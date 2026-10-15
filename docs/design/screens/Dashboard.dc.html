@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="./tokens.css">
+<style>body{margin:0;background:var(--c-canvas);color:var(--c-ink);font-family:var(--font-sans);font-size:var(--text-base);line-height:var(--lh-base);-webkit-font-smoothing:antialiased}a{color:var(--c-blue-fg)}a:hover{color:var(--c-primary-hover)}*:focus-visible{outline:none;box-shadow:var(--shadow-focus)}@keyframes skel{0%,100%{opacity:1}50%{opacity:.55}}</style>
+</helmet>
+<div style="min-height: 100%; background: var(--c-canvas); font-family: var(--font-sans); color: var(--c-ink); font-size: var(--text-base); line-height: var(--lh-base);">
+<dc-import name="Chrome" role="{{ role }}" active="dashboard" on-role="{{ setRole }}" on-nav="{{ onNav }}" hint-size="100%,110px"></dc-import>
+<main style="max-width: 1440px; box-sizing: border-box; margin: 0 auto; padding: 28px 32px 64px; display: flex; flex-direction: column; gap: 24px;">
+  <div style="display: flex; flex-direction: column; gap: 6px;">
+    <h1 style="margin: 0; font-size: var(--text-xl); line-height: var(--lh-xl); font-weight: 700;">Compliance dashboard</h1>
+    <p style="margin: 0; color: var(--c-ink-muted);">Are we covered across every active project? Pick a number to see the records behind it.</p>
+  </div>
+
+  <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading the dashboard" style="display: grid; grid-template-columns: minmax(0, 2fr) repeat(4, minmax(0, 1fr)); gap: 20px;">
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; gap: 14px;">{{ skHead }}</div>
+      <sc-for list="{{ skCards }}" as="s" hint-placeholder-count="4"><div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; gap: 14px;">{{ s.bars }}</div></sc-for>
+    </div>
+    <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 8px 20px;">{{ skRows }}</div>
+  </sc-if>
+
+  <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+    <div role="alert" style="display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 28px; background: var(--c-surface); border: 1px solid var(--c-border-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+      <div style="display: grid; grid-template-columns: 24px 1fr; gap: 12px;">
+        <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="var(--c-ink)" stroke-width="1.6" stroke-linecap="round" style="margin-top: 1px;"><circle cx="8" cy="8" r="6.2"></circle><path d="M8 4.8v3.8"></path><circle cx="8" cy="11" r="0.5" fill="var(--c-ink)"></circle></svg>
+        <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">The dashboard could not load.</span><span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); max-width: 620px; text-wrap: pretty;">The server did not answer. Nothing was changed. Try again in a moment; if it keeps failing, tell the owner of this tool.</span></span>
+      </div>
+      <button onClick="{{ retry }}" style="margin-left: 36px; height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-canvas); border-color: var(--c-ink);">Try again</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+    <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 48px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;">
+      <span style="font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">No active projects yet, so there is nothing to count.</span>
+      <span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); max-width: 460px; text-wrap: pretty;">The six numbers appear once a project has compliance records. Each one will show its source and when it was last updated.</span>
+      <span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">Source: Compliance records · Updated Oct 8, 2026, 9:20 AM · <strong style="color: var(--c-ink);">Sample data</strong></span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isLoaded }}" hint-placeholder-val="{{ true }}">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;">
+      <div style="grid-column: span 2; min-width: 0; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 24px; display: flex; flex-direction: column; gap: 16px; justify-content: space-between;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: var(--text-sm); font-weight: 600; color: var(--c-ink-muted);">All active projects</span>
+          <span style="font-size: var(--text-2xl); line-height: var(--lh-2xl); font-weight: 700; letter-spacing: -0.01em;">Compliant <span style="font-family: var(--font-mono); font-weight: 600;">110</span> of <span style="font-family: var(--font-mono); font-weight: 600;">116</span> expected</span>
+          <span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">Expected counts every open compliance record. Compliant counts those whose current certificate passes, or has every deficiency waived, and has not expired.</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">
+          <span>Source: Compliance records, Certificates</span><span>Updated Oct 8, 2026, 9:20 AM</span>
+          <span style="display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border: 1px dashed var(--c-ink-muted); border-radius: var(--radius-sm); font-weight: 600; color: var(--c-ink);">Sample data</span>
+        </div>
+      </div>
+      <sc-for list="{{ metrics }}" as="m" hint-placeholder-count="4">
+        <button aria-pressed="{{ m.pressed }}" onClick="{{ m.pick }}" style="text-align: left; font: inherit; color: var(--c-ink); background: var(--c-surface); border: 1px solid var({{ m.borderVar }}); border-radius: var(--radius-lg); box-shadow: {{ m.shadow }}; padding: 20px; display: flex; flex-direction: column; gap: 10px; cursor: pointer;" style-hover="border-color: var(--c-border-strong);">
+          <span style="display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: 600;">
+            <sc-if value="{{ m.iExpired }}" hint-placeholder-val="{{ false }}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--c-red-fg)" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6"></circle><path d="M5.8 5.8l4.4 4.4M10.2 5.8l-4.4 4.4"></path></svg></sc-if>
+            <sc-if value="{{ m.iExpiring }}" hint-placeholder-val="{{ false }}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--c-amber-fg)" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6"></circle><path d="M8 4.8V8l2.2 1.4"></path></svg></sc-if>
+            <sc-if value="{{ m.iBelow }}" hint-placeholder-val="{{ false }}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--c-ink)" stroke-width="1.8" stroke-linecap="round"><path d="M3 4h10M3 8h6M3 12h3"></path></svg></sc-if>
+            <sc-if value="{{ m.iHold }}" hint-placeholder-val="{{ false }}"><svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><rect x="3.5" y="3" width="3" height="10"></rect><rect x="9.5" y="3" width="3" height="10"></rect></svg></sc-if>
+            {{ m.label }}
+          </span>
+          <sc-if value="{{ m.shown }}" hint-placeholder-val="{{ true }}"><span style="font-family: var(--font-mono); font-size: var(--text-2xl); line-height: var(--lh-2xl); font-weight: 600; font-variant-numeric: tabular-nums;">{{ m.value }}</span></sc-if>
+          <span style="font-size: var(--text-sm); color: var(--c-blue-fg); font-weight: 600;">{{ m.cta }}</span>
+          <span style="display: flex; flex-direction: column; gap: 2px; font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted); border-top: 1px solid var(--c-border); padding-top: 10px;">
+            <span>Source: {{ m.source }}</span><span>Updated {{ m.updated }} · <strong style="color: var(--c-ink);">Sample data</strong></span>
+          </span>
+        </button>
+      </sc-for>
+    </div>
+
+    <section aria-label="Records behind the selected number" style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--c-border); flex-wrap: wrap;">
+        <h2 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Records behind: {{ selLabel }}</h2>
+        <sc-if value="{{ selIsHold }}" hint-placeholder-val="{{ false }}"><button onClick="{{ openHolds }}" style="border: 0; background: transparent; font: inherit; font-size: var(--text-sm); font-weight: 600; color: var(--c-blue-fg); cursor: pointer; padding: 0;">Open the payment hold list →</button></sc-if>
+      </div>
+      <sc-if value="{{ selHasRows }}" hint-placeholder-val="{{ true }}">
+        <div style="overflow-x: auto;">
+          <div style="min-width: 960px;">
+            <div style="display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1.6fr) 170px minmax(0, 2.6fr) 84px; gap: 16px; padding: 10px 20px; border-bottom: 1px solid var(--c-border); font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted);"><span>Subcontractor</span><span>Project</span><span>Status</span><span>Why it counts</span><span></span></div>
+            <sc-for list="{{ selRows }}" as="r" hint-placeholder-count="5">
+              <div style="display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1.6fr) 170px minmax(0, 2.6fr) 84px; gap: 16px; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--c-border);" style-hover="background: var(--c-canvas);">
+                <span style="display: flex; flex-direction: column;"><span style="font-weight: 600;">{{ r.name }}</span><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">{{ r.id }}</span></span>
+                <span style="font-size: var(--text-sm);">{{ r.project }}</span>
+                <span><dc-import name="StatusPill" status="{{ r.status }}" hint-size="120px,24px"></dc-import></span>
+                <span style="font-size: var(--text-sm); line-height: var(--lh-sm);">{{ r.detail }}</span>
+                <button onClick="{{ r.open }}" style="height: 32px; padding: 0 14px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer;" style-hover="background: var(--c-canvas); border-color: var(--c-ink);">Open</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+      <div style="display: flex; gap: 6px 12px; flex-wrap: wrap; padding: 10px 20px; background: var(--c-canvas); font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);"><span>Source: {{ selSource }}</span><span>Updated {{ selUpdated }}</span><strong style="color: var(--c-ink);">Sample data</strong></div>
+    </section>
+  </sc-if>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1100},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;accountant&quot;,&quot;project_manager&quot;,&quot;leadership&quot;],&quot;default&quot;:&quot;leadership&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;loaded&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;default&quot;:&quot;loaded&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;onOpen&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(record: string) =&gt; void&quot;},&quot;onNav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(view: string) =&gt; void&quot;}}">
+class Component extends DCLogic {
+  state = { role: null, sel: null, retried: false };
+  skel(w, h, x) {
+    const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return React.createElement('div', { key: x && x.key, style: Object.assign({ width: w, height: h, borderRadius: 'var(--radius-sm)', background: 'var(--c-sunken)', animation: reduce ? 'none' : 'skel var(--motion-skeleton)' }, x || {}) });
+  }
+  renderVals() {
+    let view = this.props.state ?? 'loaded';
+    if (view === 'error' && this.state.retried) view = 'loaded';
+    const role = this.state.role ?? this.props.role ?? 'leadership';
+    const refused = view === 'refused';
+    const sel = this.state.sel ?? (refused ? 'hold' : 'expiring');
+    const open = rec => () => { if (this.props.onOpen) this.props.onOpen(rec); };
+    const R = {
+      expired: [{ name: 'Birchwood Earthworks Inc.', id: 'REC-002', project: 'Maple Court Residences', status: 'Expired', detail: 'Expired Sep 30, 2026. No renewal received.', rec: 'birchwood' }],
+      expiring: [
+        { name: 'Clearwater Roofing', id: 'REC-104', project: 'Cedar Point Lofts', status: 'Expiring soon', detail: 'Expires Oct 19, 2026. No renewal received.', rec: 'REC-104' },
+        { name: 'Kingsley Glass', id: 'REC-207', project: 'Riverside Commons', status: 'Expiring soon', detail: 'Expires Oct 22, 2026. No renewal received.', rec: 'REC-207' },
+        { name: 'Pinecrest Plumbing', id: 'REC-011', project: 'Maple Court Residences', status: 'Expiring soon', detail: 'Expires Oct 29, 2026. No renewal received.', rec: 'REC-011' },
+        { name: 'Marlowe Electric', id: 'REC-112', project: 'Cedar Point Lofts', status: 'Expiring soon', detail: 'Expires Nov 1, 2026. No renewal received.', rec: 'REC-112' },
+        { name: 'Northgate Drywall', id: 'REC-017', project: 'Maple Court Residences', status: 'Expiring soon', detail: 'Expires Nov 3, 2026. No renewal received.', rec: 'REC-017' }
+      ],
+      below: [{ name: 'Ridgeline Roofing LLC', id: 'REC-001', project: 'Maple Court Residences', status: 'In review', detail: 'Umbrella: $1,000,000 shown, $2,000,000 required. Waiting for a decision on a deficiency.', rec: 'ridgeline' }],
+      hold: [
+        { name: 'Tidewater Masonry', id: 'REC-212', project: 'Riverside Commons', status: 'In review', detail: '$12,350 billed. Reason: In review.', rec: 'REC-212' },
+        { name: 'Fieldstone Demolition', id: 'REC-203', project: 'Riverside Commons', status: 'Awaiting', detail: '$9,600 billed. Reason: Awaiting certificate.', rec: 'fieldstone' },
+        { name: 'Birchwood Earthworks Inc.', id: 'REC-002', project: 'Maple Court Residences', status: 'Expired', detail: '$4,180 billed. Reasons: Policy expired; No W-9 on file.', rec: 'birchwood' },
+        { name: 'Granite Ridge Masonry', id: 'REC-008', project: 'Maple Court Residences', status: 'Compliant', detail: '$2,070 billed. Reason: No W-9 on file.', rec: 'granite' }
+      ]
+    };
+    const M = [
+      { k: 'expired', label: 'Expired', value: '1', cta: 'View 1 record →', source: 'Certificates', updated: 'Oct 8, 2026, 9:20 AM' },
+      { k: 'expiring', label: 'Expiring within 30 days', value: '5', cta: 'View 5 records →', source: 'Certificates', updated: 'Oct 8, 2026, 9:20 AM' },
+      { k: 'below', label: 'Below required limits', value: '1', cta: 'View 1 record →', source: 'Certificates, Activity log', updated: 'Oct 8, 2026, 9:20 AM' },
+      { k: 'hold', label: 'Dollars on hold', value: '$28,200', cta: 'Pay date Oct 15, 2026 · view records →', source: 'Pay applications', updated: 'Oct 6, 2026, 7:00 AM' }
+    ];
+    const metrics = M.map(m => {
+      const on = sel === m.k, ns = refused && m.k === 'hold';
+      return Object.assign({}, m, {
+        pressed: on ? 'true' : 'false', borderVar: on ? '--c-ink' : '--c-border',
+        shadow: on ? 'inset 0 -3px 0 var(--c-ink), var(--shadow-sm)' : 'var(--shadow-sm)',
+        iExpired: m.k === 'expired', iExpiring: m.k === 'expiring', iBelow: m.k === 'below', iHold: m.k === 'hold',
+        shown: !ns, notShown: ns, cta: ns ? 'Why not shown →' : m.cta, updated: ns ? 'Oct 6, 2026, 7:00 AM' : m.updated,
+        pick: () => this.setState({ sel: m.k })
+      });
+    });
+    const cur = M.find(m => m.k === sel);
+    const selRefused = refused && sel === 'hold';
+    const P = [
+      { key: 'maple', name: 'Maple Court Residences', tone: 'risk', compliant: 32, expected: 35, expired: 1, expiring: 2, below: 1, hold: '$6,250' },
+      { key: 'riverside', name: 'Riverside Commons', tone: 'risk', compliant: 29, expected: 31, expired: 0, expiring: 1, below: 0, hold: '$21,950' },
+      { key: 'cedar', name: 'Cedar Point Lofts', tone: 'watch', compliant: 27, expected: 28, expired: 0, expiring: 2, below: 0, hold: '$0' },
+      { key: 'oak', name: 'Oak Hollow Clinic', tone: 'track', compliant: 22, expected: 22, expired: 0, expiring: 0, below: 0, hold: '$0' }
+    ];
+    const projects = P.map(p => {
+      const tone = refused && p.key === 'riverside' ? 'watch' : p.tone;
+      return Object.assign({}, p, { atRisk: tone === 'risk', watch: tone === 'watch', onTrack: tone === 'track', expiredRed: p.expired > 0, expiredPlain: p.expired === 0, hold: refused ? 'Not shown' : p.hold, open: () => { if (this.props.onOpenProject) this.props.onOpenProject(p.key); } });
+    });
+    const S = (w, h, x) => this.skel(w, h, x);
+    const skRow = i => React.createElement('div', { key: i, style: { display: 'grid', gridTemplateColumns: '2fr 1.6fr 170px 2.6fr 84px', gap: 16, alignItems: 'center', padding: '16px 0', borderBottom: i < 4 ? '1px solid var(--c-border)' : 'none' } }, S('60%', 14, { key: 'a' }), S('70%', 12, { key: 'b' }), S(110, 24, { key: 'c', borderRadius: 'var(--radius-pill)' }), S('80%', 12, { key: 'd' }), S(64, 32, { key: 'e', borderRadius: 'var(--radius-md)' }));
+    return {
+      role, setRole: k => this.setState({ role: k }), onNav: this.props.onNav,
+      retry: () => this.setState({ retried: true }),
+      openHolds: () => { if (this.props.onNav) this.props.onNav('hold'); },
+      isLoading: view === 'loading', isError: view === 'error', isEmpty: view === 'empty', isLoaded: view === 'loaded',
+      metrics, selLabel: cur.label, selIsHold: sel === 'hold' && !selRefused,
+      selRefused, selHasRows: !selRefused,
+      selRows: (R[sel] || []).map(r => Object.assign({}, r, { open: open(r.rec) })),
+      selSource: sel === 'hold' ? 'Pay applications, Compliance records' : (sel === 'below' ? 'Certificates, Activity log' : 'Certificates'),
+      selUpdated: cur.updated,
+      projects,
+      skHead: [S('40%', 14, { key: 1 }), S('80%', 36, { key: 2 }), S('70%', 12, { key: 3 }), S('50%', 10, { key: 4 })],
+      skCards: [0, 1, 2, 3].map(() => ({ bars: [S('60%', 14, { key: 1 }), S('30%', 36, { key: 2 }), S('50%', 14, { key: 3 }), S('75%', 10, { key: 4, marginTop: 8 })] })),
+      skRows: [0, 1, 2, 3, 4].map(skRow)
+    };
+  }
+}
+</script>
+</body>
+</html>

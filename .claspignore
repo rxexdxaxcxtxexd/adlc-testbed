@@ -1,0 +1,22 @@
+# Keep everything except Apps Script code, pages and the manifest out of deployment.
+# Plain deny lines only, with no "!" re-includes, so clasp reads this file the same
+# way whichever ignore library it uses. tests/repo.test.js fails if any other file
+# would deploy, so a new top-level folder must be added here.
+# Keep .clasp.json without a rootDir, or these paths no longer line up.
+.claude/**
+.scratch/**
+.gitignore
+.gitattributes
+.claspignore
+.clasp.json
+.env
+node_modules/**
+docs/**
+scripts/**
+tests/**
+*.md
+package.json
+src/**/*.test.*
+src/**/*.md
+
+test-fixtures/**

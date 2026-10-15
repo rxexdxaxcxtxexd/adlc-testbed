@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="./tokens.css">
+<style>body{margin:0;background:var(--c-canvas);color:var(--c-ink);font-family:var(--font-sans);font-size:var(--text-base);line-height:var(--lh-base);-webkit-font-smoothing:antialiased}a{color:var(--c-blue-fg)}a:hover{color:var(--c-primary-hover)}*:focus-visible{outline:none;box-shadow:var(--shadow-focus)}</style>
+</helmet>
+<header style="background: var(--c-surface); border-bottom: 1px solid var(--c-border); font-family: var(--font-sans); color: var(--c-ink);">
+  <div style="max-width: 1440px; box-sizing: border-box; margin: 0 auto; padding: 12px 32px 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 10px 20px; flex-wrap: wrap;">
+      <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
+        <span style="font-size: var(--text-md); line-height: var(--lh-md); font-weight: 700; letter-spacing: -0.005em;">Certificate compliance</span>
+        <span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">Harborline Builders</span>
+      </div>
+      <span style="display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 10px; border: 1px dashed var(--c-ink-muted); border-radius: var(--radius-sm); font-size: var(--text-sm); font-weight: 600; color: var(--c-ink); background: var(--c-surface); white-space: nowrap;"><svg width="11" height="11" viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" transform="rotate(45 5 5)" fill="currentColor"></rect></svg>Sample data · all names fictional</span>
+    </div>
+    <div role="group" aria-label="Demo only: view as" style="display: inline-flex; align-items: center; gap: 10px; padding: 6px 6px 6px 12px; border: 1.5px dashed var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-sunken); flex-wrap: wrap;">
+      <span style="display: flex; flex-direction: column; line-height: 1.1;">
+        <span style="font-size: 11px; font-weight: 700; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink);">Demo only</span>
+        <span style="font-size: var(--text-xs); color: var(--c-ink-muted);">View as</span>
+      </span>
+      <div style="display: flex; gap: 2px; flex-wrap: wrap;">
+        <sc-for list="{{ roles }}" as="r" hint-placeholder-count="3">
+          <sc-if value="{{ r.on }}" hint-placeholder-val="{{ false }}">
+            <button aria-pressed="true" onClick="{{ r.pick }}" style="height: 32px; padding: 0 12px; border: 1px solid var(--c-ink); border-radius: var(--radius-sm); background: var(--c-surface); color: var(--c-ink); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer; box-shadow: var(--shadow-sm); white-space: nowrap;">{{ r.label }}</button>
+          </sc-if>
+          <sc-if value="{{ r.off }}" hint-placeholder-val="{{ true }}">
+            <button aria-pressed="false" onClick="{{ r.pick }}" style="height: 32px; padding: 0 12px; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--c-ink-muted); font: inherit; font-size: var(--text-sm); font-weight: 500; cursor: pointer; white-space: nowrap;" style-hover="color: var(--c-ink); background: var(--c-surface);">{{ r.label }}</button>
+          </sc-if>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+  <nav aria-label="Main" style="max-width: 1440px; box-sizing: border-box; margin: 0 auto; padding: 0 20px; display: flex; gap: 4px; overflow-x: auto;">
+    <sc-for list="{{ nav }}" as="n" hint-placeholder-count="5">
+      <sc-if value="{{ n.on }}" hint-placeholder-val="{{ false }}">
+        <button aria-current="page" onClick="{{ n.pick }}" style="height: 44px; padding: 0 12px; border: 0; background: transparent; font: inherit; font-size: var(--text-sm); font-weight: 700; color: var(--c-ink); box-shadow: inset 0 -3px 0 var(--c-ink); white-space: nowrap; cursor: pointer;">{{ n.label }}</button>
+      </sc-if>
+      <sc-if value="{{ n.off }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ n.pick }}" style="height: 44px; padding: 0 12px; border: 0; background: transparent; font: inherit; font-size: var(--text-sm); font-weight: 500; color: var(--c-ink-muted); white-space: nowrap; cursor: pointer;" style-hover="color: var(--c-ink); box-shadow: inset 0 -3px 0 var(--c-border);">{{ n.label }}</button>
+      </sc-if>
+    </sc-for>
+  </nav>
+</header>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:120},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;accountant&quot;,&quot;project_manager&quot;,&quot;leadership&quot;],&quot;default&quot;:&quot;accountant&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;active&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;projects&quot;,&quot;dashboard&quot;,&quot;worklist&quot;,&quot;hold&quot;,&quot;roi&quot;],&quot;default&quot;:&quot;worklist&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;onRole&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(role: string) =&gt; void&quot;},&quot;onNav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(view: string) =&gt; void&quot;}}">
+class Component extends DCLogic {
+  state = { role: null, active: null };
+  renderVals() {
+    const controlled = typeof this.props.onRole === 'function';
+    const role = controlled ? (this.props.role ?? 'accountant') : (this.state.role ?? this.props.role ?? 'accountant');
+    const active = this.state.active ?? this.props.active ?? 'worklist';
+    const names = { accountant: 'Accountant', project_manager: 'Project manager', leadership: 'Leadership' };
+    const roles = Object.keys(names).map(k => ({
+      label: names[k], on: role === k, off: role !== k,
+      pick: () => { this.setState({ role: k }); if (this.props.onRole) this.props.onRole(k); }
+    }));
+    const items = [['projects', 'Projects'], ['dashboard', 'Compliance dashboard'], ['worklist', 'Worklist'], ['hold', 'Payment hold list'], ['roi', 'Return on investment']];
+    const nav = items.map(([k, label]) => ({
+      label, on: active === k, off: active !== k,
+      pick: () => { if (this.props.onNav) this.props.onNav(k); else this.setState({ active: k }); }
+    }));
+    return { roles, nav };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="./tokens.css">
+<style>body{margin:0;background:#E4E2DC;font-family:var(--font-sans);color:var(--c-ink)}a{color:var(--c-blue-fg)}a:hover{color:var(--c-primary-hover)}.dv-turn{padding:48px 56px 40px;border-bottom:1px solid rgba(0,0,0,.1);scroll-margin-top:16px}.dv-thd{display:flex;align-items:baseline;gap:12px;margin:0 0 24px}.dv-tid{font:600 11px var(--font-mono);padding:3px 8px;background:#1B1F24;color:#fff;border-radius:4px;text-decoration:none}.dv-tname{font:700 22px/1.2 var(--font-sans);color:#1B1F24}.dv-tsub{font:400 14px/1.4 var(--font-sans);color:#5F656D}.dv-opts{display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start}.dv-opt{flex:none;display:flex;flex-direction:column;gap:10px;scroll-margin-top:16px}.dv-oid{font:600 11px var(--font-mono);padding:3px 7px;background:rgba(0,0,0,.1);color:#1B1F24;border-radius:5px;text-decoration:none}.dv-olabel{display:flex;align-items:baseline;gap:8px;font:500 14px/1.3 var(--font-sans);color:#1B1F24}.dv-olabel span{color:#5F656D;font-weight:400}.dv-card{max-width:100%;background:var(--c-canvas);border:1px solid rgba(0,0,0,.12);border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden}.dv-opt:target .dv-oid{background:#2563C9;color:#fff}.dv-next{margin:28px 0 0;font:13px/1.5 var(--font-sans);color:#5F656D}</style>
+</helmet>
+
+<section class="dv-turn" id="c0" style="padding-bottom: 48px;">
+  <div style="max-width: 1440px; display: flex; flex-direction: column; gap: 28px;">
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted); letter-spacing: var(--tracking-caps); text-transform: uppercase;">Round 2 · Batch C of 3 · Brief §11 items 3 to 6</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border: 1px dashed var(--c-ink-muted); border-radius: var(--radius-sm); font-size: var(--text-xs); font-weight: 600; color: var(--c-ink); background: var(--c-surface);"><svg width="10" height="10" viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" transform="rotate(45 5 5)" fill="currentColor"></rect></svg>Sample data</span>
+      </div>
+      <h1 style="margin: 0; font-size: var(--text-2xl); line-height: var(--lh-2xl); font-weight: 700; letter-spacing: -0.01em;">Record detail at 375, the §10 walkthrough, field notes, proposals</h1>
+      <p style="margin: 0; max-width: 860px; color: var(--c-ink-muted); text-wrap: pretty;">The upload page (6.7) was finished earlier in this batch. This page adds the rest. After the Batch C review, the 375 frames (<a class="dv-oid" href="#4p">4p</a>, <a class="dv-oid" href="#4q">4q</a>) show the narrow layout you applied to RecordDetail.dc.html. The rule is now in section 03 of the component sheet.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 20px 22px; display: flex; flex-direction: column; gap: 12px;">
+        <h2 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 700;">What is in Batch C</h2>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+          <li><strong>6.4 at 375 wide</strong> (<a class="dv-oid" href="#4p">4p</a>, <a class="dv-oid" href="#4q">4q</a>): the record detail with the narrow layout, in a phone-width frame.</li>
+          <li><strong>Clickable prototype</strong>: <a href="Walkthrough.dc.html" style="font-weight: 600;">Walkthrough.dc.html</a>. It links the existing screens with the existing sample data.</li>
+          <li><strong>Field notes</strong> (item 5): <span style="font-family: var(--font-mono);">field-notes.md</span>. They list the data that fills each element on every screen, using Schema column names and §7 metric names.</li>
+          <li><strong>Proposals</strong> (item 6): <span style="font-family: var(--font-mono);">proposals.md</span>, also listed below.</li>
+        </ul>
+      </div>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 20px 22px; display: flex; flex-direction: column; gap: 12px;">
+        <h2 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 700;">Batch C review: what changed</h2>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+          <li><strong>Narrow layout adopted.</strong> Your RecordDetail.dc.html is the base, as supplied. It uses a container query. Under 984 px of component width the PDF pane stops being sticky. Under 576 px each value line is two rows: the column header hides, Found and Required get small labels, and edit inputs are 127 px at 375. At 1440 it is pixel-identical to the approved version.</li>
+          <li><strong>Component sheet:</strong> the rule is in section 03, "Record detail at narrow width".</li>
+          <li><strong>Confidence pill:</strong> "Below 85%: a person checks every value" now has a minimum height instead of a fixed one, so it grows to two lines at 375 (<a class="dv-oid" href="#4q">4q</a>). It is unchanged on one line.</li>
+          <li><strong>Walkthrough:</strong> when a press moves to the next step, the role switches to that step's role, so the Worklist tab at step 2 lands on Dana as Accountant. Approve at step 4 and Reject at step 5 now move to the next step after the success message.</li>
+          <li><strong>Proposals 6 and 7</strong> are marked as applied.</li>
+        </ul>
+      </div>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 20px 22px; display: flex; flex-direction: column; gap: 12px;">
+        <h2 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 700;">Decisions recorded</h2>
+        <ol style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+          <li><strong>Narrow layout for 6.4:</strong> adopted, as above.</li>
+          <li><strong>§10 step 4: A.</strong> Dana approves Brightway. The correction stays in Batch A <span style="font-family: var(--font-mono);">4b</span> (Summit), and proposal 8 stays deferred.</li>
+          <li><strong>The CFO</strong> views the ROI page as Leadership. Confirmed.</li>
+          <li><strong>Proposals 8, 9 and 10</strong> stay deferred.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="dv-turn" id="c1">
+  <div class="dv-thd"><a class="dv-tid" href="#c1">6.4</a><span class="dv-tname">Compliance record detail at 375 wide</span><span class="dv-tsub">RecordDetail.dc.html with the narrow layout. The PDF stacks above the values and is not sticky.</span></div>
+  <div class="dv-opts">
+    <div class="dv-opt" id="4p"><div class="dv-olabel"><a class="dv-oid" href="#4p">4p</a>Deficiency decision<span>· Project manager · Ridgeline Roofing LLC</span></div><div class="dv-card" style="width: 375px;"><dc-import name="RecordDetail" record="ridgeline" role="project_manager" view="loaded" hint-size="375px,4200px"></dc-import></div></div>
+    <div class="dv-opt" id="4q"><div class="dv-olabel"><a class="dv-oid" href="#4q">4q</a>Correcting a value<span>· Accountant · Summit Mechanical</span></div><div class="dv-card" style="width: 375px;"><dc-import name="RecordDetail" record="summit" role="accountant" view="editing" hint-size="375px,4200px"></dc-import></div></div>
+  </div>
+  <p class="dv-next">Each value line is two rows: the label and result, then Found and Required. In 4q the edit inputs are 127 px wide and the 85% pill wraps inside its tint.</p>
+</section>
+
+<section class="dv-turn" id="c2">
+  <div class="dv-thd"><a class="dv-tid" href="#c2">§10</a><span class="dv-tname">Clickable walkthrough</span><span class="dv-tsub">One morning, ending on a decision. Every screen is the approved one, with its own sample data.</span></div>
+  <div style="max-width: 1100px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px;">
+    <ol style="margin: 0; padding: 20px 22px 20px 40px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); display: flex; flex-direction: column; gap: 10px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+      <li><strong>Elena Park (Leadership), Projects.</strong> Maple Court is At risk: 1 expired, $6,250 on hold. "Payment hold list →" moves to step 2.</li>
+      <li><strong>Elena, payment hold list.</strong> It opens on Maple Court: Birchwood Earthworks and Granite Ridge Masonry, with every reason.</li>
+      <li><strong>Dana Reyes (Accountant), worklist.</strong> Brightway is waiting for approval; Summit needs review. Opening Brightway moves to step 4.</li>
+      <li><strong>Dana, Brightway Electric.</strong> She checks the PDF beside the values and presses Approve.</li>
+      <li><strong>Marcus Webb (Project manager), Ridgeline Roofing LLC.</strong> Umbrella $1,000,000 against $2,000,000. He presses Reject, and the correction request goes out.</li>
+      <li><strong>The CFO (as Leadership), return on investment.</strong> The likely net value, the floor, and every input with its basis.</li>
+    </ol>
+    <div style="padding: 20px 22px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); display: flex; flex-direction: column; gap: 12px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+      <a href="Walkthrough.dc.html" style="align-self: flex-start; display: inline-flex; align-items: center; height: var(--control-md); padding: 0 18px; border-radius: var(--radius-md); background: var(--c-primary); color: var(--c-on-solid); font-weight: 600; text-decoration: none;">Open the walkthrough</a>
+      <p style="margin: 0;">A dashed "Demo only" bar sits at the bottom of every screen. It shows the step, who is acting and what to press, with Back, Next and step numbers. It uses the same pattern as the role switcher, so it reads as a demo control and not as part of the product.</p>
+      <p style="margin: 0;">Pressing the expected control on screen moves to the next step. The tabs, the tiles and Open buttons also work, and an off-path view says how to get back. Records with no detail page in the sample data say so instead of opening the wrong record.</p>
+    </div>
+  </div>
+</section>
+
+<section class="dv-turn" id="c3">
+  <div class="dv-thd"><a class="dv-tid" href="#c3">5</a><span class="dv-tname">Field notes</span><span class="dv-tsub">Full table in field-notes.md: every element on every screen, mapped to Schema columns and §7 metrics.</span></div>
+  <div style="max-width: 1100px; padding: 20px 22px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); display: flex; flex-direction: column; gap: 10px;">
+    <h2 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 700;">Seven elements have no column behind them yet</h2>
+    <ol style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+      <li><strong>Policy period</strong> on the record header. Only <span style="font-family: var(--font-mono);">certificates.expiration_date</span> exists; there is no effective date.</li>
+      <li><strong>Correction old → new</strong> in the timeline. <span style="font-family: var(--font-mono);">activity_log</span> has no old or new value columns.</li>
+      <li><strong>"Review mode set by Elena Park"</strong>. The activity log is keyed by <span style="font-family: var(--font-mono);">record_id</span>, so project-level events have nowhere to go.</li>
+      <li><strong>"Updated … (pay-cycle check)"</strong> on the tiles, the dashboard and the hold list. No column records when the check ran.</li>
+      <li><strong>"Source: ROI inputs"</strong>. There is no ROI inputs tab in <span style="font-family: var(--font-mono);">SCHEMA</span> yet; it comes with the ROI ticket.</li>
+      <li><strong>The "Required" column</strong> comes from <span style="font-family: var(--font-mono);">docs/tolerance-matrix.json</span>, but the values card says "Source: Certificates, Projects".</li>
+      <li><strong>Waiting for</strong>. <span style="font-family: var(--font-mono);">queue_stage</span> and <span style="font-family: var(--font-mono);">queue_reason</span> need a stated mapping to the four §5 words.</li>
+    </ol>
+  </div>
+</section>
+
+<section class="dv-turn" id="c4">
+  <div class="dv-thd"><a class="dv-tid" href="#c4">6</a><span class="dv-tname">Proposals</span><span class="dv-tsub">Everything held back across all batches. Items 6 and 7 are applied; the rest are not built, and each needs a decision row. Also in proposals.md.</span></div>
+  <ol style="max-width: 1100px; box-sizing: border-box; margin: 0; padding: 20px 22px 20px 40px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); display: flex; flex-direction: column; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+    <li><strong>A "Why At risk" line on each tile.</strong> It uses words only, but it changes the approved tile component. <span style="color: var(--c-ink-muted);">(Batch B)</span></li>
+    <li><strong>Payback period on the ROI page.</strong> §7 does not define it. <span style="color: var(--c-ink-muted);">(Batch B)</span></li>
+    <li><strong>Dollars on hold compared with last cycle.</strong> That is a trend, and §12 rules trends out. <span style="color: var(--c-ink-muted);">(Batch B)</span></li>
+    <li><strong>A "By project" table on the dashboard.</strong> The tiles already show each project's numbers. <span style="color: var(--c-ink-muted);">(Batch B)</span></li>
+    <li><strong>Name both insured names in the correction request.</strong> The code's text, "Insured name: missing or wrong", doesn't tell the subcontractor what to fix. <span style="color: var(--c-ink-muted);">(Batch A)</span></li>
+    <li><strong>Applied:</strong> <s>a narrow layout for the values card at phone width.</s> Adopted in the Batch C review. <span style="color: var(--c-ink-muted);">(Batch C, 4p)</span></li>
+    <li><strong>Applied:</strong> <s>no sticky PDF pane once the columns stack.</s> Adopted in the Batch C review, under 984 px of component width. <span style="color: var(--c-ink-muted);">(Batch C, 4p)</span></li>
+    <li><strong>Plant a misread value on Brightway Electric</strong>, so §10 step 4 can show correct-then-approve on one record. This changes the sample data. <span style="color: var(--c-ink-muted);">(Batch C)</span></li>
+    <li><strong>A CFO role or a "viewing as" label.</strong> §5 has none, so the CFO uses Leadership. <span style="color: var(--c-ink-muted);">(Batch C)</span></li>
+    <li><strong>HTML email layout (§6.9).</strong> It is lower priority and was not designed. The emails stay as fixed plain text. <span style="color: var(--c-ink-muted);">(all batches)</span></li>
+  </ol>
+  <p class="dv-next">This is the end of Batch C and of Round 2. Handing back for review.</p>
+</section>
+</x-dc>
+</body>
+</html>

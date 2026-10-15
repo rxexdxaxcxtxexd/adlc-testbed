@@ -1,0 +1,345 @@
+{
+  "vault": {
+    "status_contrast": {
+      "green": {
+        "fg": "#94d7ad",
+        "tint": "#1c352a",
+        "surface": 9.49,
+        "canvas": 10.56,
+        "tint_ratio": 7.9,
+        "solid": 9.49
+      },
+      "amber": {
+        "fg": "#e4c181",
+        "tint": "#352d1e",
+        "surface": 9.24,
+        "canvas": 10.28,
+        "tint_ratio": 7.92,
+        "solid": 9.24
+      },
+      "red": {
+        "fg": "#f6a5a2",
+        "tint": "#3b2528",
+        "surface": 8.16,
+        "canvas": 9.09,
+        "tint_ratio": 7.31,
+        "solid": 8.16
+      },
+      "blue": {
+        "fg": "#a1c4e8",
+        "tint": "#22303e",
+        "surface": 8.73,
+        "canvas": 9.72,
+        "tint_ratio": 7.42,
+        "solid": 8.73
+      },
+      "violet": {
+        "fg": "#cfb5ee",
+        "tint": "#30273d",
+        "surface": 8.67,
+        "canvas": 9.65,
+        "tint_ratio": 7.75,
+        "solid": 8.67
+      },
+      "neutral": {
+        "fg": "#b5c1bf",
+        "tint": "#283230",
+        "surface": 8.56,
+        "canvas": 9.52,
+        "tint_ratio": 7.14,
+        "solid": 8.56
+      }
+    },
+    "body_contrast": {
+      "ink": {
+        "canvas": 14.43,
+        "surface": 12.97,
+        "chrome": 13.73
+      },
+      "muted": {
+        "canvas": 8.33,
+        "surface": 7.49,
+        "chrome": 7.93
+      }
+    },
+    "fonts_loaded": [
+      "IBM Plex Mono",
+      "IBM Plex Mono",
+      "Manrope",
+      "Manrope",
+      "Manrope",
+      "g_d0_sf2",
+      "g_d0_sf4",
+      "g_d0_sf6",
+      "g_d0_sf8"
+    ],
+    "layout": "\"pdf step\" \"pdf values\" \"timeline values\" \"w9 values\"",
+    "mobile": {
+      "topStep": 980.265625,
+      "topPdf": 2861.203125,
+      "pdfDisplay": "none",
+      "navCount": 5,
+      "navVisible": true,
+      "animation": "none"
+    },
+    "errors": [],
+    "checks": "passed"
+  },
+  "ledger": {
+    "status_contrast": {
+      "green": {
+        "fg": "#34623f",
+        "tint": "#e1e9d6",
+        "surface": 6.36,
+        "canvas": 5.97,
+        "tint_ratio": 5.68,
+        "solid": 6.36
+      },
+      "amber": {
+        "fg": "#80500a",
+        "tint": "#f1e1ba",
+        "surface": 6.14,
+        "canvas": 5.77,
+        "tint_ratio": 5.28,
+        "solid": 6.14
+      },
+      "red": {
+        "fg": "#9d3a2a",
+        "tint": "#f2dacc",
+        "surface": 6.13,
+        "canvas": 5.76,
+        "tint_ratio": 5.1,
+        "solid": 6.13
+      },
+      "blue": {
+        "fg": "#2d557d",
+        "tint": "#e0e6e8",
+        "surface": 6.96,
+        "canvas": 6.54,
+        "tint_ratio": 6.15,
+        "solid": 6.96
+      },
+      "violet": {
+        "fg": "#65477b",
+        "tint": "#e9dfeb",
+        "surface": 6.88,
+        "canvas": 6.46,
+        "tint_ratio": 5.92,
+        "solid": 6.88
+      },
+      "neutral": {
+        "fg": "#625b51",
+        "tint": "#e4dfd3",
+        "surface": 6.01,
+        "canvas": 5.65,
+        "tint_ratio": 5.04,
+        "solid": 6.01
+      }
+    },
+    "body_contrast": {
+      "ink": {
+        "canvas": 12.35,
+        "surface": 13.15,
+        "chrome": 12.35
+      },
+      "muted": {
+        "canvas": 5.46,
+        "surface": 5.81,
+        "chrome": 5.46
+      }
+    },
+    "fonts_loaded": [
+      "IBM Plex Mono",
+      "Newsreader",
+      "Public Sans",
+      "Public Sans",
+      "Public Sans",
+      "g_d0_sf2",
+      "g_d0_sf4",
+      "g_d0_sf6",
+      "g_d0_sf8"
+    ],
+    "layout": "\"step pdf\" \"values pdf\" \"w9 pdf\" \"timeline timeline\"",
+    "mobile": {
+      "topStep": 1099.65625,
+      "topPdf": 3141.109375,
+      "pdfDisplay": "none",
+      "navCount": 5,
+      "navVisible": true,
+      "animation": "none"
+    },
+    "errors": [],
+    "checks": "passed"
+  },
+  "signal": {
+    "status_contrast": {
+      "green": {
+        "fg": "#305b3a",
+        "tint": "#dee7dd",
+        "surface": 7.22,
+        "canvas": 6.79,
+        "tint_ratio": 6.18,
+        "solid": 7.22
+      },
+      "amber": {
+        "fg": "#7b500a",
+        "tint": "#eee1c5",
+        "surface": 6.47,
+        "canvas": 6.09,
+        "tint_ratio": 5.41,
+        "solid": 6.47
+      },
+      "red": {
+        "fg": "#a3322d",
+        "tint": "#f0deda",
+        "surface": 6.35,
+        "canvas": 5.97,
+        "tint_ratio": 5.3,
+        "solid": 6.35
+      },
+      "blue": {
+        "fg": "#365b7d",
+        "tint": "#dce4e8",
+        "surface": 6.57,
+        "canvas": 6.18,
+        "tint_ratio": 5.53,
+        "solid": 6.57
+      },
+      "violet": {
+        "fg": "#694b7c",
+        "tint": "#e6deea",
+        "surface": 6.69,
+        "canvas": 6.29,
+        "tint_ratio": 5.52,
+        "solid": 6.69
+      },
+      "neutral": {
+        "fg": "#5b5d56",
+        "tint": "#e2e3dd",
+        "surface": 6.16,
+        "canvas": 5.8,
+        "tint_ratio": 5.17,
+        "solid": 6.16
+      }
+    },
+    "body_contrast": {
+      "ink": {
+        "canvas": 13.36,
+        "surface": 14.21,
+        "chrome": 12.17
+      },
+      "muted": {
+        "canvas": 5.28,
+        "surface": 5.61,
+        "chrome": 4.81
+      }
+    },
+    "fonts_loaded": [
+      "Space Grotesk",
+      "Space Grotesk",
+      "Space Grotesk",
+      "g_d0_sf2",
+      "g_d0_sf4",
+      "g_d0_sf6",
+      "g_d0_sf8"
+    ],
+    "layout": "\"values step\" \"values pdf\" \"timeline w9\"",
+    "mobile": {
+      "topStep": 1033.015625,
+      "topPdf": 3003.640625,
+      "pdfDisplay": "none",
+      "navCount": 5,
+      "navVisible": true,
+      "animation": "none"
+    },
+    "errors": [],
+    "checks": "passed"
+  },
+  "drafting": {
+    "status_contrast": {
+      "green": {
+        "fg": "#245b45",
+        "tint": "#dbe7df",
+        "surface": 7.34,
+        "canvas": 6.67,
+        "tint_ratio": 6.21,
+        "solid": 7.34
+      },
+      "amber": {
+        "fg": "#82500d",
+        "tint": "#efe0c4",
+        "surface": 6.28,
+        "canvas": 5.72,
+        "tint_ratio": 5.2,
+        "solid": 6.28
+      },
+      "red": {
+        "fg": "#a33333",
+        "tint": "#f0ddda",
+        "surface": 6.33,
+        "canvas": 5.76,
+        "tint_ratio": 5.22,
+        "solid": 6.33
+      },
+      "blue": {
+        "fg": "#235a85",
+        "tint": "#dce7ee",
+        "surface": 6.79,
+        "canvas": 6.17,
+        "tint_ratio": 5.82,
+        "solid": 6.79
+      },
+      "violet": {
+        "fg": "#664b85",
+        "tint": "#e4e0ec",
+        "surface": 6.7,
+        "canvas": 6.09,
+        "tint_ratio": 5.56,
+        "solid": 6.7
+      },
+      "neutral": {
+        "fg": "#50616a",
+        "tint": "#dce3e5",
+        "surface": 5.98,
+        "canvas": 5.44,
+        "tint_ratio": 4.96,
+        "solid": 5.98
+      }
+    },
+    "body_contrast": {
+      "ink": {
+        "canvas": 10.32,
+        "surface": 11.34,
+        "chrome": 9.46
+      },
+      "muted": {
+        "canvas": 5.43,
+        "surface": 5.97,
+        "chrome": 4.98
+      }
+    },
+    "fonts_loaded": [
+      "IBM Plex Mono",
+      "IBM Plex Mono",
+      "IBM Plex Mono",
+      "IBM Plex Sans",
+      "IBM Plex Sans",
+      "IBM Plex Sans",
+      "g_d0_sf2",
+      "g_d0_sf4",
+      "g_d0_sf6",
+      "g_d0_sf8"
+    ],
+    "layout": "\"step values pdf\" \"w9 values timeline\" \". values timeline\"",
+    "mobile": {
+      "topStep": 1009.640625,
+      "topPdf": 2934.15625,
+      "pdfDisplay": "none",
+      "navCount": 5,
+      "navVisible": true,
+      "animation": "none"
+    },
+    "errors": [],
+    "checks": "passed"
+  }
+}

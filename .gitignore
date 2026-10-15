@@ -1,0 +1,9 @@
+node_modules/
+.clasprc.json
+.env
+.claude/settings.local.json
+.claude/agent-memory-local/
+# Holds the script ID; IDs stay out of the repo (docs/decisions.md).
+.clasp.json
+# Local browser screenshots and check logs.
+.scratch/coi/validation/

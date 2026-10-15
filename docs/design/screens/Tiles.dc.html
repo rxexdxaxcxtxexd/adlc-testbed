@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="./tokens.css">
+<style>body{margin:0;background:var(--c-canvas);color:var(--c-ink);font-family:var(--font-sans);font-size:var(--text-base);line-height:var(--lh-base);-webkit-font-smoothing:antialiased}a{color:var(--c-blue-fg)}a:hover{color:var(--c-primary-hover)}*:focus-visible{outline:none;box-shadow:var(--shadow-focus)}@keyframes skel{0%,100%{opacity:1}50%{opacity:.55}}</style>
+</helmet>
+<div style="min-height: 100%; background: var(--c-canvas); font-family: var(--font-sans); color: var(--c-ink); font-size: var(--text-base); line-height: var(--lh-base);">
+<dc-import name="Chrome" role="{{ role }}" active="projects" on-role="{{ setRole }}" on-nav="{{ onNav }}" hint-size="100%,110px"></dc-import>
+<main style="max-width: 1440px; box-sizing: border-box; margin: 0 auto; padding: 28px 32px 64px; display: flex; flex-direction: column; gap: 24px;">
+
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 20px 32px; flex-wrap: wrap;">
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <h1 style="margin: 0; font-size: var(--text-xl); line-height: var(--lh-xl); font-weight: 700;">Projects</h1>
+      <p style="margin: 0; color: var(--c-ink-muted);">Which project needs your attention? At risk comes first. Open a tile to see that project's worklist.</p>
+    </div>
+    <sc-if value="{{ showHoldSummary }}" hint-placeholder-val="{{ true }}">
+      <button onClick="{{ openHolds }}" style="display: flex; align-items: center; gap: 20px; padding: 12px 16px; border: 1px solid var(--c-border); border-radius: var(--radius-lg); background: var(--c-surface); box-shadow: var(--shadow-sm); font: inherit; color: var(--c-ink); text-align: left; cursor: pointer; flex-wrap: wrap;" style-hover="border-color: var(--c-border-strong); box-shadow: var(--shadow-md);">
+        <span style="display: flex; flex-direction: column; gap: 2px;">
+          <span style="display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: 600;"><svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><rect x="3.5" y="3" width="3" height="10"></rect><rect x="9.5" y="3" width="3" height="10"></rect></svg>On hold this pay cycle, all projects</span>
+          <span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">Pay date Oct 15, 2026 · Source: Pay applications · Updated Oct 6, 2026, 7:00 AM · <strong style="color: var(--c-ink);">Sample data</strong></span>
+        </span>
+        <span style="font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 600; font-variant-numeric: tabular-nums;">{{ totalHold }}</span>
+        <span style="font-size: var(--text-sm); font-weight: 600; color: var(--c-blue-fg);">Payment hold list →</span>
+      </button>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading projects" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+      <sc-for list="{{ skTiles }}" as="s" hint-placeholder-count="4">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); overflow: hidden;">
+          <div style="height: 6px; background: var(--c-sunken);"></div>
+          <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">{{ s.bars }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+    <div role="alert" style="display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 28px; background: var(--c-surface); border: 1px solid var(--c-border-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+      <div style="display: grid; grid-template-columns: 24px 1fr; gap: 12px;">
+        <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="var(--c-ink)" stroke-width="1.6" stroke-linecap="round" style="margin-top: 1px;"><circle cx="8" cy="8" r="6.2"></circle><path d="M8 4.8v3.8"></path><circle cx="8" cy="11" r="0.5" fill="var(--c-ink)"></circle></svg>
+        <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">The project tiles could not load.</span><span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); max-width: 620px; text-wrap: pretty;">The server did not answer. Nothing was changed. Try again in a moment; if it keeps failing, tell the owner of this tool.</span></span>
+      </div>
+      <button onClick="{{ retry }}" style="margin-left: 36px; height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-canvas); border-color: var(--c-ink);">Try again</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+    <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 48px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;">
+      <span style="width: 44px; height: 44px; border-radius: 50%; background: var(--c-sunken); color: var(--c-ink-muted); display: flex; align-items: center; justify-content: center;"><svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1"></rect><rect x="9" y="2.5" width="4.5" height="4.5" rx="1"></rect><rect x="2.5" y="9" width="4.5" height="4.5" rx="1"></rect><rect x="9" y="9" width="4.5" height="4.5" rx="1"></rect></svg></span>
+      <span style="font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">No active projects yet.</span>
+      <span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); max-width: 420px; text-wrap: pretty;">A tile appears for each project once it has compliance records. Projects are added in the Projects tab of the Sheet.</span>
+      <span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">Source: Projects · Updated Oct 8, 2026, 9:20 AM · <strong style="color: var(--c-ink);">Sample data</strong></span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasTiles }}" hint-placeholder-val="{{ true }}">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+      <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="4">
+        <a href="#" onClick="{{ t.open }}" aria-label="{{ t.aria }}" style="text-decoration: none; color: var(--c-ink); background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; display: flex; flex-direction: column;" style-hover="box-shadow: var(--shadow-md); border-color: var(--c-border-strong);">
+          <div style="height: 6px; background: var({{ t.tileVar }});"></div>
+          <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px; flex: 1;">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <sc-if value="{{ t.atRisk }}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-sm); background: var(--tile-at-risk); color: var(--c-on-solid); font-size: var(--text-sm); font-weight: 700;"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="2.5" y="2.5" width="11" height="11" transform="rotate(45 8 8)"></rect></svg>At risk</span></sc-if>
+              <sc-if value="{{ t.watch }}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-sm); background: var(--tile-watch); color: var(--c-on-solid); font-size: var(--text-sm); font-weight: 700;"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5L15 14H1Z"></path></svg>Watch</span></sc-if>
+              <sc-if value="{{ t.onTrack }}" hint-placeholder-val="{{ true }}"><span style="display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-sm); background: var(--tile-on-track); color: var(--c-on-solid); font-size: var(--text-sm); font-weight: 700;"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="6.5"></circle></svg>On track</span></sc-if>
+              <span style="font-size: var(--text-lg); line-height: var(--lh-lg); font-weight: 600;">{{ t.name }}</span>
+              <span style="font-size: var(--text-base);">Compliant <strong>{{ t.compliant }}</strong> of <strong>{{ t.expected }}</strong> expected</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+              <span>Expired</span>
+              <sc-if value="{{ t.expiredRed }}" hint-placeholder-val="{{ false }}"><span style="font-family: var(--font-mono); font-weight: 500; text-align: right; color: var(--c-red-fg);">{{ t.expired }}</span></sc-if>
+              <sc-if value="{{ t.expiredPlain }}" hint-placeholder-val="{{ true }}"><span style="font-family: var(--font-mono); font-weight: 500; text-align: right;">{{ t.expired }}</span></sc-if>
+              <span>Expiring within 30 days</span><span style="font-family: var(--font-mono); font-weight: 500; text-align: right;">{{ t.expiring }}</span>
+              <span>Below required limits</span><span style="font-family: var(--font-mono); font-weight: 500; text-align: right;">{{ t.below }}</span>
+            </div>
+            <sc-if value="{{ t.holdSome }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 12px; background: var(--c-hold-tint); border-radius: var(--radius-md);">
+                <span style="display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: 600;"><svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><rect x="3.5" y="3" width="3" height="10"></rect><rect x="9.5" y="3" width="3" height="10"></rect></svg>On hold this pay cycle</span>
+                <span style="font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 600; font-variant-numeric: tabular-nums;">{{ t.hold }}</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{ t.holdNone }}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 12px; background: var(--c-canvas); border-radius: var(--radius-md);">
+                <span style="font-size: var(--text-sm); font-weight: 600; color: var(--c-ink-muted);">On hold this pay cycle</span>
+                <span style="font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 600; color: var(--c-ink-muted); font-variant-numeric: tabular-nums;">$0</span>
+              </div>
+            </sc-if>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: auto; font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">
+              <span>{{ t.sourceLine }}</span>
+              <span style="display: inline-flex; align-items: center; gap: 4px; height: 18px; padding: 0 6px; border: 1px dashed var(--c-ink-muted); border-radius: var(--radius-sm); font-weight: 600; color: var(--c-ink);">Sample data</span>
+            </div>
+          </div>
+        </a>
+      </sc-for>
+    </div>
+
+    <section aria-label="How the tile color is chosen" style="display: flex; gap: 12px 32px; flex-wrap: wrap; align-items: baseline; padding: 14px 18px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg);">
+      <span style="font-size: var(--text-sm); font-weight: 700;">How the color is chosen <span style="font-weight: 400; color: var(--c-ink-muted);">(first match wins)</span></span>
+      <span style="display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);"><svg width="12" height="12" viewBox="0 0 16 16" fill="var(--tile-at-risk)"><rect x="2.5" y="2.5" width="11" height="11" transform="rotate(45 8 8)"></rect></svg><strong>At risk:</strong> anyone expired or on payment hold</span>
+      <span style="display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);"><svg width="12" height="12" viewBox="0 0 16 16" fill="var(--tile-watch)"><path d="M8 1.5L15 14H1Z"></path></svg><strong>Watch:</strong> anyone expiring within 30 days, awaiting, needing review or with a certificate in the queue</span>
+      <span style="display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);"><svg width="12" height="12" viewBox="0 0 16 16" fill="var(--tile-on-track)"><circle cx="8" cy="8" r="6.5"></circle></svg><strong>On track:</strong> everyone compliant</span>
+    </section>
+  </sc-if>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;accountant&quot;,&quot;project_manager&quot;,&quot;leadership&quot;],&quot;default&quot;:&quot;leadership&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;loaded&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;default&quot;:&quot;loaded&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;onOpenProject&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(project: string) =&gt; void&quot;},&quot;onNav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(view: string) =&gt; void&quot;}}">
+class Component extends DCLogic {
+  state = { role: null, retried: false };
+  skel(w, h, x) {
+    const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return React.createElement('div', { key: x && x.key, style: Object.assign({ width: w, height: h, borderRadius: 'var(--radius-sm)', background: 'var(--c-sunken)', animation: reduce ? 'none' : 'skel var(--motion-skeleton)' }, x || {}) });
+  }
+  renderVals() {
+    let view = this.props.state ?? 'loaded';
+    if (view === 'error' && this.state.retried) view = 'loaded';
+    const role = this.state.role ?? this.props.role ?? 'leadership';
+    const refused = view === 'refused';
+    const P = [
+      { key: 'maple', name: 'Maple Court Residences', tone: 'risk', compliant: 32, expected: 35, expired: 1, expiring: 2, below: 1, hold: 6250 },
+      { key: 'riverside', name: 'Riverside Commons', tone: 'risk', compliant: 29, expected: 31, expired: 0, expiring: 1, below: 0, hold: 21950 },
+      { key: 'cedar', name: 'Cedar Point Lofts', tone: 'watch', compliant: 27, expected: 28, expired: 0, expiring: 2, below: 0, hold: 0 },
+      { key: 'oak', name: 'Oak Hollow Clinic', tone: 'track', compliant: 22, expected: 22, expired: 0, expiring: 0, below: 0, hold: 0 }
+    ];
+    const usd = n => '$' + n.toLocaleString('en-US');
+    const tiles = P.map(p => {
+      let tone = p.tone;
+      if (refused && p.key === 'riverside') tone = 'watch';
+      const word = { risk: 'At risk', watch: 'Watch', track: 'On track' }[tone];
+      return Object.assign({}, p, {
+        atRisk: tone === 'risk', watch: tone === 'watch', onTrack: tone === 'track',
+        tileVar: { risk: '--tile-at-risk', watch: '--tile-watch', track: '--tile-on-track' }[tone],
+        expiredRed: p.expired > 0, expiredPlain: p.expired === 0,
+        holdSome: !refused && p.hold > 0, holdNone: !refused && p.hold === 0, holdUnknown: refused,
+        hold: usd(p.hold),
+        sourceLine: refused ? 'Compliance records · Oct 8, 9:20 AM' : 'Compliance records, Pay applications · Oct 8, 9:20 AM',
+        aria: p.name + ', ' + word + '. Open the worklist.',
+        open: e => { if (e && e.preventDefault) e.preventDefault(); if (this.props.onOpenProject) this.props.onOpenProject(p.key); }
+      });
+    });
+    const S = (w, h, x) => this.skel(w, h, x);
+    return {
+      role, setRole: k => this.setState({ role: k }), onNav: this.props.onNav,
+      retry: () => this.setState({ retried: true }),
+      openHolds: () => { if (this.props.onNav) this.props.onNav('hold'); },
+      isLoading: view === 'loading', isError: view === 'error', isEmpty: view === 'empty',
+      hasTiles: view === 'loaded',
+      showHoldSummary: view === 'loaded',
+      totalHold: usd(P.reduce((a, p) => a + p.hold, 0)),
+      tiles,
+      skTiles: [0, 1, 2, 3].map(i => ({ bars: [S(72, 24, { key: 1 }), S('70%', 20, { key: 2 }), S('55%', 14, { key: 3 }), S('100%', 12, { key: 4 }), S('100%', 12, { key: 5 }), S('100%', 12, { key: 6 }), S('100%', 44, { key: 7, borderRadius: 'var(--radius-md)' }), S('60%', 10, { key: 8 })] }))
+    };
+  }
+}
+</script>
+</body>
+</html>

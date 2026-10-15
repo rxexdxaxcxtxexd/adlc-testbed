@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-08",
+  "source_files": 26,
+  "internal_version": 15,
+  "upload_version": 16,
+  "checks": [
+    "Published source matches the reviewed 26-file payload",
+    "Existing deployment URLs and access settings preserved",
+    "Real Google Sheet seed completed with four projects and 140 records",
+    "Maple Court shows 32 of 35 compliant, one expired and $6250 held",
+    "Compliance roll-up shows 135 of 140 compliant and $9050 held",
+    "Brightway Drive PDF renders in a canvas",
+    "Correction saves old/new values, note, person and time in Google-backed history",
+    "ROI shows $5284.47 likely, $518.67 floor and $21933.06 high",
+    "Cedar Masonry is held for an expired policy at $6250",
+    "Unreadable record exposes the correct active upload link",
+    "Real upload form fits the 375-pixel viewport without horizontal overflow"
+  ],
+  "remaining": [
+    "Clean PDF upload and real approval duration",
+    "Real deficient PDF upload and yellow tile check on a project without an expired policy",
+    "Demo email recipient setup and delivery checks",
+    "Approval clears the real queue",
+    "Final full panel after live protocol"
+  ],
+  "emails_sent_during_this_check": 0
+}

@@ -1,0 +1,574 @@
+<style>
+/* COI Check guided tour. Colours, type and easing come from the tokens in Styles.html. */
+.ct-off{display:none!important}
+.ct-ring{position:fixed;left:0;top:0;z-index:60;pointer-events:none;border-radius:14px;transform-origin:0 0;
+  box-shadow:0 0 0 2px var(--accent),0 0 0 7px rgba(70,99,47,.16),0 26px 50px -18px rgba(60,45,25,.42),0 0 0 200vmax rgba(235,229,217,.5);
+  transition:opacity 220ms var(--ease)}
+.ct-ring.ct-dim{opacity:0}
+.ct-card{position:fixed;left:0;top:0;z-index:61;width:min(372px,calc(100vw - 32px));padding:18px 20px 16px;
+  background:var(--surface);color:var(--ink);border-radius:16px;outline:none;
+  font-family:var(--sans);font-size:14.5px;line-height:1.55;font-weight:450;font-variant-numeric:tabular-nums;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 1px 2px rgba(60,45,25,.08),0 6px 16px -4px rgba(60,45,25,.12),0 30px 60px -24px rgba(60,45,25,.38);
+  transition:transform 320ms var(--ease),opacity 220ms var(--ease)}
+.ct-card.ct-out{opacity:0;pointer-events:none}
+.ct-card:focus-visible{box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 0 0 3px rgba(70,99,47,.35),0 30px 60px -24px rgba(60,45,25,.38)}
+.ct-card.ct-docked{left:12px;right:12px;top:auto;bottom:12px;bottom:calc(12px + env(safe-area-inset-bottom));width:auto;transform:none!important;max-height:min(62vh,440px);max-height:min(44dvh,360px);overflow:auto}
+.ct-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.ct-count{font:500 12px/1 var(--mono);color:var(--muted);white-space:nowrap}
+.ct-dots{display:flex;gap:3px;flex:1;min-width:40px}
+.ct-dots i{flex:1;height:3px;border-radius:2px;background:var(--well);transition:background-color 220ms var(--ease)}
+.ct-dots i.done{background:#9DB386}
+.ct-dots i.on{background:var(--accent)}
+.ct-skip,.ct-play{border:0;background:none;font:inherit;font-size:13px;font-weight:500;color:var(--muted);height:30px;padding:0 8px;border-radius:7px;cursor:pointer;white-space:nowrap;
+  display:inline-flex;align-items:center;gap:6px;transition:background-color 140ms,color 140ms,transform 140ms}
+@media (hover:hover) { .ct-skip:hover,.ct-play:hover{color:var(--ink);background:rgba(30,27,22,.06)} }
+.ct-skip:active,.ct-play:active{transform:scale(.97);background:rgba(30,27,22,.1)}
+.ct-play[aria-pressed="true"]{color:var(--done-fg);background:var(--done-bg)}
+.ct-title{margin:0 0 6px;font-size:19px;line-height:1.25;font-weight:650;letter-spacing:-.015em;text-wrap:balance}
+.ct-body{margin:0;color:var(--ink-2);text-wrap:pretty}
+.ct-bar{height:2px;margin:14px 0 12px;border-radius:2px;background:rgba(30,27,22,.08);overflow:hidden}
+.ct-bar span{display:block;height:100%;background:var(--accent);transform-origin:left;transform:scaleX(0)}
+.ct-actions{display:flex;align-items:center;gap:8px}
+.ct-sp{flex:1}
+.ct-btn{height:36px;min-width:44px;padding:0 15px;border:0;border-radius:9px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;
+  transition:transform 140ms var(--ease),box-shadow 140ms,background-color 140ms}
+.ct-back{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(30,27,22,.45),0 1px 2px rgba(60,45,25,.08)}
+@media (hover:hover) { .ct-back:hover{transform:translateY(-1px);box-shadow:inset 0 0 0 1px var(--ink),0 3px 8px -3px rgba(60,45,25,.3)} }
+.ct-back:active{transform:scale(.98);background:#F1ECE2}
+.ct-next{background:var(--accent);color:var(--on-accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 1px 2px rgba(46,66,32,.3)}
+@media (hover:hover) { .ct-next:hover{background:var(--accent-hover);transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 6px 14px -6px rgba(46,66,32,.7)} }
+.ct-next:active{transform:scale(.98);background:var(--accent-press)}
+.ct-btn:disabled{opacity:.4;cursor:default;transform:none;box-shadow:inset 0 0 0 1px rgba(30,27,22,.2)}
+.ct-card button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ct-next:focus-visible{outline-color:var(--ink)}
+.ct-live{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;padding:0}
+/* Finale */
+.ct-card.ct-final{width:min(340px,calc(100vw - 32px));text-align:center;padding:26px 24px 20px}
+.ct-fin .ct-check{display:inline-flex;margin-bottom:10px}
+.ct-fin .ct-c1,.ct-fin .ct-c2{stroke:var(--accent);stroke-dasharray:100;stroke-dashoffset:0}
+.ct-fin.ct-play-in .ct-c1{animation:ctDraw 520ms cubic-bezier(.65,0,.35,1) both}
+.ct-fin.ct-play-in .ct-c2{animation:ctDraw 360ms cubic-bezier(.65,0,.35,1) 420ms both}
+.ct-fin.ct-play-in .ct-check{animation:ctPop 420ms var(--ease) both}
+.ct-fin-title{font-size:22px}
+.ct-orbit{position:fixed;z-index:62;width:46px;height:46px;border-radius:50%;pointer-events:none;box-shadow:inset 0 0 0 1.5px rgba(70,99,47,.55);opacity:0}
+.ct-card.ct-final .ct-body{font-size:13.5px;color:var(--muted)}
+@keyframes ctDraw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+@keyframes ctPop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+/* Welcome */
+.ct-welcome{position:fixed;inset:0;z-index:64;display:grid;place-items:center;padding:16px;perspective:1200px;--px:0px;--py:0px}
+.ct-veil{position:absolute;inset:0;overflow:hidden;background:rgba(241,236,226,.38);-webkit-backdrop-filter:blur(0px) saturate(1);backdrop-filter:blur(0px) saturate(1);opacity:0;
+  transition:opacity 420ms var(--ease),backdrop-filter 620ms var(--ease),-webkit-backdrop-filter 620ms var(--ease)}
+.ct-welcome.ct-in .ct-veil{opacity:1;-webkit-backdrop-filter:blur(14px) saturate(1.25);backdrop-filter:blur(14px) saturate(1.25)}
+.ct-orb{position:absolute;border-radius:50%;filter:blur(60px);opacity:.55;mix-blend-mode:multiply;transform:translate(var(--px),var(--py))}
+.ct-orb-a{width:46vmax;height:46vmax;left:-12vmax;top:-16vmax;background:radial-gradient(circle,rgba(157,179,134,.55),transparent 65%);animation:ctDrift 18s ease-in-out infinite alternate}
+.ct-orb-b{width:40vmax;height:40vmax;right:-14vmax;bottom:-18vmax;background:radial-gradient(circle,rgba(214,170,92,.42),transparent 65%);animation:ctDrift 22s ease-in-out -6s infinite alternate-reverse}
+.ct-orb-c{width:26vmax;height:26vmax;left:54%;top:8%;background:radial-gradient(circle,rgba(255,253,249,.9),transparent 70%);mix-blend-mode:normal;opacity:.6;animation:ctDrift 16s ease-in-out -3s infinite alternate}
+@keyframes ctDrift{from{translate:0 0}to{translate:4vmax 3vmax}}
+.ct-wcard{position:relative;width:min(468px,100%);overflow:hidden;border-radius:24px;color:var(--ink);
+  font-family:var(--sans);font-size:14.5px;line-height:1.55;font-weight:450;
+  background:linear-gradient(180deg,rgba(255,253,249,.94),var(--surface) 46%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),0 0 0 1px rgba(60,45,25,.06),0 2px 4px rgba(60,45,25,.06),0 24px 48px -20px rgba(60,45,25,.28),0 60px 120px -40px rgba(70,99,47,.35);
+  --rx:0deg;--ry:0deg;--gx:50%;--gy:30%;
+  opacity:0;translate:0 22px;scale:.96;transform:rotateX(var(--rx)) rotateY(var(--ry));
+  transition:opacity 360ms var(--ease),translate 620ms var(--ease),scale 620ms var(--ease)}
+.ct-welcome.ct-in .ct-wcard{opacity:1;translate:0 0;scale:1}
+.ct-welcome.ct-leaving .ct-wcard{opacity:0;translate:0 -8px;scale:.98;transition-duration:260ms,320ms,320ms}
+.ct-welcome.ct-leaving .ct-veil{opacity:0}
+.ct-w-glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(420px circle at var(--gx) var(--gy),rgba(157,179,134,.22),transparent 60%);z-index:0}
+.ct-w-hero{position:relative;z-index:1;margin:10px 10px 0;padding:14px 14px 12px;border-radius:16px;
+  background:linear-gradient(160deg,#3F5A2A 0%,#2F4620 100%);color:#EEF2E6;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 -1px 0 rgba(0,0,0,.2),0 10px 24px -12px rgba(46,66,32,.6)}
+.ct-w-hero::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.12) 45%,transparent 60%);background-size:250% 100%;background-position:120% 0;animation:ctSheen 1.4s var(--ease) 2.8s both}
+@keyframes ctSheen{to{background-position:-60% 0}}
+.ct-w-hero-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ct-w-live{display:inline-flex;align-items:center;gap:7px;font:500 11.5px/1 var(--mono);color:rgba(238,242,230,.78)}
+.ct-w-live i{width:6px;height:6px;border-radius:50%;background:#B9D39C;box-shadow:0 0 0 0 rgba(185,211,156,.6);animation:ctLive 2s ease-out infinite}
+@keyframes ctLive{0%{box-shadow:0 0 0 0 rgba(185,211,156,.55)}80%,100%{box-shadow:0 0 0 7px rgba(185,211,156,0)}}
+.ct-w-rows{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.ct-w-row{display:flex;align-items:center;gap:10px;height:34px;padding:0 6px 0 10px;border-radius:9px;background:rgba(255,253,249,.07);
+  opacity:0;transform:translateY(6px);animation:ctRowIn 520ms var(--ease) calc(260ms + var(--i) * 110ms) both}
+@keyframes ctRowIn{to{opacity:1;transform:none}}
+.ct-w-co{flex:1;min-width:0;font-size:13px;font-weight:550;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ct-w-st{position:relative;flex:none;display:grid;justify-items:end}
+.ct-w-from,.ct-w-to{grid-area:1/1;display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 9px;border-radius:7px;font-size:12px;font-weight:600;white-space:nowrap;
+  transition:opacity 280ms var(--ease),transform 420ms var(--ease),filter 280ms}
+.ct-w-from{background:rgba(255,253,249,.1);color:rgba(238,242,230,.72)}
+.ct-w-to{opacity:0;transform:translateY(8px) scale(.9);filter:blur(3px);background:var(--done-bg);color:var(--done-fg)}
+.ct-w-row[data-tone="amber"] .ct-w-to{background:#F4E4C6;color:#6B4708}
+.ct-w-to svg{stroke-dasharray:14;stroke-dashoffset:14;transition:stroke-dashoffset 360ms cubic-bezier(.65,0,.35,1) 160ms}
+.ct-w-row[data-tone="amber"] .ct-w-to svg{display:none}
+.ct-w-row.ct-done .ct-w-from{opacity:0;transform:translateY(-8px);filter:blur(3px)}
+.ct-w-row.ct-done .ct-w-to{opacity:1;transform:none;filter:none}
+.ct-w-row.ct-done .ct-w-to svg{stroke-dashoffset:0}
+.ct-w-row.ct-done{animation:ctRowIn 520ms var(--ease) calc(260ms + var(--i) * 110ms) both,ctRowLit 900ms var(--ease)}
+@keyframes ctRowLit{0%{background:rgba(255,253,249,.07)}30%{background:rgba(185,211,156,.22)}100%{background:rgba(255,253,249,.07)}}
+.ct-w-row[data-tone="amber"].ct-done{animation:ctRowIn 520ms var(--ease) calc(260ms + var(--i) * 110ms) both,ctRowAmb 900ms var(--ease)}
+@keyframes ctRowAmb{30%{background:rgba(214,170,92,.24)}}
+.ct-w-copy{position:relative;z-index:1;padding:22px 28px 22px}
+.ct-w-copy>*{opacity:0;transform:translateY(8px);animation:ctRowIn 560ms var(--ease) both}
+.ct-w-copy>:nth-child(1){animation-delay:120ms}.ct-w-copy>:nth-child(2){animation-delay:180ms}.ct-w-copy>:nth-child(3){animation-delay:240ms}.ct-w-copy>:nth-child(4){animation-delay:300ms}.ct-w-copy>:nth-child(5){animation-delay:360ms}
+.ct-w-eyebrow{font-size:12.5px;font-weight:600;color:var(--accent);letter-spacing:.01em}
+.ct-w-title{margin:6px 0 8px;font-size:27px;line-height:1.12;font-weight:650;letter-spacing:-.028em;text-wrap:balance}
+.ct-w-body{margin:0;color:var(--ink-2);font-size:15px;text-wrap:pretty}
+.ct-w-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:20px}
+.ct-w-actions .ct-btn{height:42px;display:inline-flex;align-items:center;gap:8px;font-size:14px}
+.ct-w-go{position:relative;overflow:hidden;padding:0 16px 0 18px}
+.ct-w-go::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.28) 50%,transparent 65%);transform:translateX(-120%);transition:transform 620ms var(--ease)}
+@media (hover:hover) { .ct-w-go:hover::after{transform:translateX(120%)} }
+.ct-w-go svg{transition:transform 220ms var(--ease)}
+@media (hover:hover) { .ct-w-go:hover svg{transform:translateX(3px)} }
+.ct-ghost{background:transparent;color:var(--ink-2)}
+@media (hover:hover) { .ct-ghost:hover{background:rgba(30,27,22,.06);color:var(--ink)} }
+.ct-ghost:active{transform:scale(.98);background:rgba(30,27,22,.1)}
+.ct-w-meta{margin-top:16px;font:500 11.5px/1 var(--mono);color:var(--faint)}
+.ct-wcard button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ct-w-go:focus-visible{outline-color:var(--ink)}
+@media (max-width:480px){.ct-w-copy{padding:18px 20px 20px}.ct-w-title{font-size:23px}}
+/* Replay hint */
+  font:500 13px/1.4 var(--sans);box-shadow:0 14px 30px -12px rgba(30,27,22,.55);
+  opacity:0;transform:translateY(-4px);transition:opacity 220ms var(--ease),transform 220ms var(--ease);pointer-events:none}
+.ct-hint-ring{position:fixed;z-index:63;border-radius:12px;pointer-events:none;box-shadow:0 0 0 2px var(--accent),0 0 0 6px rgba(70,99,47,.18);opacity:0}
+.ct-hint-ring.ct-in{animation:ctRing 1.6s var(--ease) 2 both}
+@keyframes ctRing{0%{opacity:0;transform:scale(1.25)}30%{opacity:1;transform:none}100%{opacity:0;transform:scale(1.08)}}
+@media (max-width:640px){.ct-title{font-size:17.5px}.ct-card{padding:16px 16px 14px}}
+@media (prefers-reduced-motion:reduce){.ct-ring,.ct-card,.ct-dots i,.ct-btn,.ct-skip,.ct-play,.ct-veil,.ct-wcard{transition:none!important}.ct-fin *,.ct-fin,.ct-hint-ring,.ct-orb,.ct-w-row,.ct-w-copy>*,.ct-w-hero::after,.ct-w-live i{animation:none!important}.ct-w-row,.ct-w-copy>*{opacity:1;transform:none}.ct-w-from,.ct-w-to,.ct-w-to svg{transition:none!important}.ct-hint-ring.ct-in{opacity:1}}
+/* Sidebar foot: replay and About */
+.foot-links{display:grid;gap:2px;margin-top:8px}
+.foot-btn{display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border:0;border-radius:9px;background:none;color:var(--ink-2);font:inherit;font-size:13px;font-weight:550;text-align:left;cursor:pointer;
+  transition:background-color var(--t1),color var(--t1)}
+@media (hover:hover) { .foot-btn:hover{background:rgba(30,27,22,.06);color:var(--ink)} }
+.foot-btn:active{background:rgba(30,27,22,.1)}
+.foot-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.foot-btn svg{flex:none}
+.side.closed .foot-btn{justify-content:center;padding:0}
+.side.closed .foot-label{display:none}
+/* About view */
+.about{max-width:640px}
+.about h2{margin:0 0 8px;font-size:19px;line-height:1.25;font-weight:650;letter-spacing:-.015em}
+.about p{margin:0 0 12px;color:var(--ink-2)}
+.about .thesis{font-size:17px;line-height:1.5;color:var(--ink);font-weight:550}
+.about .about-credit{margin-top:20px;font-weight:550;color:var(--ink)}
+.about .about-sample{color:var(--muted);font-size:13px}
+/* Touch screens (ticket R12): every tour control is 44px high. */
+@media (pointer:coarse){.ct-btn,.ct-skip,.ct-play{height:44px}.ct-skip,.ct-play{min-width:44px;padding:0 12px}.ct-w-actions .ct-btn{height:48px}}
+</style>
+<script>
+/* COI Check guided tour engine. Plain JavaScript, no dependencies.
+
+   HOW TO START IT
+   - First visit: a welcome card offers the tour. Closing it (or the tour) points to the Tour button once.
+     The card does not show when the page opens a record from an email link.
+   - Replay: click any element with [data-tour-replay], or call CoiTour.start().
+   - AUTOPLAY for screen recording, two ways:
+       1. Open the web app address with ?tour=play at the end. In an Apps Script web app the page
+          runs inside an iframe, so the page address does not carry the visitor's query string.
+          doGet in Code.gs reads e.parameter.tour, and passes tour:'play' to the page as INITIAL.tour
+          only when the value is exactly "play". This engine starts autoplay from INITIAL.tour.
+          No other value does anything.
+       2. Press P while the tour is open. P also pauses and resumes autoplay.
+     Each step's time is "ms" in TourSteps.html.
+   - Keys while open: Right/Left arrows move between steps, Esc closes, P toggles autoplay.
+
+   The host (AppClient.html) exposes window.coiApp = { go(view), screen() } so steps can switch views.
+   A view the host does not have yet is skipped, and the step shows its card centred.
+   All copy, targets and timings live in TourSteps.html. */
+(function () {
+  var C = window.TOUR_CONFIG;
+  if (!C || !C.steps || !C.steps.length || window.CoiTour) return;
+  var L = C.labels || {}, W = C.welcome || {}, FIN = C.finale || {};
+  var rm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var D = rm ? 0 : 320, EASE = 'cubic-bezier(.16,1,.3,1)', PAD = 8;
+  var ring, card, live, titleEl, bodyEl, countEl, dotsEl, barEl, backBtn, nextBtn, playBtn, skipBtn, finEl, finBtn;
+  var welcome, hintEl, hintRing;
+  var idx = -1, isOpen = false, playing = false, timer = 0, raf = 0, token = 0, last = null, moving = false, returnTo = null, target = null, finished = false;
+
+  function app() { return window.coiApp || null; }
+  // Fetch the tour's screens early, so a step does not wait on the server.
+  // A failed early fetch must never stop the tour, so an error here is logged and ignored.
+  function warm() { var a = app(); try { if (a && a.warm) a.warm(); } catch (e) { if (window.console) console.warn('Tour: early fetch failed', e); } }
+  function q(s) { try { return s ? document.querySelector(s) : null; } catch (e) { return null; } }
+  function fmt(t, o) { return String(t || '').replace(/\{(\w+)\}/g, function (_, k) { return o[k]; }); }
+  function mobile() { return window.innerWidth <= 640; }
+  function esc(t) { return String(t || '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function markSeen() { try { localStorage.setItem(C.storageKey, '1'); } catch (e) {} }
+
+  function build() {
+    if (card) return;
+    ring = document.createElement('div'); ring.className = 'ct-ring ct-off'; ring.setAttribute('aria-hidden', 'true');
+    card = document.createElement('div'); card.className = 'ct-card ct-off ct-out';
+    card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'false');
+    card.setAttribute('aria-label', L.region); card.tabIndex = -1;
+    card.innerHTML =
+      '<div class="ct-main"><div class="ct-top"><span class="ct-count" id="ct-count"></span><span class="ct-dots" aria-hidden="true"></span>' +
+      '<button type="button" class="ct-skip" data-ct="skip"></button></div>' +
+      '<h2 class="ct-title" id="ct-title"></h2><p class="ct-body" id="ct-body"></p>' +
+      '<div class="ct-bar" aria-hidden="true"><span></span></div>' +
+      '<div class="ct-actions"><button type="button" class="ct-play" data-ct="play" aria-pressed="false"></button>' +
+      '<span class="ct-sp"></span><button type="button" class="ct-btn ct-back" data-ct="back"></button>' +
+      '<button type="button" class="ct-btn ct-next" data-ct="next"></button></div></div>' +
+      '<div class="ct-fin" hidden><span class="ct-check" aria-hidden="true"><svg viewBox="0 0 48 48" width="48" height="48"><circle cx="24" cy="24" r="21" fill="none" stroke-width="3" pathLength="100" class="ct-c1"/><path d="M15 24.5l6.5 6.5L33.5 18" fill="none" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" pathLength="100" class="ct-c2"/></svg></span>' +
+      '<h2 class="ct-title ct-fin-title" id="ct-fin-title">' + esc(FIN.title) + '</h2><p class="ct-body">' + esc(FIN.body) + '</p>' +
+      '</div>';
+    live = document.createElement('div'); live.className = 'ct-live'; live.setAttribute('role', 'status'); live.setAttribute('aria-live', 'polite');
+    document.body.appendChild(ring); document.body.appendChild(card); document.body.appendChild(live);
+    titleEl = card.querySelector('#ct-title'); bodyEl = card.querySelector('#ct-body'); countEl = card.querySelector('#ct-count');
+    dotsEl = card.querySelector('.ct-dots'); barEl = card.querySelector('.ct-bar'); backBtn = card.querySelector('[data-ct="back"]');
+    nextBtn = card.querySelector('[data-ct="next"]'); playBtn = card.querySelector('[data-ct="play"]'); skipBtn = card.querySelector('[data-ct="skip"]');
+    finEl = card.querySelector('.ct-fin');
+    card.setAttribute('aria-labelledby', 'ct-title'); card.setAttribute('aria-describedby', 'ct-body');
+    skipBtn.textContent = L.skip; backBtn.textContent = L.back;
+    dotsEl.innerHTML = C.steps.map(function () { return '<i></i>'; }).join('');
+    card.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-ct]'); if (!b) return;
+      var a = b.getAttribute('data-ct');
+      if (a === 'next') next(); else if (a === 'back') go(idx - 1); else if (a === 'skip') close(); else if (a === 'play') setPlay(!playing);
+      else if (a === 'finish') { var ap = app(); if (FIN.view && ap) ap.go(FIN.view); close(true); }
+    });
+  }
+
+  function setPlay(on) {
+    playing = on;
+    playBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    playBtn.innerHTML = (on
+      ? '<svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12"><rect x="2" y="1.5" width="2.6" height="9" rx=".6" fill="currentColor"/><rect x="7.4" y="1.5" width="2.6" height="9" rx=".6" fill="currentColor"/></svg>'
+      : '<svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12"><path d="M3 1.6v8.8L10.2 6z" fill="currentColor"/></svg>') + (on ? L.pause : L.play);
+    barEl.style.visibility = on ? 'visible' : 'hidden';
+    clearTimeout(timer);
+    if (on && isOpen && !moving && !finished) schedule();
+  }
+
+  function schedule() {
+    // Autoplay can be switched on before the first step opens (idx is -1). The step's own open schedules it then.
+    if (!C.steps[idx]) return;
+    var s = C.steps[idx], ms = s.ms || C.defaultMs || 7000, sp = barEl.firstChild;
+    sp.style.transition = 'none'; sp.style.transform = 'scaleX(0)'; void sp.offsetWidth;
+    sp.style.transition = 'transform ' + ms + 'ms linear'; sp.style.transform = 'scaleX(1)';
+    clearTimeout(timer);
+    timer = setTimeout(next, ms);
+  }
+
+  function next() { if (idx >= C.steps.length - 1) finale(); else go(idx + 1); }
+
+  function waitFor(sel, delay, limit, cb) {
+    if (!sel) { setTimeout(function () { cb(null); }, delay); return; }
+    var t0 = 0;
+    setTimeout(function poll() {
+      var el = q(sel), r = el && el.getBoundingClientRect();
+      if (el && r.width > 0 && r.height > 0) { cb(el); return; }
+      if ((t0 += 50) > limit) { cb(null); return; }
+      setTimeout(poll, 50);
+    }, delay);
+  }
+
+  function scrollToTarget(el, cb) {
+    if (!el) { cb(); return; }
+    for (var p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+      var ox = getComputedStyle(p).overflowX;
+      if ((ox === 'auto' || ox === 'scroll') && p.scrollWidth > p.clientWidth) {
+        var pr = p.getBoundingClientRect(), er = el.getBoundingClientRect();
+        if (er.left < pr.left || er.right > pr.right) p.scrollLeft += er.left - pr.left - Math.max(0, (pr.width - er.width) / 2);
+      }
+    }
+    var r = el.getBoundingClientRect(), vh = window.innerHeight, vw = window.innerWidth, top = mobile() ? 16 : 84;
+    var cw = card.offsetWidth, ch = card.offsetHeight;
+    var sideFits = r.right + PAD + 16 + cw <= vw - 16 || r.left - PAD - 16 - cw >= 16;
+    if (!mobile() && !sideFits && r.height + ch + PAD * 2 + 32 <= vh - top) {
+      if (Math.abs(r.top - PAD - top) > 4) { window.scrollTo({ top: Math.max(0, window.scrollY + r.top - top - PAD), behavior: rm ? 'auto' : 'smooth' }); setTimeout(cb, rm ? 30 : 460); } else cb();
+      return;
+    }
+    var bottom = mobile() ? vh - ch - 24 : vh - 24, room = bottom - top;
+    if (r.top >= top && (r.bottom <= bottom || r.height > room && r.top <= top + 40)) { cb(); return; }
+    var y = window.scrollY + r.top - (r.height < room ? top + (room - r.height) / 2 : top);
+    window.scrollTo({ top: Math.max(0, y), behavior: rm ? 'auto' : 'smooth' });
+    setTimeout(cb, rm ? 30 : 460);
+  }
+
+  function boxFor(el) {
+    var vw = window.innerWidth, vh = window.innerHeight;
+    if (!el) { var cr = card.getBoundingClientRect(); return { x: cr.left, y: cr.top, w: cr.width, h: cr.height }; }
+    var r = el.getBoundingClientRect();
+    var x = Math.max(6, r.left - PAD), y = Math.max(6, r.top - PAD);
+    var x2 = Math.min(vw - 6, r.right + PAD), y2 = Math.min(vh - 6, r.bottom + PAD);
+    return { x: x, y: y, w: Math.max(24, x2 - x), h: Math.max(24, y2 - y) };
+  }
+
+  function setRing(b) {
+    ring.style.transition = 'opacity 220ms ' + EASE;
+    ring.style.width = b.w + 'px'; ring.style.height = b.h + 'px';
+    ring.style.transform = 'translate(' + b.x + 'px,' + b.y + 'px)';
+  }
+
+  function moveRing(b, animate) {
+    if (!last || !animate || !D) { setRing(b); last = b; return; }
+    var a = last; last = b;
+    ring.style.transition = 'none';
+    ring.style.width = b.w + 'px'; ring.style.height = b.h + 'px';
+    ring.style.transform = 'translate(' + a.x + 'px,' + a.y + 'px) scale(' + (a.w / b.w) + ',' + (a.h / b.h) + ')';
+    void ring.offsetWidth;
+    ring.style.transition = 'transform ' + D + 'ms ' + EASE + ',opacity 220ms ' + EASE;
+    ring.style.transform = 'translate(' + b.x + 'px,' + b.y + 'px)';
+  }
+
+  function resetCardStyle() { card.style.left = ''; card.style.right = ''; card.style.bottom = ''; card.style.top = ''; card.style.width = ''; }
+
+  function placeCard(b, centred, animate) {
+    var vw = window.innerWidth, vh = window.innerHeight, m = 16;
+    resetCardStyle();
+    if (mobile()) { card.classList.add('ct-docked'); return; }
+    card.classList.remove('ct-docked');
+    var cw = card.offsetWidth, ch = card.offsetHeight, x, y;
+    if (centred) { x = (vw - cw) / 2; y = Math.max(m, (vh - ch) / 2); }
+    else if (b.x + b.w + m + cw <= vw - m) { x = b.x + b.w + m; y = Math.min(Math.max(b.y, 80), vh - ch - m); }
+    else if (b.x - m - cw >= m) { x = b.x - m - cw; y = Math.min(Math.max(b.y, 80), vh - ch - m); }
+    else if (b.y + b.h + m + ch <= vh - m) { y = b.y + b.h + m; x = Math.min(Math.max(b.x, m), vw - cw - m); }
+    else if (b.y - m - ch >= 76) { y = b.y - m - ch; x = Math.min(Math.max(b.x, m), vw - cw - m); }
+    else {
+      x = vw - cw - 28; y = vh - ch - 28;
+      if (x < b.x + b.w && x + cw > b.x && y < b.y + b.h && y + ch > b.y) {
+        var below = b.y + b.h + m;
+        if (vh - below - m >= ch) { y = below; x = Math.min(Math.max(b.x, m), vw - cw - m); }
+        else if (b.y - m - ch >= 76) { y = b.y - m - ch; x = Math.min(Math.max(b.x, m), vw - cw - m); }
+        else { card.classList.add('ct-docked'); card.style.left = 'auto'; card.style.right = '16px'; card.style.bottom = '16px'; card.style.top = 'auto'; card.style.width = 'min(372px,calc(100vw - 32px))'; return; }
+      }
+    }
+    y = Math.max(m, Math.min(y, vh - ch - m));
+    card.style.transition = animate && D ? '' : 'none';
+    card.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(y) + 'px)';
+    if (!animate || !D) { void card.offsetWidth; card.style.transition = ''; }
+  }
+
+  function fill(s, n) {
+    var total = C.steps.length;
+    titleEl.textContent = s.title; bodyEl.textContent = s.body;
+    countEl.textContent = fmt(L.count, { n: n + 1, total: total });
+    Array.prototype.forEach.call(dotsEl.children, function (d, i) { d.className = i < n ? 'done' : i === n ? 'on' : ''; });
+    backBtn.disabled = n === 0;
+    nextBtn.textContent = n === total - 1 ? L.done : L.next;
+  }
+
+  function showMain(on) {
+    card.querySelector('.ct-main').hidden = !on; finEl.hidden = on;
+    card.classList.toggle('ct-final', !on);
+    card.setAttribute('aria-labelledby', on ? 'ct-title' : 'ct-fin-title');
+  }
+
+  function go(n) {
+    if (!isOpen || n < 0 || n >= C.steps.length) return;
+    var t = ++token, s = C.steps[n], a = app(), first = idx < 0;
+    idx = n; moving = true; finished = false; clearTimeout(timer);
+    var needNav = !!(s.view && a && a.screen && a.screen() !== s.view);
+    if (needNav) a.go(s.view);
+    card.classList.add('ct-out');
+    showMain(true); fill(s, n);
+    waitFor(s.target, needNav ? (D ? 380 : 60) : (first ? 0 : 160), 5000, function (el) {
+      if (t !== token) return;
+      target = el;
+      if (!s.target || !el) placeCard(null, true, false);
+      scrollToTarget(el, function () {
+        if (t !== token) return;
+        var b = boxFor(el);
+        ring.classList.remove('ct-dim');
+        moveRing(b, !first);
+        placeCard(b, !el, !first);
+        card.classList.remove('ct-out');
+        live.textContent = countEl.textContent + '. ' + s.title + '. ' + s.body;
+        setTimeout(function () { if (t !== token) return; moving = false; if (playing) schedule(); }, D);
+      });
+    });
+  }
+
+  function ripple() {
+    var c = card.querySelector('.ct-check'); if (!c || rm) return;
+    var r = c.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    [0, 1, 2].forEach(function (k) {
+      var o = document.createElement('span'); o.className = 'ct-orbit';
+      o.style.cssText = 'left:' + cx + 'px;top:' + cy + 'px';
+      document.body.appendChild(o);
+      var an = o.animate([{ transform: 'translate(-50%,-50%) scale(.6)', opacity: .55 }, { transform: 'translate(-50%,-50%) scale(' + (3.2 + k * 1.4) + ')', opacity: 0 }],
+        { duration: 1100 + k * 180, delay: k * 140, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'both' });
+      var gone = false, rmv = function () { if (gone) return; gone = true; o.remove(); };
+      an.onfinish = rmv; setTimeout(rmv, 1100 + k * 180 + k * 140 + 120);
+    });
+  }
+
+  function dismissIntoReplay() {
+    var rb = q('[data-tour-replay]');
+    if (!rb || rm || !card.animate) { close(true); showHint(); return; }
+    var cr = card.getBoundingClientRect(), tr = rb.getBoundingClientRect();
+    var dx = tr.left + tr.width / 2 - (cr.left + cr.width / 2), dy = tr.top + tr.height / 2 - (cr.top + cr.height / 2);
+    var base = card.style.transform || 'none';
+    ring.classList.add('ct-dim');
+    var an = card.animate([{ transform: base, opacity: 1 }, { transform: base + ' translate(' + dx + 'px,' + dy + 'px) scale(.08)', opacity: 0 }],
+      { duration: 560, easing: 'cubic-bezier(.55,0,.3,1)', fill: 'forwards' });
+    var done = false, end = function () { if (done) return; done = true; close(true); try { an.cancel(); } catch (e) {} showHint(); };
+    an.onfinish = end; setTimeout(end, 640);
+  }
+
+  function finale() {
+    if (!isOpen || finished) return;
+    token++; finished = true; moving = true; clearTimeout(timer);
+    var t = token;
+    card.classList.add('ct-out');
+    setTimeout(function () {
+      if (t !== token) return;
+      showMain(false);
+      target = null;
+      placeCard(null, true, false);
+      var b = boxFor(null);
+      moveRing(b, true);
+      card.classList.remove('ct-out');
+      finEl.classList.remove('ct-play-in'); void finEl.offsetWidth; finEl.classList.add('ct-play-in');
+      setTimeout(function () { if (t === token) ripple(); }, rm ? 0 : 380);
+      live.textContent = (FIN.title || '') + '. ' + (FIN.body || '');
+      card.focus({ preventScroll: true });
+      setTimeout(function () { if (t === token) moving = false; }, D);
+      timer = setTimeout(function () { if (t === token) dismissIntoReplay(); }, rm ? 1600 : 2300);
+    }, D ? 200 : 0);
+  }
+
+  function track() {
+    raf = requestAnimationFrame(track);
+    if (!isOpen || moving) return;
+    // A screen that draws itself again replaces the element. Find it again by the step's selector.
+    if (target && !document.contains(target)) {
+      var fresh = C.steps[idx] ? q(C.steps[idx].target) : null;
+      if (!fresh) { ring.classList.add('ct-dim'); return; }
+      target = fresh; ring.classList.remove('ct-dim');
+    }
+    var b = boxFor(target);
+    if (!last || Math.abs(b.x - last.x) > .5 || Math.abs(b.y - last.y) > .5 || Math.abs(b.w - last.w) > .5 || Math.abs(b.h - last.h) > .5) {
+      last = b; setRing(b); if (target) placeCard(b, false, false);
+    }
+  }
+
+  function start(opts) {
+    build(); hideWelcome(true); hideHint();
+    if (isOpen) return;
+    warm();
+    opts = opts || {};
+    returnTo = document.activeElement && document.activeElement !== document.body ? document.activeElement : null;
+    isOpen = true; idx = -1; last = null; target = null; finished = false;
+    ring.classList.remove('ct-off'); card.classList.remove('ct-off');
+    setPlay(!!opts.autoplay);
+    go(0);
+    setTimeout(function () { card.focus({ preventScroll: true }); }, D ? 60 : 0);
+    cancelAnimationFrame(raf); track();
+  }
+
+  function close(completed) {
+    if (!isOpen) return;
+    isOpen = false; token++; clearTimeout(timer); cancelAnimationFrame(raf);
+    markSeen();
+    ring.classList.add('ct-dim'); card.classList.add('ct-out');
+    setTimeout(function () { if (!isOpen) { ring.classList.add('ct-off'); card.classList.add('ct-off'); ring.classList.remove('ct-dim'); showMain(true); } }, D ? 240 : 0);
+    live.textContent = L.closed || '';
+    var rb = q('[data-tour-replay]');
+    var back = completed === true ? rb : (returnTo && document.contains(returnTo) ? returnTo : rb);
+    if (back && back.focus) back.focus({ preventScroll: true });
+    if (completed !== true) setTimeout(showHint, D ? 380 : 0);
+  }
+
+  /* Welcome card: first visit only. */
+  function showWelcome() {
+    if (welcome) return;
+    warm();
+    var rows = (W.demo || []).map(function (r, i) {
+      return '<li class="ct-w-row" style="--i:' + i + '" data-tone="' + esc(r.tone) + '"><span class="ct-w-co">' + esc(r.name) + '</span>' +
+        '<span class="ct-w-st"><span class="ct-w-from">' + esc(r.from) + '</span><span class="ct-w-to"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12"><path d="M2.5 6.3l2.2 2.2 4.8-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' + esc(r.to) + '</span></span></li>';
+    }).join('');
+    welcome = document.createElement('div'); welcome.className = 'ct-welcome';
+    welcome.innerHTML = '<div class="ct-veil" data-w="later"><span class="ct-orb ct-orb-a"></span><span class="ct-orb ct-orb-b"></span><span class="ct-orb ct-orb-c"></span></div>' +
+      '<div class="ct-wcard" role="dialog" aria-modal="false" aria-labelledby="ct-w-title"><span class="ct-w-glow" aria-hidden="true"></span>' +
+      '<div class="ct-w-hero" aria-hidden="true"><div class="ct-w-hero-top">' +
+      '<span class="ct-w-live"><i></i>' + esc(W.demoLabel) + '</span></div><ul class="ct-w-rows">' + rows + '</ul></div>' +
+      '<div class="ct-w-copy"><div class="ct-w-eyebrow">' + esc(W.eyebrow) + '</div><h2 class="ct-w-title" id="ct-w-title">' + esc(W.title) + '</h2><p class="ct-w-body">' + esc(W.body) + '</p>' +
+      '<div class="ct-w-actions"><button type="button" class="ct-btn ct-next ct-w-go" data-w="start"><span>' + esc(W.start) + '</span><svg aria-hidden="true" width="14" height="14" viewBox="0 0 16 16"><path d="M3 8h9M8.5 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+      '<button type="button" class="ct-btn ct-ghost" data-w="later">' + esc(W.later) + '</button></div>' + (W.minutes ? '<div class="ct-w-meta">' + esc(W.minutes) + '</div>' : '') + '</div></div>';
+    document.body.appendChild(welcome);
+    var cardEl = welcome.querySelector('.ct-wcard');
+    void welcome.offsetWidth; welcome.classList.add('ct-in');
+    if (!rm && window.matchMedia && matchMedia('(pointer: fine)').matches) {
+      var tx = 0, ty = 0, cx = 0, cy = 0, wr = 0;
+      var loop = function () {
+        if (!welcome) return;
+        cx += (tx - cx) * .08; cy += (ty - cy) * .08;
+        cardEl.style.setProperty('--rx', (cy * -2.2).toFixed(3) + 'deg');
+        cardEl.style.setProperty('--ry', (cx * 2.8).toFixed(3) + 'deg');
+        cardEl.style.setProperty('--gx', (50 + cx * 38).toFixed(1) + '%');
+        cardEl.style.setProperty('--gy', (30 + cy * 30).toFixed(1) + '%');
+        welcome.style.setProperty('--px', (cx * 14).toFixed(1) + 'px');
+        welcome.style.setProperty('--py', (cy * 10).toFixed(1) + 'px');
+        wr = requestAnimationFrame(loop);
+      };
+      welcome.addEventListener('pointermove', function (ev) { tx = ev.clientX / window.innerWidth * 2 - 1; ty = ev.clientY / window.innerHeight * 2 - 1; });
+      welcome.addEventListener('pointerleave', function () { tx = ty = 0; });
+      loop();
+    }
+    var flips = welcome.querySelectorAll('.ct-w-row');
+    Array.prototype.forEach.call(flips, function (r, i) { setTimeout(function () { if (r.isConnected) r.classList.add('ct-done'); }, rm ? 0 : 1000 + i * 520); });
+    welcome.addEventListener('click', function (ev) {
+      var b = ev.target.closest('[data-w]'); if (!b) return;
+      // Either choice answers the welcome card, so it never shows again. Replay stays on the Tour button.
+      if (b.getAttribute('data-w') === 'start') { markSeen(); start(); } else { hideWelcome(); markSeen(); setTimeout(showHint, D ? 260 : 0); }
+    });
+    setTimeout(function () { var st = welcome && welcome.querySelector('[data-w="start"]'); if (st) st.focus({ preventScroll: true }); }, 60);
+  }
+  function hideWelcome(instant) {
+    if (!welcome) return;
+    var w = welcome; welcome = null; w.classList.remove('ct-in'); w.classList.add('ct-leaving');
+    setTimeout(function () { w.remove(); }, instant || !D ? 0 : 320);
+  }
+
+  /* One-time pointer to the replay button after a close. */
+  function showHint() {
+    var rb = q('[data-tour-replay]'); if (!rb) return;
+    hideHint();
+    var r = rb.getBoundingClientRect();
+    hintRing = document.createElement('span'); hintRing.className = 'ct-hint-ring'; hintRing.setAttribute('aria-hidden', 'true');
+    hintRing.style.cssText = 'left:' + (r.left - 3) + 'px;top:' + (r.top - 3) + 'px;width:' + (r.width + 6) + 'px;height:' + (r.height + 6) + 'px';
+    document.body.appendChild(hintRing);
+    void hintRing.offsetWidth; hintRing.classList.add('ct-in');
+    if (live) live.textContent = C.hint || '';
+    hideHint.t = setTimeout(hideHint, 3400);
+    document.addEventListener('pointerdown', hideHint, { once: true });
+  }
+  function hideHint() {
+    clearTimeout(hideHint.t);
+    [hintRing].forEach(function (el) { if (!el) return; el.classList.remove('ct-in'); setTimeout(function () { el.remove(); }, 260); });
+    hintRing = null;
+  }
+
+  window.addEventListener('keydown', function (e) {
+    if (welcome && e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); hideWelcome(); markSeen(); setTimeout(showHint, D ? 260 : 0); return; }
+    if (!isOpen) return;
+    var tag = (e.target.tagName || '').toLowerCase(), typing = tag === 'input' || tag === 'textarea' || tag === 'select';
+    var hit = true;
+    if (e.key === 'Escape') close();
+    else if (typing || finished) hit = false;
+    else if (e.key === 'ArrowRight') next();
+    else if (e.key === 'ArrowLeft') go(idx - 1);
+    else if (e.key === 'p' || e.key === 'P') setPlay(!playing);
+    else hit = false;
+    if (hit) { e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); }
+  }, true);
+
+  window.addEventListener('resize', function () { if (isOpen && !moving) last = null; if (hintRing) hideHint(); });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-tour-replay]');
+    if (b && !b.hasAttribute('data-tour-managed')) start();
+  });
+
+  window.CoiTour = { start: start, close: close, autoplay: function () { start({ autoplay: true }); }, isOpen: function () { return isOpen; }, welcome: showWelcome };
+
+  function boot() {
+    var tries = 0, init = typeof INITIAL === 'object' && INITIAL ? INITIAL : {};
+    (function wait() {
+      if (!app() && tries++ < 100) { setTimeout(wait, 50); return; }
+      var seen = false; try { seen = localStorage.getItem(C.storageKey) === '1'; } catch (e) {}
+      if (init.tour === 'play') setTimeout(function () { start({ autoplay: true }); }, 600);
+      else if (!seen && !init.record) setTimeout(showWelcome, 700);
+    })();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>

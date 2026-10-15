@@ -1,0 +1,76 @@
+/* Certificate compliance tool — design tokens, round 1.
+   Built from the brief only; no existing design system or brand.
+   Contrast: every *-fg passes 4.5:1 as text on --c-surface, --c-canvas and its own *-tint.
+   Every *-solid passes 3:1 against --c-surface (non-text) and carries --c-on-solid at 4.5:1+. */
+:root {
+  /* Type */
+  --font-sans: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --text-xs: 12px;   --lh-xs: 16px;   /* captions, source + updated */
+  --text-sm: 13px;   --lh-sm: 18px;   /* meta, table secondary */
+  --text-base: 15px; --lh-base: 22px; /* body, table cells */
+  --text-md: 17px;   --lh-md: 24px;   /* card titles */
+  --text-lg: 20px;   --lh-lg: 28px;   /* section titles */
+  --text-xl: 24px;   --lh-xl: 32px;   /* page titles */
+  --text-2xl: 32px;  --lh-2xl: 40px;  /* metric values */
+  --text-3xl: 40px;  --lh-3xl: 48px;  /* headline figure (ROI likely case) */
+  --weight-regular: 400; --weight-medium: 500; --weight-semibold: 600; --weight-bold: 700;
+  --tracking-caps: 0.06em;
+
+  /* Neutrals (warm grey) */
+  --c-canvas: #F5F4F0;        /* page background */
+  --c-surface: #FFFFFF;       /* cards, tables */
+  --c-sunken: #ECEBE6;        /* wells, skeleton base, disabled */
+  --c-skeleton-hi: #F7F6F2;
+  --c-border: #E2E0DA;        /* dividers (decorative) */
+  --c-border-strong: #7D8188; /* inputs, secondary buttons: 3.91:1 on surface */
+  --c-ink: #1B1F24;           /* primary text */
+  --c-ink-muted: #5F656D;     /* secondary text: 5.88 surface, 5.35 canvas, 4.93 sunken */
+  --c-on-solid: #FFFFFF;      /* text on any *-solid fill */
+
+  /* Action */
+  --c-primary: #1F3550;       /* primary button fill: 12.48:1 with white */
+  --c-primary-hover: #142538;
+  --c-focus: #2563C9;         /* focus ring: 5.67:1 on surface */
+
+  /* Status families: fg = text, solid = fill, tint = quiet background */
+  --c-green-fg: #1D6B3A;  --c-green-solid: #1D6B3A;  --c-green-tint: #E5F1E8;
+  --c-amber-fg: #8A5100;  --c-amber-solid: #8A5100;  --c-amber-tint: #FBEFD9;
+  --c-red-fg: #B42318;    --c-red-solid: #B42318;    --c-red-tint: #FCEAE7;
+  --c-blue-fg: #1D57A6;   --c-blue-solid: #1D57A6;   --c-blue-tint: #E6EEF9;
+  --c-violet-fg: #6435B5; --c-violet-solid: #6435B5; --c-violet-tint: #EFE9F9;
+  --c-neutral-fg: #555B63; --c-neutral-solid: #555B63; --c-neutral-tint: #ECEBE6;
+  --c-hold-fg: #1B1F24;   --c-hold-solid: #1B1F24;   --c-hold-tint: #E9E8E3;
+
+  /* Status → family (use these names in markup) */
+  --st-awaiting: var(--c-blue-fg);         --st-awaiting-tint: var(--c-blue-tint);
+  --st-needs-review: var(--c-amber-fg);    --st-needs-review-tint: var(--c-amber-tint);
+  --st-in-review: var(--c-violet-fg);      --st-in-review-tint: var(--c-violet-tint);
+  --st-compliant: var(--c-green-fg);       --st-compliant-tint: var(--c-green-tint);
+  --st-expiring-soon: var(--c-amber-fg);   --st-expiring-soon-tint: var(--c-amber-tint);
+  --st-expired: var(--c-red-fg);           --st-expired-tint: var(--c-red-tint);
+  --st-closed: var(--c-neutral-fg);        --st-closed-tint: var(--c-neutral-tint);
+  --tile-on-track: var(--c-green-solid);   --tile-watch: var(--c-amber-solid);  --tile-at-risk: var(--c-red-solid);
+  --line-pass: var(--c-green-fg);          --line-fail: var(--c-red-fg);        --line-waived: var(--c-neutral-fg);
+  --flag-hold: var(--c-hold-solid);
+
+  /* Spacing (4px base) */
+  --space-0: 0; --space-1: 2px; --space-2: 4px; --space-3: 8px; --space-4: 12px; --space-5: 16px;
+  --space-6: 20px; --space-7: 24px; --space-8: 32px; --space-9: 40px; --space-10: 48px; --space-11: 64px;
+
+  /* Radius */
+  --radius-sm: 4px;   /* inputs, skeleton bars */
+  --radius-md: 6px;   /* buttons, messages */
+  --radius-lg: 10px;  /* cards, tiles */
+  --radius-pill: 999px;
+
+  /* Shadow */
+  --shadow-sm: 0 1px 2px rgba(27,31,36,.06);
+  --shadow-md: 0 1px 2px rgba(27,31,36,.06), 0 4px 12px rgba(27,31,36,.06);
+  --shadow-lg: 0 2px 4px rgba(27,31,36,.06), 0 12px 32px rgba(27,31,36,.10);
+  --shadow-focus: 0 0 0 2px var(--c-surface), 0 0 0 4px var(--c-focus);
+
+  /* Sizing + motion */
+  --control-md: 40px; --control-lg: 48px; /* lg on the phone upload page (min 44px) */
+  --motion-skeleton: 1.6s ease-in-out infinite;
+}

@@ -1,0 +1,69 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [5 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>
+endobj
+6 0 obj
+<< /Length 3883 >>
+stream
+BT /F2 11 Tf 40 764 Td (SAMPLE: fictional certificate) Tj ET
+BT /F2 17 Tf 40 738 Td (Certificate of Insurance) Tj ET
+BT /F1 8 Tf 40 724 Td (Sample layout for demonstration only. Not a standard industry form.) Tj ET
+BT /F1 9 Tf 420 738 Td (Date issued: 10/01/2026) Tj ET
+0.5 w 40 650 250 60 re S
+BT /F2 7 Tf 46 700 Td (PRODUCER) Tj ET
+BT /F1 9 Tf 46 686 Td (Alder & Finch Insurance Brokers) Tj ET
+BT /F1 9 Tf 46 674 Td (88 Quarry Lane, Fairview) Tj ET
+0.5 w 322 650 250 60 re S
+BT /F2 7 Tf 328 700 Td (INSURED) Tj ET
+BT /F1 9 Tf 328 686 Td (Ridgeline Roofing LLC) Tj ET
+BT /F1 9 Tf 328 674 Td (2200 Millrace Drive, Fairview) Tj ET
+BT /F2 7 Tf 40 632 Td (INSURERS) Tj ET
+BT /F1 8 Tf 40 621 Td (A: Northgate Mutual Insurance Co.    B: Cedar Ridge Casualty Co.    C: Lantern Bay Indemnity Co.) Tj ET
+BT /F2 7 Tf 40 600 Td (COVERAGE) Tj ET
+BT /F2 7 Tf 168 600 Td (INSR) Tj ET
+BT /F2 7 Tf 192 600 Td (POLICY NO.) Tj ET
+BT /F2 7 Tf 262 600 Td (EFFECTIVE) Tj ET
+BT /F2 7 Tf 317 600 Td (EXPIRES) Tj ET
+BT /F2 7 Tf 372 600 Td (LIMITS \(US DOLLARS\)) Tj ET
+BT /F2 7 Tf 535 600 Td (ADDL INSD) Tj ET
+0.5 w 40 595 m 572 595 l S
+BT /F1 8 Tf 40 582 Td (General liability) Tj ET
+BT /F1 8 Tf 168 582 Td (A) Tj ET
+BT /F1 8 Tf 192 582 Td (GL-48213) Tj ET
+BT /F1 8 Tf 262 582 Td (10/01/2026) Tj ET
+BT /F1 8 Tf 317 582 Td (09/30/2027) Tj ET
+BT /F1 8 Tf 372 582 Td (Each occurrence   $1,000,000) Tj ET
+BT /F1 8 Tf 372 572 Td (General aggregate   $2,000,000) Tj ET
+BT /F1 8 Tf 535 582 Td (Yes) Tj ET
+0.5 w 40 560 m 572 560 l S
+BT /F1 8 Tf 40 548 Td (Automobile liability) Tj ET
+BT /F1 8 Tf 168 548 Td (A) Tj ET
+BT /F1 8 Tf 192 548 Td (AU-77120) Tj ET
+BT /F1 8 Tf 262 548 Td (10/01/2026) Tj ET
+BT /F1 8 Tf 317 548 Td (09/30/2027) Tj ET
+BT /F1 8 Tf 372 548 Td (Combined single limit   $1,000,000) Tj ET
+BT /F1 8 Tf 535 548 Td (-) Tj ET
+0.5 w 40 526 m 572 526 l S
+BT /F1 8 Tf 40 514 Td (Umbrella / excess) Tj ET
+BT /F1 8 Tf 40 504 Td (liability) Tj ET
+BT /F1 8 Tf 168 514 Td (B) Tj ET
+BT /F1 8 Tf 192 514 Td (UM-30551) Tj ET
+BT /F1 8 Tf 262 514 Td (10/01/2026) Tj ET
+BT /F1 8 Tf 317 514 Td (09/30/2027) Tj ET
+BT /F1 8 Tf 372 514 Td (Each occurrence   $2,000,000) Tj ET
+BT /F1 8 Tf 535 514 Td (-) Tj ET
+0.5 w 40 492 m 572 492 l S
+BT /F1 8 Tf 40 480 Td (Workers compensation) Tj ET
+BT /F1 8 Tf 40 470 Td (and employer's 

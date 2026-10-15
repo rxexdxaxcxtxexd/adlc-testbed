@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="./tokens.css">
+<style>body{margin:0;background:var(--c-canvas);color:var(--c-ink);font-family:var(--font-sans);font-size:var(--text-base);line-height:var(--lh-base);-webkit-font-smoothing:antialiased}a{color:var(--c-blue-fg)}a:hover{color:var(--c-primary-hover)}*:focus-visible{outline:none;box-shadow:var(--shadow-focus)}@keyframes skel{0%,100%{opacity:1}50%{opacity:.55}}
+/* Record detail narrow layout. Existing tokens only. Widths are the component's own width (page width minus 64px of padding).
+   Under 984 the PDF and values columns stack (440 + 24 + 520), so the PDF pane stops being sticky.
+   Under 576 (a 640 wide page) each value line also becomes two rows. */
+@container (max-width: 983px){
+.rd-pdf{position:static!important}
+}
+@container (max-width: 575px){
+.rd-head{display:none!important}
+.rd-line{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:var(--space-3) var(--space-5)!important;align-items:start!important}
+.rd-line>:nth-child(1){grid-column:1/5;grid-row:1}
+.rd-line>:nth-child(4){grid-column:5/7;grid-row:1;justify-self:end!important}
+.rd-line>:nth-child(2){grid-column:1/4;grid-row:2}
+.rd-line>:nth-child(3){grid-column:4/7;grid-row:2}
+.rd-line:not(.rd-skel)>:nth-child(2)::before,.rd-line:not(.rd-skel)>:nth-child(3)::before{display:block;font:600 var(--text-xs)/var(--lh-xs) var(--font-sans);letter-spacing:var(--tracking-caps);text-transform:uppercase;color:var(--c-ink-muted);font-weight:600}
+.rd-line:not(.rd-skel)>:nth-child(2)::before{content:"Found"}
+.rd-line:not(.rd-skel)>:nth-child(3)::before{content:"Required"}
+.rd-edit>:nth-child(1){grid-column:1/7;padding-top:0!important}
+.rd-edit>:nth-child(3){padding-top:0!important}
+.rd-edit>:nth-child(4){grid-column:1/7;grid-row:3;padding-top:0!important}
+}</style>
+</helmet>
+<div style="min-height: 100%; background: var(--c-canvas); font-family: var(--font-sans); color: var(--c-ink); font-size: var(--text-base); line-height: var(--lh-base);">
+<dc-import name="Chrome" role="{{ role }}" active="worklist" on-role="{{ setRole }}" on-nav="{{ onNav }}" hint-size="100%,110px"></dc-import>
+<main style="max-width: 1440px; box-sizing: border-box; margin: 0 auto; padding: 16px 32px 64px; display: flex; flex-direction: column; gap: 20px;">
+
+<button onClick="{{ onBack }}" style="align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px 0 6px; margin-left: -6px; border: 0; border-radius: var(--radius-sm); background: transparent; font: inherit; font-size: var(--text-sm); font-weight: 600; color: var(--c-blue-fg); cursor: pointer;" style-hover="background: var(--c-sunken);"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.5L5.5 8l4.5 4.5"></path></svg>Worklist: {{ projectName }}</button>
+
+<sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+  <div aria-busy="true" aria-label="Loading the record" style="display: flex; flex-direction: column; gap: 20px;">
+    <div style="display: flex; flex-direction: column; gap: 12px;">{{ skHead }}</div>
+    <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start;">
+      <div style="flex: 5 1 440px; min-width: 0; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); overflow: hidden;">
+        <div style="padding: 14px 16px; border-bottom: 1px solid var(--c-border); display: flex; flex-direction: column; gap: 6px;">{{ skPdfHead }}</div>
+        <div style="background: var(--c-sunken); padding: 20px;"><div style="aspect-ratio: 8.5 / 11; background: var(--c-skeleton-hi); border-radius: var(--radius-sm);"></div></div>
+      </div>
+      <div style="flex: 7 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 20px;">
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 20px 24px; display: flex; flex-direction: column; gap: 12px;">{{ skAction }}</div>
+        <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 8px 20px;">{{ skLines }}</div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+  <div role="alert" style="display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 28px; background: var(--c-surface); border: 1px solid var(--c-border-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+    <div style="display: grid; grid-template-columns: 24px 1fr; gap: 12px;">
+      <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="var(--c-ink)" stroke-width="1.6" stroke-linecap="round" style="margin-top: 1px;"><circle cx="8" cy="8" r="6.2"></circle><path d="M8 4.8v3.8"></path><circle cx="8" cy="11" r="0.5" fill="var(--c-ink)"></circle></svg>
+      <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">This compliance record could not load.</span><span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); max-width: 620px; text-wrap: pretty;">The server did not answer. Nothing was changed. Try again in a moment; if it keeps failing, tell the owner of this tool.</span></span>
+    </div>
+    <button onClick="{{ retry }}" style="margin-left: 36px; height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-canvas); border-color: var(--c-ink);">Try again</button>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isLoaded }}" hint-placeholder-val="{{ true }}">
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <sc-if value="{{ hasSuccess }}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: start; padding: 12px 14px; background: var(--c-green-tint); border: 1px solid var(--c-green-fg); border-radius: var(--radius-md);">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--c-green-fg)" stroke-width="2" stroke-linecap="round" style="margin-top: 2px;"><path d="M3.5 8.5l3 3 6-6.5"></path></svg>
+        <span style="font-weight: 600;">{{ success }}</span>
+      </div>
+    </sc-if>
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 12px 32px; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: column; gap: 10px; min-width: 0;">
+        <div style="display: flex; align-items: baseline; gap: 6px 12px; flex-wrap: wrap;">
+          <h1 style="margin: 0; font-size: var(--text-xl); line-height: var(--lh-xl); font-weight: 700;">{{ rec.name }}</h1>
+          <span style="color: var(--c-ink-muted);">{{ rec.scope }} · {{ rec.project }}</span>
+          <span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">{{ rec.id }}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px 16px; flex-wrap: wrap;">
+          <dc-import name="StatusPill" status="{{ rec.status }}" hint-size="120px,24px"></dc-import>
+          <sc-if value="{{ hasWaiting }}" hint-placeholder-val="{{ true }}"><span style="font-weight: 600;">{{ rec.waiting }}</span></sc-if>
+          <sc-if value="{{ onHold }}" hint-placeholder-val="{{ false }}">
+            <span style="display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-sm); background: var(--flag-hold); color: var(--c-on-solid); font-size: var(--text-sm); font-weight: 600;"><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><rect x="3.5" y="3" width="3" height="10" rx="0.5"></rect><rect x="9.5" y="3" width="3" height="10" rx="0.5"></rect></svg>On payment hold</span>
+              <span style="font-size: var(--text-sm); color: var(--c-ink);">Reasons: {{ holdReasons }}</span>
+            </span>
+          </sc-if>
+        </div>
+        <dl style="margin: 0; display: flex; gap: 4px 24px; flex-wrap: wrap; font-size: var(--text-sm); line-height: var(--lh-sm);">
+          <sc-for list="{{ facts }}" as="f" hint-placeholder-count="2"><div style="display: flex; gap: 6px; align-items: baseline;"><dt style="color: var(--c-ink-muted);">{{ f.label }}</dt><dd style="margin: 0; font-family: var(--font-mono); font-size: var(--text-sm);">{{ f.value }}</dd></div></sc-for>
+        </dl>
+      </div>
+      <div style="display: flex; align-items: center; gap: 6px 12px; flex-wrap: wrap; font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">
+        <span>Source: Compliance records</span><span>Updated {{ rec.updated }}</span>
+        <span style="display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border: 1px dashed var(--c-ink-muted); border-radius: var(--radius-sm); font-weight: 600; color: var(--c-ink);">Sample data</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="rd-split" style="display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; container-type: inline-size;">
+
+    <section class="rd-pdf" aria-label="Certificate PDF" style="flex: 5 1 440px; min-width: 0; position: sticky; top: 16px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--c-border); flex-wrap: wrap;">
+        <span style="display: flex; flex-direction: column;"><span style="font-weight: 600;">Certificate PDF</span><span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">{{ rec.uploadedLine }}</span></span>
+        <sc-if value="{{ hasFile }}" hint-placeholder-val="{{ true }}"><a href="#" style="font-size: var(--text-sm); font-weight: 600;">Open the original file (owner only)</a></sc-if>
+      </div>
+      <div style="background: var(--c-sunken); padding: 20px; display: flex; flex-direction: column; gap: 16px; max-height: 1000px; overflow: auto;">
+        <sc-if value="{{ pdfOk }}" hint-placeholder-val="{{ true }}">
+          <div role="img" aria-label="Page 1 of the certificate PDF" style="position: relative; background: var(--c-surface); aspect-ratio: 8.5 / 11; box-shadow: var(--shadow-md); padding: 7%; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; overflow: hidden; font-size: 10px; line-height: 14px; color: var(--c-ink);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; border-bottom: 1.5px solid var(--c-ink); padding-bottom: 10px;">
+              <div style="display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 13px; line-height: 16px; font-weight: 700;">Certificate of insurance</span><span style="color: var(--c-ink-muted);">Generic certificate-style layout</span></div>
+              <span style="padding: 4px 6px; border: 1.5px solid var(--c-ink); font-weight: 700; letter-spacing: .04em; white-space: nowrap;">SAMPLE: fictional certificate</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px;">
+              <div style="display: flex; flex-direction: column;"><span style="font-size: 8.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--c-ink-muted);">Insured</span><span style="font-weight: 600;">{{ pdf.insured }}</span><span style="color: var(--c-ink-muted);">{{ pdf.address }}</span></div>
+              <div style="display: flex; flex-direction: column;"><span style="font-size: 8.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--c-ink-muted);">Issued by</span><span style="font-weight: 600;">Fairhaven Insurance Agency</span><span style="color: var(--c-ink-muted);">Fictional agency</span></div>
+              <div style="display: flex; flex-direction: column;"><span style="font-size: 8.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--c-ink-muted);">Certificate holder</span><span style="font-weight: 600;">Harborline Builders</span><span style="color: var(--c-ink-muted);">{{ rec.project }}</span></div>
+              <div style="display: flex; flex-direction: column;"><span style="font-size: 8.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--c-ink-muted);">Policy period</span><span style="font-weight: 600; font-family: var(--font-mono);">{{ pdf.period }}</span></div>
+            </div>
+            <div style="display: flex; flex-direction: column; border: 1px solid var(--c-border-strong);">
+              <div style="display: grid; grid-template-columns: 1.5fr 1fr; padding: 5px 8px; background: var(--c-sunken); font-weight: 700;"><span>Coverage</span><span>Limit</span></div>
+              <sc-for list="{{ pdf.lines }}" as="pl" hint-placeholder-count="6"><div style="display: grid; grid-template-columns: 1.5fr 1fr; padding: 5px 8px; border-top: 1px solid var(--c-border);"><span>{{ pl.label }}</span><span style="font-family: var(--font-mono);">{{ pl.value }}</span></div></sc-for>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <div style="height: 6px; width: 92%; background: var(--c-sunken); border-radius: 2px;"></div>
+              <div style="height: 6px; width: 78%; background: var(--c-sunken); border-radius: 2px;"></div>
+              <div style="height: 6px; width: 85%; background: var(--c-sunken); border-radius: 2px;"></div>
+            </div>
+            <span aria-hidden="true" style="position: absolute; left: 50%; top: 58%; transform: translate(-50%, -50%) rotate(-28deg); font-size: 72px; line-height: 1; font-weight: 700; letter-spacing: .08em; color: var(--c-ink); opacity: .05; pointer-events: none; white-space: nowrap;">SAMPLE</span>
+          </div>
+          <div role="img" aria-label="Page 2 of the certificate PDF" style="position: relative; background: var(--c-surface); aspect-ratio: 8.5 / 11; box-shadow: var(--shadow-md); padding: 7%; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; overflow: hidden; font-size: 10px; line-height: 14px; color: var(--c-ink);">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1.5px solid var(--c-ink); padding-bottom: 8px;"><span style="font-weight: 700;">Page 2 · Endorsements and notes</span><span style="padding: 3px 5px; border: 1.5px solid var(--c-ink); font-weight: 700; white-space: nowrap;">SAMPLE: fictional certificate</span></div>
+            <div style="display: flex; flex-direction: column; gap: 4px;"><span style="font-size: 8.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--c-ink-muted);">Additional insured</span><span>{{ pdf.ai }}</span></div>
+            <div style="display: flex; flex-direction: column; gap: 4px;"><span style="font-size: 8.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--c-ink-muted);">Cancellation</span><span>{{ pdf.cancel }}</span></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 8.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--c-ink-muted);">Description of operations</span><div style="height: 6px; width: 95%; background: var(--c-sunken); border-radius: 2px;"></div><div style="height: 6px; width: 88%; background: var(--c-sunken); border-radius: 2px;"></div><div style="height: 6px; width: 60%; background: var(--c-sunken); border-radius: 2px;"></div></div>
+            <span aria-hidden="true" style="position: absolute; left: 50%; top: 58%; transform: translate(-50%, -50%) rotate(-28deg); font-size: 72px; line-height: 1; font-weight: 700; letter-spacing: .08em; color: var(--c-ink); opacity: .05; pointer-events: none; white-space: nowrap;">SAMPLE</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ pdfUnreadable }}" hint-placeholder-val="{{ false }}">
+          <div role="img" aria-label="Page 1 of the PDF: a blurred scan" style="position: relative; background: var(--c-surface); aspect-ratio: 8.5 / 11; box-shadow: var(--shadow-md); overflow: hidden;">
+            <div style="position: absolute; inset: 0; padding: 7%; display: flex; flex-direction: column; gap: 14px; filter: blur(2.4px); opacity: .6; transform: rotate(-2deg) scale(1.04); font-size: 10px;">
+              <div style="height: 14px; width: 55%; background: var(--c-ink); opacity: .5;"></div>
+              <div style="height: 8px; width: 80%; background: var(--c-border-strong);"></div>
+              <div style="height: 8px; width: 70%; background: var(--c-border-strong);"></div>
+              <div style="height: 120px; width: 100%; border: 2px solid var(--c-border-strong);"></div>
+              <div style="height: 8px; width: 90%; background: var(--c-border-strong);"></div>
+              <div style="height: 8px; width: 60%; background: var(--c-border-strong);"></div>
+            </div>
+            <span style="position: absolute; top: 12px; right: 12px; padding: 3px 5px; border: 1.5px solid var(--c-ink); background: var(--c-surface); font-size: 10px; font-weight: 700;">SAMPLE: fictional certificate</span>
+          </div>
+          <span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink); text-align: center;">This is the file as received. It is a blurred phone photo of a page, so no values could be read.</span>
+        </sc-if>
+        <sc-if value="{{ pdfNone }}" hint-placeholder-val="{{ false }}">
+          <div style="aspect-ratio: 8.5 / 11; border: 1.5px dashed var(--c-border-strong); border-radius: var(--radius-md); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 24px; text-align: center;">
+            <svg width="36" height="36" viewBox="0 0 16 16" fill="none" stroke="var(--c-ink-muted)" stroke-width="1.2" stroke-linejoin="round"><path d="M4 1.8h5.5L12.5 5v9.2H4Z"></path><path d="M9.5 1.8V5h3"></path></svg>
+            <span style="font-weight: 600;">No certificate has been received yet.</span>
+            <span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); max-width: 300px;">The PDF appears here, page by page, after the subcontractor uploads it.</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ pdfError }}" hint-placeholder-val="{{ false }}">
+          <div role="alert" style="aspect-ratio: 8.5 / 11; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 24px; text-align: center;">
+            <svg width="28" height="28" viewBox="0 0 16 16" fill="none" stroke="var(--c-ink)" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6.2"></circle><path d="M8 4.8v3.8"></path><circle cx="8" cy="11" r="0.5" fill="var(--c-ink)"></circle></svg>
+            <span style="font-weight: 600;">The PDF could not be shown here.</span>
+            <span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); max-width: 320px; text-wrap: pretty;">The values on the right were read from this file. Open the original file to compare before you approve.</span>
+            <a href="#" style="font-size: var(--text-sm); font-weight: 600;">Open the original file (owner only)</a>
+          </div>
+        </sc-if>
+      </div>
+    </section>
+
+    <div style="flex: 7 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 20px;">
+
+      <section aria-label="Your next step" style="background: var(--c-surface); border: 1px solid var(--c-border-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); padding: 20px 24px; display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: var(--text-xs); font-weight: 700; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted);">Your next step · {{ roleLabel }}</span>
+          <h2 style="margin: 0; font-size: var(--text-lg); line-height: var(--lh-lg); font-weight: 700;">{{ panelTitle }}</h2>
+        </div>
+
+        <sc-if value="{{ pApprove }}" hint-placeholder-val="{{ false }}">
+          <p style="margin: 0; text-wrap: pretty;">Every line passes. Nothing goes to the subcontractor until you approve.</p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button onClick="{{ approve }}" style="height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-primary); border-radius: var(--radius-md); background: var(--c-primary); color: var(--c-on-solid); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-primary-hover);">Approve</button>
+            <button onClick="{{ startEdit }}" style="height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-canvas); border-color: var(--c-ink);">Correct a value</button>
+          </div>
+          <span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">Approving emails {{ rec.name }} and records your name: {{ actor }}.</span>
+        </sc-if>
+
+        <sc-if value="{{ pCorrect }}" hint-placeholder-val="{{ false }}">
+          <p style="margin: 0; text-wrap: pretty;">{{ correctText }}</p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button onClick="{{ save }}" style="height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-primary); border-radius: var(--radius-md); background: var(--c-primary); color: var(--c-on-solid); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-primary-hover);">Save and check again</button>
+            <sc-if value="{{ canCancelEdit }}" hint-placeholder-val="{{ false }}"><button onClick="{{ cancelEdit }}" style="height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-canvas); border-color: var(--c-ink);">Cancel</button></sc-if>
+          </div>
+          <span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">Each change is kept in the timeline as old value to new value, with your name: {{ actor }}.</span>
+        </sc-if>
+
+        <sc-if value="{{ pResend }}" hint-placeholder-val="{{ false }}">
+          <p style="margin: 0; text-wrap: pretty;">No values could be read from this file. Check the draft below, then send it. Nothing is sent until you press the button.</p>
+          <div style="border: 1px solid var(--c-border); border-radius: var(--radius-md); background: var(--c-canvas); overflow: hidden;">
+            <div style="display: grid; grid-template-columns: 64px 1fr; gap: 4px 12px; padding: 10px 14px; border-bottom: 1px solid var(--c-border); font-size: var(--text-sm); line-height: var(--lh-sm);">
+              <span style="color: var(--c-ink-muted);">To</span><span>{{ draft.to }}</span>
+              <span style="color: var(--c-ink-muted);">Subject</span><span style="font-weight: 600;">{{ draft.subject }}</span>
+            </div>
+            <div style="padding: 14px; white-space: pre-wrap; font-size: var(--text-sm); line-height: var(--lh-sm);">{{ draft.body }}</div>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button onClick="{{ resend }}" style="height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-primary); border-radius: var(--radius-md); background: var(--c-primary); color: var(--c-on-solid); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-primary-hover);">Send "please resend" request</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ pDecide }}" hint-placeholder-val="{{ false }}">
+          <p style="margin: 0; text-wrap: pretty;">The check found these deficiencies. Waive them with a note, or reject. Reject sends {{ rec.name }} a fixed correction request that lists each one.</p>
+          <ul style="margin: 0; padding: 12px 14px; list-style: none; display: flex; flex-direction: column; gap: 8px; background: var(--c-red-tint); border-radius: var(--radius-md);">
+            <sc-for list="{{ deficiencies }}" as="d" hint-placeholder-count="2">
+              <li style="display: grid; grid-template-columns: 16px 1fr; gap: 8px; align-items: start;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--c-red-fg)" stroke-width="2.2" stroke-linecap="round" style="margin-top: 4px;"><path d="M4 4l8 8M12 4l-8 8"></path></svg><span style="display: flex; flex-direction: column; gap: 2px;"><span>{{ d.defText }} <span style="color: var(--c-red-fg); font-weight: 600;">· Fail</span></span><sc-if value="{{ d.hasSub }}" hint-placeholder-val="{{ false }}"><span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink);">{{ d.sub }}</span></sc-if></span></li>
+            </sc-for>
+          </ul>
+          <label style="display: flex; flex-direction: column; gap: 6px;">
+            <span style="font-size: var(--text-sm); font-weight: 600;">Waiver note <span style="font-weight: 400; color: var(--c-ink-muted);">(required to waive)</span></span>
+            <textarea value="{{ note }}" onChange="{{ setNote }}" rows="3" placeholder="Why is this acceptable? For example: the owner agreed in writing." style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-sm); background: var(--c-surface); font: inherit; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink); resize: vertical;" style-focus="outline: none; box-shadow: var(--shadow-focus); border-color: var(--c-focus);"></textarea>
+          </label>
+          <sc-if value="{{ noteRefused }}" hint-placeholder-val="{{ false }}">
+            <div role="status" style="display: grid; grid-template-columns: 20px 1fr; gap: 10px; padding: 12px 14px; background: var(--c-canvas); border: 1px solid var(--c-border-strong); border-radius: var(--radius-md);">
+              <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--c-ink)" stroke-width="1.6" stroke-linecap="round" style="margin-top: 2px;"><rect x="3" y="7" width="10" height="7" rx="1.5"></rect><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"></path></svg>
+              <span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 600;">A waiver needs a note. Write why this is acceptable, then waive.</span><span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">Nothing was changed. The note is saved in the timeline with your name.</span></span>
+            </div>
+          </sc-if>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button onClick="{{ waive }}" style="height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-primary); border-radius: var(--radius-md); background: var(--c-primary); color: var(--c-on-solid); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-primary-hover);">Waive</button>
+            <button onClick="{{ reject }}" style="height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-canvas); border-color: var(--c-ink);">Reject</button>
+          </div>
+          <details style="border-top: 1px solid var(--c-border); padding-top: 12px;">
+            <summary style="cursor: pointer; font-size: var(--text-sm); font-weight: 600; color: var(--c-blue-fg);">What Reject sends to {{ rec.name }}</summary>
+            <div style="margin-top: 10px; padding: 14px; background: var(--c-canvas); border: 1px solid var(--c-border); border-radius: var(--radius-md); white-space: pre-wrap; font-size: var(--text-sm); line-height: var(--lh-sm);">{{ correctionText }}</div>
+          </details>
+          <span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">Your decision is saved with your name: {{ actor }}.</span>
+        </sc-if>
+
+        <sc-if value="{{ pW9 }}" hint-placeholder-val="{{ false }}">
+          <p style="margin: 0; text-wrap: pretty;">{{ w9Para }}</p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button onClick="{{ toggleW9 }}" style="height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-primary); border-radius: var(--radius-md); background: var(--c-primary); color: var(--c-on-solid); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-primary-hover);">Mark W-9 on file</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ pNone }}" hint-placeholder-val="{{ false }}">
+          <p style="margin: 0; color: var(--c-ink-muted); text-wrap: pretty;">{{ noneText }}</p>
+        </sc-if>
+
+        <sc-if value="{{ pRefused }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <sc-for list="{{ refBtns }}" as="b" hint-placeholder-count="1">
+              <sc-if value="{{ b.primary }}" hint-placeholder-val="{{ true }}"><button disabled="" aria-describedby="refusal" style="height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-sunken); border-radius: var(--radius-md); background: var(--c-sunken); color: var(--c-ink-muted); font: inherit; font-weight: 600; cursor: not-allowed;">{{ b.label }}</button></sc-if>
+              <sc-if value="{{ b.secondary }}" hint-placeholder-val="{{ false }}"><button disabled="" aria-describedby="refusal" style="height: var(--control-md); padding: 0 18px; border: 1px dashed var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink-muted); font: inherit; font-weight: 600; cursor: not-allowed;">{{ b.label }}</button></sc-if>
+            </sc-for>
+          </div>
+          <div id="refusal" role="status" style="display: grid; grid-template-columns: 20px 1fr; gap: 10px; padding: 12px 14px; background: var(--c-canvas); border: 1px solid var(--c-border-strong); border-radius: var(--radius-md);">
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--c-ink)" stroke-width="1.6" stroke-linecap="round" style="margin-top: 2px;"><rect x="3" y="7" width="10" height="7" rx="1.5"></rect><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"></path></svg>
+            <span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 600;">{{ refTitle }}</span><span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">{{ refSub }}</span></span>
+          </div>
+        </sc-if>
+      </section>
+
+      <section aria-label="Values read against the requirements" style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;">
+        <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; border-bottom: 1px solid var(--c-border);">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px 16px; flex-wrap: wrap;">
+            <h2 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Values read against the requirements</h2>
+            <span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">Requirements for {{ rec.project }}</span>
+          </div>
+          <sc-if value="{{ confAbove }}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;"><span style="font-weight: 600;">Reading confidence</span><span style="font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 600;">{{ rec.conf }}%</span></div>
+              <div style="position: relative; height: 8px; background: var(--c-sunken); border-radius: var(--radius-pill);">
+                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: {{ rec.conf }}%; background: var(--c-ink); border-radius: var(--radius-pill);"></div>
+                <div style="position: absolute; left: 85%; top: -4px; bottom: -4px; width: 2px; background: var(--c-ink); box-shadow: 0 0 0 2px var(--c-surface);"></div>
+              </div>
+              <div style="position: relative; height: 16px; font-size: var(--text-xs); color: var(--c-ink-muted);"><span style="position: absolute; left: 85%; transform: translateX(-50%);">85%</span></div>
+              <span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">{{ rec.confText }}</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ confBelow }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;"><span style="font-weight: 600;">Reading confidence</span><span style="font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 600;">{{ rec.conf }}%</span></div>
+              <div style="position: relative; height: 8px; background: var(--c-sunken); border-radius: var(--radius-pill);">
+                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: {{ rec.conf }}%; background: var(--c-amber-solid); border-radius: var(--radius-pill);"></div>
+                <div style="position: absolute; left: 85%; top: -4px; bottom: -4px; width: 2px; background: var(--c-ink); box-shadow: 0 0 0 2px var(--c-surface);"></div>
+              </div>
+              <div style="position: relative; height: 16px; font-size: var(--text-xs); color: var(--c-ink-muted);"><span style="position: absolute; left: 85%; transform: translateX(-50%);">85%</span></div>
+              <span style="display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; box-sizing: border-box; min-height: 24px; padding: 3px 10px 3px 8px; border-radius: var(--radius-pill); background: var(--st-needs-review-tint); color: var(--st-needs-review); font-size: var(--text-sm); line-height: var(--lh-sm); font-weight: 600;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" style="flex: none;"><path d="M8 2L14.5 13.5H1.5Z"></path><path d="M8 6.5v3"></path><circle cx="8" cy="11.5" r="0.4"></circle></svg>Below 85%: a person checks every value</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ confNA }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px; background: var(--c-amber-tint); border-radius: var(--radius-md);">
+              <span style="display: flex; flex-direction: column;"><span style="font-weight: 600; color: var(--c-amber-fg);">Unreadable file</span><span style="font-size: var(--text-sm); color: var(--c-ink);">No values could be read. A person must review.</span></span>
+              <span style="font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 600; color: var(--c-amber-fg);">n/a</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ sumFails }}" hint-placeholder-val="{{ false }}">
+            <span style="display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--c-red-fg)" stroke-width="2.2" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"></path></svg><span><strong style="color: var(--c-red-fg);">Fails:</strong> {{ failList }}</span></span>
+          </sc-if>
+          <sc-if value="{{ sumPass }}" hint-placeholder-val="{{ false }}">
+            <span style="display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--c-green-fg)" stroke-width="2.2" stroke-linecap="round"><path d="M3.5 8.5l3 3 6-6.5"></path></svg><span><strong style="color: var(--c-green-fg);">Pass:</strong> every line meets the requirement.</span></span>
+          </sc-if>
+          <sc-if value="{{ sumWaived }}" hint-placeholder-val="{{ false }}">
+            <span style="display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--c-neutral-fg)" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"></circle><path d="M4.5 11.5l7-7"></path></svg><span><strong>Waived:</strong> every deficiency was waived with a note.</span></span>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ hasLines }}" hint-placeholder-val="{{ true }}">
+          <div class="rd-head" style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 112px; gap: 12px; padding: 10px 20px; border-bottom: 1px solid var(--c-border); font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted);"><span>Coverage</span><span>Found</span><span>Required</span><span>Result</span></div>
+          <sc-for list="{{ lines }}" as="l" hint-placeholder-count="9">
+            <sc-if value="{{ l.vPass }}" hint-placeholder-val="{{ true }}">
+              <div class="rd-line" style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 112px; gap: 12px; align-items: center; padding: 11px 20px; border-bottom: 1px solid var(--c-border);">
+                <span style="display: flex; flex-direction: column; gap: 2px;"><span>{{ l.label }}</span><sc-if value="{{ l.hasSub }}" hint-placeholder-val="{{ false }}"><span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">{{ l.sub }}</span></sc-if></span>
+                <span style="font-family: var({{ l.font }}); font-size: var(--text-sm); font-variant-numeric: tabular-nums; overflow-wrap: anywhere;">{{ l.found }}</span>
+                <span style="font-family: var({{ l.font }}); font-size: var(--text-sm); color: var(--c-ink-muted); font-variant-numeric: tabular-nums; overflow-wrap: anywhere;">{{ l.req }}</span>
+                <span style="display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px 0 6px; border-radius: var(--radius-sm); background: var(--c-green-tint); color: var(--line-pass); font-size: var(--text-sm); font-weight: 600; justify-self: start;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3.5 8.5l3 3 6-6.5"></path></svg>Pass</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{ l.vFail }}" hint-placeholder-val="{{ false }}">
+              <div class="rd-line" style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 112px; gap: 12px; align-items: center; padding: 11px 20px; border-bottom: 1px solid var(--c-border); background: var(--c-red-tint);">
+                <span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 600;">{{ l.label }}</span><sc-if value="{{ l.hasSub }}" hint-placeholder-val="{{ false }}"><span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink);">{{ l.sub }}</span></sc-if></span>
+                <span style="font-family: var({{ l.font }}); font-size: var(--text-sm); font-weight: 600; color: var(--c-red-fg); font-variant-numeric: tabular-nums; overflow-wrap: anywhere;">{{ l.found }}</span>
+                <span style="font-family: var({{ l.font }}); font-size: var(--text-sm); font-variant-numeric: tabular-nums; overflow-wrap: anywhere;">{{ l.req }}</span>
+                <span style="display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px 0 6px; border-radius: var(--radius-sm); background: var(--c-surface); color: var(--line-fail); font-size: var(--text-sm); font-weight: 600; justify-self: start;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"></path></svg>Fail</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{ l.vWaived }}" hint-placeholder-val="{{ false }}">
+              <div class="rd-line" style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 112px; gap: 12px; align-items: start; padding: 11px 20px; border-bottom: 1px solid var(--c-border);">
+                <span style="display: flex; flex-direction: column; gap: 4px;"><span>{{ l.label }}</span><span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">{{ l.waivedText }}</span></span>
+                <span style="font-family: var({{ l.font }}); font-size: var(--text-sm); overflow-wrap: anywhere;">{{ l.found }}</span>
+                <span style="font-family: var({{ l.font }}); font-size: var(--text-sm); color: var(--c-ink-muted); overflow-wrap: anywhere;">{{ l.req }}</span>
+                <span style="display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px 0 6px; border-radius: var(--radius-sm); background: var(--c-neutral-tint); color: var(--line-waived); font-size: var(--text-sm); font-weight: 600; justify-self: start;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"></circle><path d="M4.5 11.5l7-7"></path></svg>Waived</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{ l.vEdit }}" hint-placeholder-val="{{ false }}">
+              <div class="rd-line rd-edit" style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 112px; gap: 12px; align-items: start; padding: 10px 20px; border-bottom: 1px solid var(--c-border); background: var(--c-canvas);">
+                <span style="font-weight: 600; padding-top: 9px;">{{ l.label }}</span>
+                <span style="display: flex; flex-direction: column; gap: 4px;">
+                  <sc-if value="{{ l.useInput }}" hint-placeholder-val="{{ true }}"><input aria-label="{{ l.inputLabel }}" value="{{ l.inputVal }}" onChange="{{ l.change }}" style="height: var(--control-md); width: 100%; box-sizing: border-box; padding: 0 10px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-sm); background: var(--c-surface); font-family: var({{ l.font }}); font-size: var(--text-sm); color: var(--c-ink);" style-focus="outline: none; box-shadow: var(--shadow-focus); border-color: var(--c-focus);"></sc-if>
+                  <sc-if value="{{ l.useSelect }}" hint-placeholder-val="{{ false }}"><select aria-label="{{ l.inputLabel }}" value="{{ l.inputVal }}" onChange="{{ l.change }}" style="height: var(--control-md); width: 100%; box-sizing: border-box; padding: 0 8px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-sm); background: var(--c-surface); font: inherit; font-size: var(--text-sm); color: var(--c-ink);"><option value="Printed">Printed</option><option value="Not printed">Not printed</option></select></sc-if>
+                  <sc-if value="{{ l.hasEditHint }}" hint-placeholder-val="{{ false }}"><span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">{{ l.editHint }}</span></sc-if>
+                  <sc-if value="{{ l.changed }}" hint-placeholder-val="{{ false }}"><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">Was {{ l.found }}</span></sc-if>
+                </span>
+                <span style="font-family: var({{ l.font }}); font-size: var(--text-sm); color: var(--c-ink-muted); padding-top: 9px; overflow-wrap: anywhere;">{{ l.req }}</span>
+                <span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); padding-top: 9px;">{{ l.editNote }}</span>
+              </div>
+            </sc-if>
+          </sc-for>
+        </sc-if>
+        <sc-if value="{{ noLines }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 32px 20px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;">
+            <span style="font-weight: 600;">{{ noLinesTitle }}</span>
+            <span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); max-width: 420px;">{{ noLinesText }}</span>
+          </div>
+        </sc-if>
+        <div style="display: flex; gap: 6px 12px; flex-wrap: wrap; padding: 10px 20px; background: var(--c-canvas); font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">
+          <span>Source: Certificates, Projects</span><span>Updated {{ rec.updated }}</span><strong style="color: var(--c-ink);">Sample data</strong>
+        </div>
+      </section>
+
+      <sc-if value="{{ showW9Card }}" hint-placeholder-val="{{ true }}">
+        <section aria-label="W-9" style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px 20px; flex-wrap: wrap;">
+          <div style="display: flex; flex-direction: column;">
+            <span style="font-weight: 600;">W-9</span>
+            <span style="font-size: var(--text-sm); line-height: var(--lh-sm);">{{ w9Text }}</span>
+          </div>
+          <sc-if value="{{ w9CanToggle }}" hint-placeholder-val="{{ false }}"><button onClick="{{ toggleW9 }}" style="height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-canvas); border-color: var(--c-ink);">{{ w9Btn }}</button></sc-if>
+          <sc-if value="{{ w9Refused }}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="7" width="10" height="7" rx="1.5"></rect><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"></path></svg>Only the accountant can mark a W-9.</span></sc-if>
+        </section>
+      </sc-if>
+
+      <section aria-label="Timeline" style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 18px 20px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap;">
+          <h2 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Timeline</h2>
+          <span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">Newest first · Source: Activity log</span>
+        </div>
+        <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column;">
+          <sc-for list="{{ timeline }}" as="t" hint-placeholder-count="4">
+            <li style="display: grid; grid-template-columns: 20px 1fr; gap: 12px;">
+              <span style="display: flex; flex-direction: column; align-items: center;">
+                <sc-if value="{{ t.isDecision }}" hint-placeholder-val="{{ false }}"><span style="width: 12px; height: 12px; margin-top: 5px; border-radius: 50%; background: var(--c-ink); flex: none;"></span></sc-if>
+                <sc-if value="{{ t.isCorrection }}" hint-placeholder-val="{{ false }}"><span style="width: 12px; height: 12px; margin-top: 5px; border-radius: 50%; background: var(--c-surface); border: 2px solid var(--c-ink); box-sizing: border-box; flex: none;"></span></sc-if>
+                <sc-if value="{{ t.isSystem }}" hint-placeholder-val="{{ true }}"><span style="width: 10px; height: 10px; margin-top: 6px; background: var(--c-border-strong); transform: rotate(45deg); flex: none;"></span></sc-if>
+                <sc-if value="{{ t.notLast }}" hint-placeholder-val="{{ true }}"><span style="flex: 1; width: 2px; background: var(--c-border); margin-top: 4px;"></span></sc-if>
+              </span>
+              <span style="display: flex; flex-direction: column; gap: 3px; padding-bottom: 18px;">
+                <span style="font-size: var(--text-xs); color: var(--c-ink-muted); font-family: var(--font-mono);">{{ t.when }}</span>
+                <span><strong>{{ t.who }}</strong> <sc-if value="{{ t.hasRole }}" hint-placeholder-val="{{ false }}"><span style="color: var(--c-ink-muted);">({{ t.role }})</span></sc-if></span>
+                <span style="font-size: var(--text-sm); line-height: var(--lh-sm);">{{ t.text }}</span>
+                <sc-if value="{{ t.hasChange }}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; padding: 4px 8px; background: var(--c-canvas); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: var(--text-sm);"><span style="text-decoration: line-through; color: var(--c-ink-muted);">{{ t.from }}</span><span aria-hidden="true">→</span><span style="font-weight: 600;">{{ t.to }}</span></span></sc-if>
+                <sc-if value="{{ t.hasNote }}" hint-placeholder-val="{{ false }}"><span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">Note: "{{ t.note }}"</span></sc-if>
+              </span>
+            </li>
+          </sc-for>
+        </ol>
+      </section>
+    </div>
+  </div>
+</sc-if>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1400},&quot;record&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;ridgeline&quot;,&quot;brightway&quot;,&quot;summit&quot;,&quot;lakeshore&quot;,&quot;granite&quot;,&quot;birchwood&quot;,&quot;stonebridge&quot;,&quot;fieldstone&quot;],&quot;default&quot;:&quot;ridgeline&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;accountant&quot;,&quot;project_manager&quot;,&quot;leadership&quot;],&quot;default&quot;:&quot;project_manager&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;loaded&quot;,&quot;loading&quot;,&quot;error&quot;,&quot;pdf-error&quot;,&quot;editing&quot;,&quot;no-note&quot;,&quot;approved&quot;,&quot;rejected&quot;,&quot;w9-done&quot;],&quot;default&quot;:&quot;loaded&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;onBack&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;() =&gt; void&quot;},&quot;onNav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(view: string) =&gt; void&quot;}}">
+class Component extends DCLogic {
+  state = { role: null, rec: null, editing: null, edits: null, note: '', noteRefused: null, success: null, retried: false };
+  NAMES = { accountant: 'Accountant', project_manager: 'Project manager', leadership: 'Leadership' };
+  PEOPLE = { accountant: 'Dana Reyes', project_manager: 'Marcus Webb', leadership: 'Elena Park' };
+  NOW = 'Oct 8, 2026 · 10:42 AM';
+  RULES = { glOcc: ['General liability', 1000000], agg: ['Aggregate', 2000000], auto: ['Auto', 1000000], umb: ['Umbrella', 2000000], wc: ["Workers' comp", null], pol: ['Pollution', 1000000] };
+  CHECKS = [['ai', 'Additional insured endorsement'], ['addr', 'Project address'], ['holder', 'Certificate holder']];
+
+  skel(w, h, x) {
+    const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return React.createElement('div', { key: x && x.key, style: Object.assign({ width: w, height: h, borderRadius: 'var(--radius-sm)', background: 'var(--c-sunken)', animation: reduce ? 'none' : 'skel var(--motion-skeleton)' }, x || {}) });
+  }
+  usd(n) { return '$' + Number(n).toLocaleString('en-US'); }
+  num(s) { const n = String(s == null ? '' : s).replace(/[^0-9]/g, ''); return n ? Number(n) : null; }
+  limitKeys(r) { return ['glOcc', 'agg', 'auto', 'umb', 'wc'].concat(r.pollution ? ['pol'] : []); }
+
+  // Mirrors evaluateCoi in src/Evaluate.gs: labels, found/required wording and deficiency text.
+  evaluate(r) {
+    if (!r.values) return [];
+    const v = r.values, out = [];
+    this.limitKeys(r).forEach(k => {
+      const [label, min] = this.RULES[k], f = v[k];
+      const req = min != null ? this.usd(min) : 'Any amount';
+      let found, pass = true, def = '';
+      if (f == null) { found = 'Not shown'; pass = false; def = label + ': not shown on the certificate'; }
+      else if (min != null && f < min) { found = this.usd(f); pass = false; def = label + ': ' + this.usd(f) + ' shown, ' + this.usd(min) + ' required'; }
+      else found = this.usd(f);
+      out.push({ k, kind: 'limit', label, found, req, pass, defText: def, raw: f == null ? '' : this.usd(f) });
+    });
+    this.CHECKS.forEach(([k, label]) => {
+      const ok = v[k] === true;
+      out.push({ k, kind: 'check', label, found: ok ? 'Printed' : 'Not printed', req: 'Printed', pass: ok, defText: ok ? '' : label + ': missing or wrong', raw: ok ? 'Printed' : 'Not printed' });
+    });
+    const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const nameOk = norm(v.insuredName) === norm(r.name);
+    out.push({ k: 'insured', kind: 'name', label: 'Insured name', found: nameOk ? 'Matches' : 'Does not match', req: 'Matches', pass: nameOk, defText: nameOk ? '' : 'Insured name: missing or wrong', sub: 'On the certificate: ' + v.insuredName + ' · On the record: ' + r.name, raw: v.insuredName });
+    const d = v.cancel, short = d == null || d < 30;
+    out.push({ k: 'cancel', kind: 'cancel', label: 'Cancellation notice', found: d == null ? 'Not shown' : d + ' days', req: '30 days', pass: !short, defText: short ? 'Cancellation notice: ' + (d == null ? 'none' : d) + ' days shown, 30 required' : '', raw: d == null ? '' : String(d) });
+    out.forEach(l => { l.waivedText = (r.waived && r.waived[l.k]) || ''; l.waived = !!l.waivedText; });
+    return out;
+  }
+
+  pdfFor(r) {
+    const v = r.values || r.currentValues || {};
+    const t = r.pdfTrue || {};
+    const lines = this.limitKeys(r).map(k => ({ label: this.RULES[k][0], value: t[k] != null ? this.usd(t[k]) : (v[k] == null ? '' : this.usd(v[k])) }));
+    return { insured: v.insuredName || r.name, address: r.address, period: r.period, lines,
+      ai: v.ai === false ? 'No additional insured endorsement is attached.' : 'Harborline Builders is named as additional insured by endorsement.',
+      cancel: (v.cancel || 30) + ' days written notice of cancellation to the certificate holder.' };
+  }
+
+  base(key) {
+    const std = n => ({ glOcc: 1000000, agg: 2000000, auto: 1000000, umb: 2000000, wc: 1000000, pol: 1000000, ai: true, addr: true, holder: true, insuredName: n, cancel: 30 });
+    const R = {
+      ridgeline: { id: 'REC-001', name: 'Ridgeline Roofing LLC', scope: 'Roofing', project: 'Maple Court Residences', status: 'In review', waiting: 'Waiting for a decision on a deficiency', next: 'decide', conf: 93, pdf: 'ok', w9: true, hold: [], pollution: true,
+        values: Object.assign(std('Ridgeline Roofing LLC'), { insuredName: 'Ridgeline Roofing Partners LLC', umb: 1000000 }),
+        address: '41 Quarry Road, Millbrook', period: 'Jan 15, 2026 to Jan 15, 2027',
+        facts: [['Policy period', 'Jan 15, 2026 to Jan 15, 2027'], ['Expires', 'Jan 15, 2027'], ['Current certificate', 'None on file']],
+        updated: 'Oct 8, 2026, 9:20 AM', uploadedLine: 'Uploaded Oct 8, 2026 by Ridgeline Roofing LLC (Subcontractor)',
+        confText: 'Above the 85% line, so the values were not sent for a second look. Code ran the check; the deficiencies wait for a person.',
+        timeline: [
+          { when: 'Oct 8, 2026 · 9:20 AM', who: 'System', text: 'Sent to Marcus Webb (Project manager) for a decision on the deficiencies.', kind: 'system' },
+          { when: 'Oct 8, 2026 · 9:19 AM', who: 'System', text: 'Checked against the Maple Court Residences requirements. Fails: umbrella, insured name.', kind: 'system' },
+          { when: 'Oct 8, 2026 · 9:18 AM', who: 'System', text: 'Read automatically. Reading confidence 93%.', kind: 'system' },
+          { when: 'Oct 8, 2026 · 9:12 AM', who: 'Ridgeline Roofing LLC', role: 'Subcontractor', text: 'Uploaded a certificate through the upload link.', kind: 'system' },
+          { when: 'Sep 28, 2026 · 2:05 PM', who: 'System', text: 'Upload link sent to Ridgeline Roofing LLC.', kind: 'system' },
+          { when: 'Sep 28, 2026 · 2:04 PM', who: 'Dana Reyes', role: 'Accountant', text: 'Added Ridgeline Roofing LLC to Maple Court Residences.', kind: 'decision' }
+        ] },
+      brightway: { id: 'REC-014', name: 'Brightway Electric', scope: 'Electrical', project: 'Maple Court Residences', status: 'In review', waiting: 'Waiting for approval', next: 'approve', conf: 96, pdf: 'ok', w9: true, hold: [],
+        values: std('Brightway Electric'), address: '9 Foundry Lane, Westbrook', period: 'Mar 31, 2026 to Mar 31, 2027',
+        facts: [['Policy period', 'Mar 31, 2026 to Mar 31, 2027'], ['Expires', 'Mar 31, 2027']],
+        updated: 'Oct 8, 2026, 8:47 AM', uploadedLine: 'Uploaded Oct 8, 2026 by Brightway Electric (Subcontractor)',
+        confText: 'Above the 85% line. The values were read automatically; you still approve.',
+        timeline: [
+          { when: 'Oct 8, 2026 · 8:47 AM', who: 'System', text: 'Every line passes. Waiting for approval because the review mode is Review all.', kind: 'system' },
+          { when: 'Oct 8, 2026 · 8:46 AM', who: 'System', text: 'Read automatically. Reading confidence 96%.', kind: 'system' },
+          { when: 'Oct 8, 2026 · 8:40 AM', who: 'Brightway Electric', role: 'Subcontractor', text: 'Uploaded a certificate through the upload link.', kind: 'system' },
+          { when: 'Sep 30, 2026 · 10:15 AM', who: 'System', text: 'Upload link sent to Brightway Electric.', kind: 'system' }
+        ] },
+      summit: { id: 'REC-021', name: 'Summit Mechanical', scope: 'Mechanical', project: 'Maple Court Residences', status: 'Expiring soon', currentStatus: 'Expiring soon', currentExpiry: 'Oct 31, 2026', remindersLeft: 'The system sends a 7-day follow-up on Oct 24.', waiting: 'Needs review', next: 'correct', conf: 78, pdf: 'ok', w9: true, hold: [],
+        values: Object.assign(std('Summit Mechanical'), { auto: 100000 }), pdfTrue: { auto: 1000000 },
+        address: '220 Mill Street, Harbor Point', period: 'Oct 31, 2026 to Oct 31, 2027',
+        facts: [['Current certificate expires', 'Oct 31, 2026'], ['Renewal policy period', 'Oct 31, 2026 to Oct 31, 2027']],
+        afterApproveFacts: [['Policy period', 'Oct 31, 2026 to Oct 31, 2027'], ['Expires', 'Oct 31, 2027']],
+        updated: 'Oct 8, 2026, 9:02 AM', uploadedLine: 'Renewal uploaded Oct 8, 2026 by Summit Mechanical (Subcontractor)',
+        confText: '',
+        timeline: [
+          { when: 'Oct 8, 2026 · 9:02 AM', who: 'System', text: 'Sent to a person because reading confidence is below 85%.', kind: 'system' },
+          { when: 'Oct 8, 2026 · 9:01 AM', who: 'System', text: 'Read automatically. Reading confidence 78%.', kind: 'system' },
+          { when: 'Oct 8, 2026 · 8:55 AM', who: 'Summit Mechanical', role: 'Subcontractor', text: 'Uploaded a renewal certificate through the upload link.', kind: 'system' },
+          { when: 'Oct 1, 2026 · 7:00 AM', who: 'System', text: '30-day reminder sent. The current certificate expires Oct 31, 2026.', kind: 'system' },
+          { when: 'Nov 3, 2025 · 11:10 AM', who: 'Dana Reyes', role: 'Accountant', text: 'Approved the current certificate.', kind: 'decision' }
+        ] },
+      lakeshore: { id: 'REC-109', name: 'Lakeshore Glazing Co.', scope: 'Glazing', project: 'Cedar Point Lofts', status: 'Needs review', waiting: 'Unreadable file', next: 'resend', conf: null, unreadable: true, pdf: 'unreadable', w9: true, hold: [], values: null,
+        facts: [['Current certificate', 'None on file']],
+        updated: 'Oct 7, 2026, 4:31 PM', uploadedLine: 'Uploaded Oct 7, 2026 by Lakeshore Glazing Co. (Subcontractor)',
+        draft: { to: 'office@lakeshoreglazing.example', subject: 'Certificate of insurance: Lakeshore Glazing Co.', body: 'Please resend your certificate as a standard PDF. Upload it here: [upload link]' },
+        timeline: [
+          { when: 'Oct 7, 2026 · 4:31 PM', who: 'System', text: 'Unreadable file. Sent to the accountant queue.', kind: 'system' },
+          { when: 'Oct 7, 2026 · 4:30 PM', who: 'Lakeshore Glazing Co.', role: 'Subcontractor', text: 'Uploaded a file through the upload link.', kind: 'system' },
+          { when: 'Sep 25, 2026 · 9:00 AM', who: 'System', text: 'Upload link sent to Lakeshore Glazing Co.', kind: 'system' }
+        ] },
+      granite: { id: 'REC-008', name: 'Granite Ridge Masonry', scope: 'Masonry', project: 'Maple Court Residences', status: 'Compliant', waiting: '', next: 'w9', conf: 97, pdf: 'ok', w9: false, hold: ['No W-9 on file'],
+        values: std('Granite Ridge Masonry'), address: '3 Ledge Way, Basin Falls', period: 'Jun 30, 2026 to Jun 30, 2027',
+        facts: [['Policy period', 'Jun 30, 2026 to Jun 30, 2027'], ['Expires', 'Jun 30, 2027']],
+        updated: 'Oct 6, 2026, 7:00 AM', uploadedLine: 'Uploaded Sep 2, 2026 by Granite Ridge Masonry (Subcontractor)',
+        confText: 'Above the 85% line. Approved by Dana Reyes (Accountant), Sep 3.',
+        timeline: [
+          { when: 'Oct 6, 2026 · 7:00 AM', who: 'System', text: 'Pay-cycle check for the pay date of Oct 15, 2026: on payment hold. Reason: No W-9 on file.', kind: 'system' },
+          { when: 'Sep 3, 2026 · 11:20 AM', who: 'Dana Reyes', role: 'Accountant', text: 'Approved the certificate.', kind: 'decision' },
+          { when: 'Sep 3, 2026 · 10:02 AM', who: 'System', text: 'Read automatically. Reading confidence 97%.', kind: 'system' },
+          { when: 'Sep 2, 2026 · 3:48 PM', who: 'Granite Ridge Masonry', role: 'Subcontractor', text: 'Uploaded a certificate through the upload link.', kind: 'system' }
+        ] },
+      birchwood: { id: 'REC-002', name: 'Birchwood Earthworks Inc.', scope: 'Earthwork', project: 'Maple Court Residences', status: 'Expired', waiting: '', next: 'w9', conf: 95, pdf: 'ok', w9: false, hold: ['Policy expired', 'No W-9 on file'], pollution: true,
+        values: std('Birchwood Earthworks Inc.'), address: '88 Gravel Pit Road, Alder Creek', period: 'Sep 30, 2025 to Sep 30, 2026',
+        facts: [['Policy period', 'Sep 30, 2025 to Sep 30, 2026'], ['Expired', 'Sep 30, 2026']],
+        updated: 'Oct 6, 2026, 7:00 AM', uploadedLine: 'Uploaded Sep 29, 2025 by Birchwood Earthworks Inc. (Subcontractor)',
+        confText: 'Above the 85% line. Approved by Dana Reyes (Accountant), Oct 2, 2025.',
+        timeline: [
+          { when: 'Oct 6, 2026 · 7:00 AM', who: 'System', text: 'Pay-cycle check for the pay date of Oct 15, 2026: on payment hold. Reasons: Policy expired; No W-9 on file.', kind: 'system' },
+          { when: 'Oct 1, 2026 · 7:00 AM', who: 'System', text: 'The certificate expired with no renewal. Status is now Expired.', kind: 'system' },
+          { when: 'Sep 23, 2026 · 7:00 AM', who: 'System', text: '7-day follow-up sent to Birchwood Earthworks Inc.', kind: 'system' },
+          { when: 'Aug 31, 2026 · 7:00 AM', who: 'System', text: '30-day reminder sent to Birchwood Earthworks Inc.', kind: 'system' },
+          { when: 'Oct 2, 2025 · 2:15 PM', who: 'Dana Reyes', role: 'Accountant', text: 'Approved the certificate.', kind: 'decision' }
+        ] },
+      stonebridge: { id: 'REC-131', name: 'Stonebridge Concrete', scope: 'Concrete', project: 'Cedar Point Lofts', status: 'Compliant', currentStatus: 'Compliant', currentExpiry: 'Dec 15, 2026', remindersLeft: 'The system sends a 30-day reminder on Nov 15 and a 7-day follow-up on Dec 8.', waiting: 'Waiting for a decision on a deficiency', next: 'decide', conf: 94, pdf: 'ok', w9: true, hold: [],
+        values: Object.assign(std('Stonebridge Concrete'), { ai: false }), currentValues: std('Stonebridge Concrete'),
+        address: '17 Kiln Street, Basin Falls', period: 'Dec 15, 2026 to Dec 15, 2027',
+        facts: [['Current certificate expires', 'Dec 15, 2026'], ['Renewal policy period', 'Dec 15, 2026 to Dec 15, 2027']],
+        afterRejectFacts: [['Policy period', 'Dec 15, 2025 to Dec 15, 2026'], ['Expires', 'Dec 15, 2026']],
+        updated: 'Oct 8, 2026, 8:31 AM', uploadedLine: 'Renewal uploaded Oct 8, 2026 by Stonebridge Concrete (Subcontractor)',
+        confText: 'Above the 85% line. Code ran the check; the deficiency waits for a person.',
+        timeline: [
+          { when: 'Oct 8, 2026 · 8:31 AM', who: 'System', text: 'Sent to Marcus Webb (Project manager) for a decision on the deficiency.', kind: 'system' },
+          { when: 'Oct 8, 2026 · 8:30 AM', who: 'System', text: 'Read automatically. Reading confidence 94%. Fails: additional insured endorsement.', kind: 'system' },
+          { when: 'Oct 8, 2026 · 8:22 AM', who: 'Stonebridge Concrete', role: 'Subcontractor', text: 'Uploaded a renewal certificate through the upload link.', kind: 'system' },
+          { when: 'Dec 10, 2025 · 9:40 AM', who: 'Dana Reyes', role: 'Accountant', text: 'Approved the current certificate.', kind: 'decision' }
+        ] },
+      fieldstone: { id: 'REC-203', name: 'Fieldstone Demolition', scope: 'Demolition', project: 'Riverside Commons', status: 'Awaiting', waiting: '', next: null, conf: null, pdf: 'none', w9: true, hold: ['Awaiting certificate'], values: null,
+        facts: [['Current certificate', 'None on file']],
+        noneText: 'Nothing to do yet. This record waits for Fieldstone Demolition to upload a certificate. The system sends reminders, and you are told when a file arrives. The payment hold is released once a certificate is approved.',
+        updated: 'Oct 6, 2026, 7:00 AM', uploadedLine: 'Nothing uploaded yet',
+        timeline: [
+          { when: 'Oct 6, 2026 · 7:00 AM', who: 'System', text: 'Pay-cycle check for the pay date of Oct 15, 2026: on payment hold. Reason: Awaiting certificate.', kind: 'system' },
+          { when: 'Oct 2, 2026 · 9:31 AM', who: 'System', text: 'Upload link sent to Fieldstone Demolition.', kind: 'system' },
+          { when: 'Oct 2, 2026 · 9:30 AM', who: 'Dana Reyes', role: 'Accountant', text: 'Added Fieldstone Demolition to Riverside Commons.', kind: 'decision' }
+        ] }
+    };
+    const o = JSON.parse(JSON.stringify(R[key] || R.ridgeline));
+    o.waived = {};
+    return o;
+  }
+
+  failNames(r) { return this.evaluate(r).filter(l => !l.pass && !l.waived).map(l => l.label.toLowerCase()).join(', '); }
+  applyApprove(r, actor) {
+    r.status = 'Compliant'; r.waiting = ''; r.next = null;
+    if (r.afterApproveFacts) r.facts = r.afterApproveFacts;
+    r.noneText = 'Nothing needs you on this record.';
+    r.confText = 'Above the 85% line. Approved by ' + actor + ', Oct 8.';
+    r.updated = 'Oct 8, 2026, 10:42 AM';
+    const [who, role] = actor.replace(')', '').split(' (');
+    r.timeline.unshift({ when: this.NOW, who, role, text: 'Approved the certificate. ' + r.name + ' was emailed.', kind: 'decision' });
+  }
+  applyReject(r, actor) {
+    const names = this.failNames(r);
+    const [who, role] = actor.replace(')', '').split(' (');
+    r.timeline.unshift({ when: this.NOW, who, role, text: 'Rejected. Correction request sent, listing: ' + names + '.', kind: 'decision' });
+    r.waiting = ''; r.next = null; r.updated = 'Oct 8, 2026, 10:42 AM';
+    if (r.currentStatus) {
+      r.status = r.currentStatus; r.values = r.currentValues || r.values;
+      if (r.afterRejectFacts) r.facts = r.afterRejectFacts;
+      r.period = r.facts[0][1]; r.uploadedLine = 'Current certificate. The rejected renewal was cleared.';
+      r.confText = 'Current certificate, approved earlier. The status follows it.';
+      r.noneText = 'The renewal was rejected and cleared. The current certificate still counts until it expires ' + r.currentExpiry + '. ' + (r.remindersLeft || '');
+      r.timeline.unshift({ when: this.NOW, who: 'System', text: 'Renewal cleared. Status follows the current certificate: ' + r.currentStatus + '.', kind: 'system' });
+    } else {
+      r.status = 'Awaiting';
+      r.noneText = 'Waiting for ' + r.name + ' to upload a corrected certificate.';
+    }
+  }
+  applyW9(r, actor) {
+    const [who, role] = actor.replace(')', '').split(' (');
+    r.w9 = !r.w9;
+    r.timeline.unshift({ when: this.NOW, who, role, text: r.w9 ? 'Marked the W-9 on file.' : 'Marked the W-9 missing.', kind: 'decision' });
+    if (r.w9 && r.hold.indexOf('No W-9 on file') >= 0) {
+      r.hold = r.hold.filter(h => h !== 'No W-9 on file');
+      r.timeline.unshift({ when: this.NOW, who: 'System', text: r.hold.length ? 'Payment hold reason removed: No W-9 on file. Still on hold: ' + r.hold.join('; ') + '.' : 'Payment hold released. No reasons are left.', kind: 'system' });
+    }
+    if (r.next === 'w9' && r.w9) {
+      r.next = null;
+      r.noneText = r.hold.length ? 'Still on payment hold for: ' + r.hold.join('; ') + '. The hold is released once no reasons are left.' : 'Nothing needs you on this record.';
+    }
+    r.updated = 'Oct 8, 2026, 10:42 AM';
+  }
+
+  getRec() {
+    if (this.state.rec) return this.state.rec;
+    const r = this.base(this.props.record ?? 'ridgeline');
+    const v = this.props.view ?? '';
+    if (v === 'approved') this.applyApprove(r, 'Dana Reyes (Accountant)');
+    if (v === 'rejected') this.applyReject(r, 'Marcus Webb (Project manager)');
+    if (v === 'w9-done') this.applyW9(r, 'Dana Reyes (Accountant)');
+    return r;
+  }
+  update(fn, extra) {
+    const r = JSON.parse(JSON.stringify(this.getRec()));
+    fn(r);
+    this.setState(Object.assign({ rec: r }, extra || {}));
+  }
+
+  renderVals() {
+    let view = this.props.view ?? 'loaded';
+    if (view === 'error' && this.state.retried) view = 'loaded';
+    const r = this.getRec();
+    const role = this.state.role ?? this.props.role ?? (r.next === 'decide' ? 'project_manager' : 'accountant');
+    const roleLabel = this.NAMES[role];
+    const actor = this.PEOPLE[role] + ' (' + roleLabel + ')';
+    const isAcc = role === 'accountant', isDecider = role === 'project_manager' || role === 'leadership';
+    const fresh = !this.state.rec;
+    const editing = this.state.editing ?? (r.next === 'correct' || view === 'editing');
+    const edits = this.state.edits ?? ((view === 'editing' || (r.next === 'correct' && fresh)) && r.pdfTrue ? { auto: '$1,000,000' } : {});
+    const noteRefused = this.state.noteRefused ?? (view === 'no-note');
+    const presetSuccess = { approved: 'Approved. The subcontractor has been emailed.', rejected: 'Rejected. The correction request has been sent to the subcontractor.', 'w9-done': 'W-9 marked on file.' };
+    const success = this.state.success ?? (presetSuccess[view] || '');
+    const evald = this.evaluate(r);
+
+    let kind = 'none', title = 'Nothing needs you', refTitle = '', refSub = '', refBtns = [];
+    const refuse = (t, s, btns, stepTitle) => { kind = 'refused'; title = stepTitle; refTitle = t; refSub = s; refBtns = btns.map((b, i) => ({ label: b, primary: i === 0, secondary: i > 0 })); };
+    if (editing && evald.length) {
+      if (isAcc) { kind = 'correct'; title = 'Check each value against the PDF'; }
+      else refuse('Only the accountant can correct a reading.', 'You are viewing as ' + roleLabel + '. Dana Reyes (Accountant) checks the values.', ['Save and check again'], 'Check each value against the PDF');
+    } else if (r.next === 'approve') {
+      if (isAcc) { kind = 'approve'; title = 'Approve this certificate'; }
+      else refuse('Only the accountant can approve a certificate.', 'You are viewing as ' + roleLabel + '. Dana Reyes (Accountant) approves it.', ['Approve', 'Correct a value'], 'Approve this certificate');
+    } else if (r.next === 'resend') {
+      if (isAcc) { kind = 'resend'; title = 'Ask for a readable file'; }
+      else refuse('Only the accountant can send a resend request.', 'You are viewing as ' + roleLabel + '. Dana Reyes (Accountant) sends it.', ['Send "please resend" request'], 'Ask for a readable file');
+    } else if (r.next === 'decide') {
+      if (isDecider) { kind = 'decide'; title = 'Decide on the deficiencies'; }
+      else refuse('Only the project manager or leadership can waive a deficiency.', 'You are viewing as Accountant. Marcus Webb (Project manager) was asked to decide.', ['Waive', 'Reject'], 'Decide on the deficiencies');
+    } else if (r.next === 'w9') {
+      if (isAcc) { kind = 'w9'; title = 'Mark the W-9 when it arrives'; }
+      else refuse('Only the accountant can mark a W-9.', 'You are viewing as ' + roleLabel + '. Dana Reyes (Accountant) marks it.', ['Mark W-9 on file'], 'Mark the W-9 when it arrives');
+    } else {
+      title = r.status === 'Awaiting' && !r.timeline.some(t => t.text.indexOf('Rejected') === 0 || t.text.indexOf('Sent the') === 0) ? 'Nothing to do yet' : 'Nothing needs you';
+    }
+
+    const fails = evald.filter(l => !l.pass && !l.waived);
+    const hints = { limit: 'Leave empty if not shown', name: 'Name as printed on the certificate', cancel: 'Days' };
+    const lines = evald.map(l => {
+      const canEdit = editing && kind === 'correct';
+      const val = edits[l.k];
+      const changed = val !== undefined && val !== l.raw;
+      const money = /^\$/.test(l.found) || /^\$/.test(l.req);
+      return Object.assign({}, l, {
+        font: money ? '--font-mono' : '--font-sans', hasSub: !!l.sub,
+        vEdit: canEdit, vPass: !canEdit && l.pass && !l.waived, vFail: !canEdit && !l.pass && !l.waived, vWaived: !canEdit && l.waived,
+        found: canEdit ? (l.raw || 'Not shown') : l.found,
+        useInput: l.kind !== 'check', useSelect: l.kind === 'check',
+        inputLabel: l.label + ', value on the certificate',
+        inputVal: val !== undefined ? val : l.raw, changed,
+        editHint: hints[l.kind] || '', hasEditHint: !changed && !!hints[l.kind],
+        editNote: changed ? 'Checks again on save' : 'Unchanged',
+        change: e => { const v = e.target.value; this.setState(s => ({ edits: Object.assign({}, s.edits ?? edits, { [l.k]: v }) })); }
+      });
+    });
+
+    const correctionText = 'Your certificate does not meet the project requirements. Please send a corrected certificate.\n' +
+      fails.map(l => '- ' + l.defText).join('\n') + '\nUpload it here: [upload link]';
+    const timeline = r.timeline.map((t, i, a) => Object.assign({}, t, {
+      isDecision: t.kind === 'decision', isCorrection: t.kind === 'correction', isSystem: t.kind === 'system',
+      hasRole: !!t.role, hasChange: !!t.from, hasNote: !!t.note, notLast: i < a.length - 1
+    }));
+    const hasW9Hold = r.hold.indexOf('No W-9 on file') >= 0;
+    const otherHolds = r.hold.filter(h => h !== 'No W-9 on file');
+
+    const S = (w, h, x) => this.skel(w, h, x);
+    const skLine = i => React.createElement('div', { key: i, className: 'rd-line rd-skel', style: { display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 112px', gap: 12, alignItems: 'center', padding: '14px 0', borderBottom: i < 7 ? '1px solid var(--c-border)' : 'none' } },
+      S('70%', 13, { key: 'a' }), S('60%', 12, { key: 'b' }), S('55%', 12, { key: 'c' }), S(64, 22, { key: 'd' }));
+
+    return {
+      role, roleLabel, actor,
+      setRole: k => this.setState({ role: k, noteRefused: false }),
+      onNav: this.props.onNav,
+      onBack: () => { if (this.props.onBack) this.props.onBack(); },
+      retry: () => this.setState({ retried: true }),
+      projectName: r.project,
+      isLoading: view === 'loading', isError: view === 'error', isLoaded: view !== 'loading' && view !== 'error',
+      rec: r, facts: (r.facts || []).map(([label, value]) => ({ label, value })),
+      hasWaiting: !!r.waiting, onHold: r.hold.length > 0, holdReasons: r.hold.join('; '),
+      hasSuccess: !!success, success,
+      pdf: (r.pdf === 'ok' ? this.pdfFor(r) : null) || { lines: [] }, hasFile: r.pdf !== 'none',
+      pdfOk: r.pdf === 'ok' && view !== 'pdf-error', pdfUnreadable: r.pdf === 'unreadable', pdfNone: r.pdf === 'none', pdfError: r.pdf === 'ok' && view === 'pdf-error',
+      panelTitle: title,
+      pApprove: kind === 'approve', pCorrect: kind === 'correct', pResend: kind === 'resend', pDecide: kind === 'decide', pW9: kind === 'w9', pNone: kind === 'none', pRefused: kind === 'refused',
+      refTitle, refSub, refBtns, noneText: r.noneText || 'Nothing needs you on this record.',
+      correctText: r.conf != null && r.conf < 85
+        ? 'Reading confidence is below 85%, so a person checks every value. Compare each value with the PDF, change any that are wrong, then save. The check runs again.'
+        : 'Change any value that does not match the PDF, then save. The check runs again before anything is approved.',
+      canCancelEdit: r.next !== 'correct',
+      draft: r.draft || {}, correctionText,
+      deficiencies: fails.map(l => ({ defText: l.defText, hasSub: !!l.sub, sub: l.sub })),
+      note: this.state.note, setNote: e => this.setState({ note: e.target.value, noteRefused: false }),
+      noteRefused: kind === 'decide' && noteRefused,
+      confAbove: r.conf != null && r.conf >= 85, confBelow: r.conf != null && r.conf < 85, confNA: !!r.unreadable,
+      sumFails: fails.length > 0, failList: fails.map(l => l.label.toLowerCase()).join(', '),
+      sumPass: evald.length > 0 && fails.length === 0 && !evald.some(l => l.waived),
+      sumWaived: evald.some(l => l.waived) && fails.length === 0,
+      lines, hasLines: evald.length > 0, noLines: evald.length === 0,
+      noLinesTitle: r.unreadable ? 'No values could be read from this file.' : 'No certificate yet.',
+      noLinesText: r.unreadable ? 'Nothing was checked. Ask for a readable file, or open the original file and enter the values yourself.' : 'Each value appears here, against the requirement, after the subcontractor uploads and the file is read.',
+      showW9Card: r.status !== 'Closed',
+      w9Text: r.w9 ? 'On file.' : (hasW9Hold ? 'Not on file. This holds payment.' : 'Not on file. Whether this holds payment is decided at the next pay-cycle check.'),
+      w9Btn: r.w9 ? 'Mark W-9 missing' : 'Mark W-9 on file',
+      w9CanToggle: isAcc && kind !== 'w9', w9Refused: !isAcc,
+      w9Para: otherHolds.length
+        ? r.name + ' is on payment hold for: ' + r.hold.join('; ') + '. Marking the W-9 on file removes only that reason; the hold stays until no reasons are left.'
+        : 'The certificate is compliant, but no W-9 is on file, so ' + r.name + ' is on payment hold. When the W-9 arrives, mark it here. The hold is released once no reasons are left.',
+      timeline,
+      startEdit: () => this.setState({ editing: true, edits: {} }),
+      cancelEdit: () => this.setState({ editing: false, edits: {} }),
+      approve: () => this.update(x => this.applyApprove(x, actor), { success: 'Approved. The subcontractor has been emailed.' }),
+      save: () => this.update(x => {
+        const before = this.evaluate(x), changes = [];
+        before.forEach(l => {
+          const v = edits[l.k];
+          if (v === undefined || v === l.raw) return;
+          let nv, shown;
+          if (l.kind === 'limit') { nv = this.num(v); shown = nv == null ? 'Not shown' : this.usd(nv); }
+          else if (l.kind === 'cancel') { nv = this.num(v); shown = nv == null ? 'Not shown' : nv + ' days'; }
+          else if (l.kind === 'check') { nv = v === 'Printed'; shown = v; }
+          else { nv = v.trim(); shown = nv; }
+          x.values[l.k === 'insured' ? 'insuredName' : l.k] = nv;
+          changes.push({ when: this.NOW, who: this.PEOPLE[role], role: roleLabel, text: 'Corrected ' + l.label.toLowerCase() + '.', from: l.raw || 'Not shown', to: shown, kind: 'correction' });
+        });
+        const after = this.evaluate(x), bad = after.filter(l => !l.pass);
+        x.waiting = bad.length ? 'Waiting for a decision on a deficiency' : 'Waiting for approval';
+        x.next = bad.length ? 'decide' : 'approve';
+        if (!x.currentStatus) x.status = 'In review';
+        x.confText = 'Values confirmed by ' + actor + ' against the PDF.';
+        x.updated = 'Oct 8, 2026, 10:41 AM';
+        x.timeline = [{ when: this.NOW, who: 'System', text: bad.length ? 'Checked again. Fails: ' + bad.map(l => l.label.toLowerCase()).join(', ') + '.' : 'Checked again. Every line passes. Waiting for approval.', kind: 'system' }].concat(changes.reverse(), x.timeline);
+      }, { editing: false, edits: {}, success: 'Correction saved and the check run again.' }),
+      resend: () => this.update(x => {
+        x.waiting = ''; x.next = null; x.status = x.currentStatus || 'Awaiting';
+        x.noneText = 'Waiting for ' + x.name + ' to upload a new file.';
+        x.timeline.unshift({ when: this.NOW, who: this.PEOPLE[role], role: roleLabel, text: 'Sent the "please resend" request to ' + x.name + '.', kind: 'decision' });
+      }, { success: 'Resend request sent.' }),
+      waive: () => {
+        if (!this.state.note.trim()) { this.setState({ noteRefused: true }); return; }
+        const note = this.state.note.trim();
+        this.update(x => {
+          const names = this.failNames(x);
+          this.evaluate(x).forEach(l => { if (!l.pass) x.waived[l.k] = 'Waived by ' + actor + ', Oct 8: "' + note + '"'; });
+          x.status = 'Compliant'; x.waiting = ''; x.next = null;
+          x.noneText = 'Nothing needs you on this record. The waiver and its note are in the timeline.';
+          x.timeline.unshift({ when: this.NOW, who: this.PEOPLE[role], role: roleLabel, text: 'Waived the deficiencies: ' + names + '.', note, kind: 'decision' });
+        }, { success: 'Waived. The subcontractor has been emailed that the certificate is approved.', noteRefused: false });
+      },
+      reject: () => this.update(x => this.applyReject(x, actor), { success: 'Rejected. The correction request has been sent to the subcontractor.' }),
+      toggleW9: () => { const wasOn = this.getRec().w9; this.update(x => this.applyW9(x, actor), { success: wasOn ? 'W-9 marked missing.' : 'W-9 marked on file.' }); },
+      skHead: [S(240, 12, { key: 1 }), S(360, 28, { key: 2 }), S(280, 24, { key: 3, borderRadius: 'var(--radius-pill)' })],
+      skPdfHead: [S(140, 14, { key: 1 }), S(260, 10, { key: 2 })],
+      skAction: [S(160, 10, { key: 1 }), S(280, 22, { key: 2 }), S('90%', 14, { key: 3 }), S(220, 40, { key: 4, borderRadius: 'var(--radius-md)' })],
+      skLines: [0, 1, 2, 3, 4, 5, 6, 7].map(skLine)
+    };
+  }
+}
+</script>
+</body>
+</html>

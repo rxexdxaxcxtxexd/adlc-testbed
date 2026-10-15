@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="./tokens.css">
+<style>body{margin:0;background:#E4E2DC;font-family:var(--font-sans);color:var(--c-ink)}a{color:var(--c-blue-fg)}a:hover{color:var(--c-primary-hover)}.dv-turn{padding:48px 56px 40px;border-bottom:1px solid rgba(0,0,0,.1);scroll-margin-top:16px}.dv-thd{display:flex;align-items:baseline;gap:12px;margin:0 0 24px}.dv-tid{font:600 11px var(--font-mono);padding:3px 8px;background:#1B1F24;color:#fff;border-radius:4px;text-decoration:none}.dv-tname{font:700 22px/1.2 var(--font-sans);color:#1B1F24}.dv-tsub{font:400 14px/1.4 var(--font-sans);color:#5F656D}.dv-opts{display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start}.dv-opt{flex:none;display:flex;flex-direction:column;gap:10px;scroll-margin-top:16px}.dv-oid{font:600 11px var(--font-mono);padding:3px 7px;background:rgba(0,0,0,.1);color:#1B1F24;border-radius:5px;text-decoration:none}.dv-olabel{display:flex;align-items:baseline;gap:8px;font:500 14px/1.3 var(--font-sans);color:#1B1F24}.dv-olabel span{color:#5F656D;font-weight:400}.dv-card{max-width:100%;background:var(--c-canvas);border:1px solid rgba(0,0,0,.12);border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden}.dv-opt:target .dv-oid{background:#2563C9;color:#fff}.dv-next{margin:28px 0 0;font:13px/1.5 var(--font-sans);color:#5F656D}</style>
+</helmet>
+
+<section class="dv-turn" id="b0" style="padding-bottom: 48px;">
+  <div style="max-width: 1440px; display: flex; flex-direction: column; gap: 28px;">
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted); letter-spacing: var(--tracking-caps); text-transform: uppercase;">Round 2 · Batch B of 3 · Brief §11 item 3</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border: 1px dashed var(--c-ink-muted); border-radius: var(--radius-sm); font-size: var(--text-xs); font-weight: 600; color: var(--c-ink); background: var(--c-surface);"><svg width="10" height="10" viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" transform="rotate(45 5 5)" fill="currentColor"></rect></svg>Sample data</span>
+      </div>
+      <h1 style="margin: 0; font-size: var(--text-2xl); line-height: var(--lh-2xl); font-weight: 700; letter-spacing: -0.01em;">Project tiles, compliance dashboard, payment hold list, return on investment</h1>
+      <p style="margin: 0; max-width: 860px; color: var(--c-ink-muted); text-wrap: pretty;">Same chrome, tokens and components as Batch A, plus section 03 of the component sheet. All four screens use one set of sample data, so the totals agree. Maple Court is At risk with 1 expired and $6,250 on hold, as in step 1 of the §10 walkthrough. Every frame is live: you can pick a dashboard number, switch the hold list's project, and switch roles.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 20px 22px; display: flex; flex-direction: column; gap: 12px;">
+        <h2 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 700;">Checked against §3, §5, §7</h2>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+          <li><strong>Sample data</strong> is in the header of every frame and beside every figure: each tile, metric card, table footer and ROI section.</li>
+          <li><strong>Demo only</strong> switcher in every header.</li>
+          <li><strong>Words beside color:</strong> every tile carries its word and shape (diamond, triangle, circle), and the legend repeats the rules. Status pills and hold reasons are words. Red appears only on At risk, Expired and the expired count.</li>
+          <li><strong>Numbers:</strong> only the six §7 dashboard numbers, per project and rolled up, plus the five ROI lines (low, likely, high). Also shown are each held subcontractor's amount billed this cycle (a §6.5 row field), the pay date, and the ROI inputs, which must be visible, with the twelve placeholders marked as such. No charts, trends or percentages beyond the catch-rate input.</li>
+          <li><strong>Vocabulary:</strong> On track, Watch and At risk; the five hold reasons; "Compliant X of Y expected"; the §6.5 empty sentence word for word. No model names: the reading-cost source is called "research note C4", not its file name.</li>
+        </ul>
+      </div>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 20px 22px; display: flex; flex-direction: column; gap: 12px;">
+        <h2 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 700;">Batch B review: what changed</h2>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+          <li><strong>No refused state on read-only screens.</strong> I removed the "no current pay cycle" state from the tiles, the dashboard and the hold list. Tile colors come from the hold flag stored on each record, so Riverside stays At risk. These screens now have loaded, loading, empty and error.</li>
+          <li><strong>Hold list covers one project</strong>, with the worklist's project picker. It opens on the project you came from: Maple Court in the walkthrough. The total, pay date and source cover that project only, and the rows stay largest amount first.</li>
+          <li><strong>Second empty state for the hold list</strong>, with the code's sentence: "No pay date from today on has a pay application. Nothing to hold." (<a class="dv-oid" href="#5d">5d</a>)</li>
+          <li><strong>ROI placeholders:</strong> the twelve made-up inputs now read "estimate: placeholder, set in the ROI ticket". A line above the inputs table says which three are sourced.</li>
+          <li><strong>"By project" table cut</strong> from the dashboard and moved to the proposals list.</li>
+          <li><strong>Component sheet:</strong> the "Not shown" message (ROI only), selected metric card, hold summary band, tile color legend and the ROI line and input rows are now in section 03 of <span style="font-family: var(--font-mono);">Components.dc.html</span>.</li>
+          <li><strong>Batch A:</strong> after a rejected renewal, the message names only the reminders still to come. Stonebridge (<span style="font-family: var(--font-mono);">4n</span>) now reads "The system sends a 30-day reminder on Nov 15 and a 7-day follow-up on Dec 8." Summit would read "The system sends a 7-day follow-up on Oct 24."</li>
+        </ul>
+      </div>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 20px 22px; display: flex; flex-direction: column; gap: 12px;">
+        <h2 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 700;">Components</h2>
+        <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm);">No new components or tokens in this round. Everything on these screens is in <span style="font-family: var(--font-mono);">Components.dc.html</span>, sections 02 and 03.</p>
+        <h3 style="margin: 4px 0 0; font-size: var(--text-sm); font-weight: 700;">Held for the proposals list (item 6)</h3>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+          <li>A "Why At risk" line on each tile. Words only, but it changes the approved tile component.</li>
+          <li>Payback period on the ROI page. It is not defined in §7.</li>
+          <li>Dollars on hold compared with last cycle. That is a trend, which §12 rules out.</li>
+          <li>A "By project" table on the dashboard. The tiles already show each project's numbers.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="dv-turn" id="b1">
+  <div class="dv-thd"><a class="dv-tid" href="#b1">6.1</a><span class="dv-tname">Project tiles</span><span class="dv-tsub">Leadership home: which project needs my attention?</span></div>
+  <div class="dv-opts">
+    <div class="dv-opt" id="1a"><div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Loaded<span>· Leadership · 4 projects, At risk first</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="Tiles" role="leadership" state="loaded" hint-size="1440px,900px"></dc-import></div></div>
+    <div class="dv-opt" id="1c"><div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Empty<span>· no active projects</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="Tiles" role="leadership" state="empty" hint-size="1440px,600px"></dc-import></div></div>
+    <div class="dv-opt" id="1d"><div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>Loading</div><div class="dv-card" style="width: 1440px;"><dc-import name="Tiles" role="leadership" state="loading" hint-size="1440px,700px"></dc-import></div></div>
+    <div class="dv-opt" id="1e"><div class="dv-olabel"><a class="dv-oid" href="#1e">1e</a>Error</div><div class="dv-card" style="width: 1440px;"><dc-import name="Tiles" role="leadership" state="error" hint-size="1440px,500px"></dc-import></div></div>
+  </div>
+</section>
+
+<section class="dv-turn" id="b2">
+  <div class="dv-thd"><a class="dv-tid" href="#b2">6.2</a><span class="dv-tname">Compliance dashboard</span><span class="dv-tsub">Are we covered across the whole portfolio? Each number leads to its records; the tiles carry the per-project numbers.</span></div>
+  <div class="dv-opts">
+    <div class="dv-opt" id="2a"><div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Loaded<span>· Expiring within 30 days selected · click any card</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="Dashboard" role="leadership" state="loaded" hint-size="1440px,1300px"></dc-import></div></div>
+    <div class="dv-opt" id="2c"><div class="dv-olabel"><a class="dv-oid" href="#2c">2c</a>Empty</div><div class="dv-card" style="width: 1440px;"><dc-import name="Dashboard" role="leadership" state="empty" hint-size="1440px,600px"></dc-import></div></div>
+    <div class="dv-opt" id="2d"><div class="dv-olabel"><a class="dv-oid" href="#2d">2d</a>Loading</div><div class="dv-card" style="width: 1440px;"><dc-import name="Dashboard" role="leadership" state="loading" hint-size="1440px,800px"></dc-import></div></div>
+    <div class="dv-opt" id="2e"><div class="dv-olabel"><a class="dv-oid" href="#2e">2e</a>Error</div><div class="dv-card" style="width: 1440px;"><dc-import name="Dashboard" role="leadership" state="error" hint-size="1440px,500px"></dc-import></div></div>
+  </div>
+</section>
+
+<section class="dv-turn" id="b3">
+  <div class="dv-thd"><a class="dv-tid" href="#b3">6.5</a><span class="dv-tname">Payment hold list</span><span class="dv-tsub">Who must I not pay this cycle, and why? One project at a time; read-only for every role.</span></div>
+  <div class="dv-opts">
+    <div class="dv-opt" id="5a"><div class="dv-olabel"><a class="dv-oid" href="#5a">5a</a>Loaded<span>· Leadership · opens on Maple Court, the project she came from ($6,250)</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="HoldList" role="leadership" state="loaded" project="maple" hint-size="1440px,800px"></dc-import></div></div>
+    <div class="dv-opt" id="5b"><div class="dv-olabel"><a class="dv-oid" href="#5b">5b</a>Loaded<span>· Accountant · Riverside Commons ($21,950), largest amount first</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="HoldList" role="accountant" state="loaded" project="riverside" hint-size="1440px,800px"></dc-import></div></div>
+    <div class="dv-opt" id="5c"><div class="dv-olabel"><a class="dv-oid" href="#5c">5c</a>Empty: no one held<span>· Oak Hollow Clinic · the §6.5 sentence</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="HoldList" role="leadership" state="empty" project="oak" hint-size="1440px,700px"></dc-import></div></div>
+    <div class="dv-opt" id="5d"><div class="dv-olabel"><a class="dv-oid" href="#5d">5d</a>Empty: no current pay cycle<span>· the code's sentence, word for word</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="HoldList" role="leadership" state="no-cycle" project="maple" hint-size="1440px,600px"></dc-import></div></div>
+    <div class="dv-opt" id="5e"><div class="dv-olabel"><a class="dv-oid" href="#5e">5e</a>Loading</div><div class="dv-card" style="width: 1440px;"><dc-import name="HoldList" role="leadership" state="loading" hint-size="1440px,600px"></dc-import></div></div>
+    <div class="dv-opt" id="5f"><div class="dv-olabel"><a class="dv-oid" href="#5f">5f</a>Error<span>· says plainly not to read it as "no one on hold"</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="HoldList" role="leadership" state="error" hint-size="1440px,500px"></dc-import></div></div>
+  </div>
+</section>
+
+<section class="dv-turn" id="b4">
+  <div class="dv-thd"><a class="dv-tid" href="#b4">6.6</a><span class="dv-tname">Return on investment</span><span class="dv-tsub">For the CFO: likely net value first, low and high beside it, the floor called out, every input with its basis</span></div>
+  <div class="dv-opts">
+    <div class="dv-opt" id="6a"><div class="dv-olabel"><a class="dv-oid" href="#6a">6a</a>Loaded<span>· Leadership</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="ROI" role="leadership" state="loaded" hint-size="1440px,1700px"></dc-import></div></div>
+    <div class="dv-opt" id="6b"><div class="dv-olabel"><a class="dv-oid" href="#6b">6b</a>Refused: an input lacks a basis<span>· lapse risk and net value say "Not shown" and name the input</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="ROI" role="leadership" state="refused" hint-size="1440px,1700px"></dc-import></div></div>
+    <div class="dv-opt" id="6c"><div class="dv-olabel"><a class="dv-oid" href="#6c">6c</a>Empty<span>· only the three sourced inputs exist</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="ROI" role="leadership" state="empty" hint-size="1440px,1700px"></dc-import></div></div>
+    <div class="dv-opt" id="6d"><div class="dv-olabel"><a class="dv-oid" href="#6d">6d</a>Loading</div><div class="dv-card" style="width: 1440px;"><dc-import name="ROI" role="leadership" state="loading" hint-size="1440px,700px"></dc-import></div></div>
+    <div class="dv-opt" id="6e"><div class="dv-olabel"><a class="dv-oid" href="#6e">6e</a>Error</div><div class="dv-card" style="width: 1440px;"><dc-import name="ROI" role="leadership" state="error" hint-size="1440px,500px"></dc-import></div></div>
+  </div>
+  <p class="dv-next">Next is Batch C: the upload page and one internal screen at 375 wide, the clickable §10 walkthrough, the field notes and the proposals list.</p>
+</section>
+</x-dc>
+</body>
+</html>

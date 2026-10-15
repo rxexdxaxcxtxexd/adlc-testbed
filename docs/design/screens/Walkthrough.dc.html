@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="./tokens.css">
+<style>body{margin:0;background:var(--c-canvas);color:var(--c-ink);font-family:var(--font-sans);font-size:var(--text-base);line-height:var(--lh-base);-webkit-font-smoothing:antialiased}a{color:var(--c-blue-fg)}a:hover{color:var(--c-primary-hover)}*:focus-visible{outline:none;box-shadow:var(--shadow-focus)}</style>
+</helmet>
+<div style="min-height: 100vh; background: var(--c-canvas); font-family: var(--font-sans); color: var(--c-ink); display: flex; flex-direction: column;">
+  <div onClickCapture="{{ screenClick }}" style="flex: 1; padding-bottom: 24px;">
+    <sc-if value="{{ sTiles }}" hint-placeholder-val="{{ true }}"><dc-import name="Tiles" key="{{ navKey }}" role="{{ role }}" state="loaded" on-nav="{{ onNav }}" on-open-project="{{ openProject }}" hint-size="100%,900px"></dc-import></sc-if>
+    <sc-if value="{{ sHold }}" hint-placeholder-val="{{ false }}"><dc-import name="HoldList" key="{{ navKey }}" role="{{ role }}" state="loaded" project="{{ project }}" on-nav="{{ onNav }}" on-open="{{ openRecord }}" hint-size="100%,800px"></dc-import></sc-if>
+    <sc-if value="{{ sWorklist }}" hint-placeholder-val="{{ false }}"><dc-import name="Worklist" key="{{ navKey }}" role="{{ role }}" state="loaded" project="{{ project }}" on-nav="{{ onNav }}" on-open="{{ openRecord }}" hint-size="100%,2700px"></dc-import></sc-if>
+    <sc-if value="{{ sRecord }}" hint-placeholder-val="{{ false }}"><dc-import name="RecordDetail" key="{{ navKey }}" role="{{ role }}" record="{{ record }}" view="loaded" on-nav="{{ onNav }}" on-back="{{ back }}" hint-size="100%,1600px"></dc-import></sc-if>
+    <sc-if value="{{ sDashboard }}" hint-placeholder-val="{{ false }}"><dc-import name="Dashboard" key="{{ navKey }}" role="{{ role }}" state="loaded" on-nav="{{ onNav }}" on-open="{{ openRecord }}" hint-size="100%,1300px"></dc-import></sc-if>
+    <sc-if value="{{ sRoi }}" hint-placeholder-val="{{ false }}"><dc-import name="ROI" key="{{ navKey }}" role="{{ role }}" state="loaded" on-nav="{{ onNav }}" hint-size="100%,1700px"></dc-import></sc-if>
+  </div>
+
+  <aside aria-label="Demo only: walkthrough" style="position: sticky; bottom: 16px; z-index: 20; margin: 0 auto 16px; width: calc(100% - 32px); max-width: 1100px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border: 1.5px dashed var(--c-border-strong); border-radius: var(--radius-lg); background: var(--c-sunken); box-shadow: var(--shadow-md);">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px 20px; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap;">
+        <span style="display: flex; flex-direction: column; line-height: 1.1;">
+          <span style="font-size: 11px; font-weight: 700; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink);">Demo only</span>
+          <span style="font-size: var(--text-xs); color: var(--c-ink-muted);">Walkthrough · one morning</span>
+        </span>
+        <div role="tablist" aria-label="Steps" style="display: flex; gap: 2px; flex-wrap: wrap;">
+          <sc-for list="{{ steps }}" as="s" hint-placeholder-count="6">
+            <sc-if value="{{ s.on }}" hint-placeholder-val="{{ false }}"><button role="tab" aria-selected="true" onClick="{{ s.pick }}" style="height: 32px; min-width: 32px; padding: 0 10px; border: 1px solid var(--c-ink); border-radius: var(--radius-sm); background: var(--c-surface); color: var(--c-ink); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer; box-shadow: var(--shadow-sm); white-space: nowrap;">{{ s.label }}</button></sc-if>
+            <sc-if value="{{ s.off }}" hint-placeholder-val="{{ true }}"><button role="tab" aria-selected="false" onClick="{{ s.pick }}" style="height: 32px; min-width: 32px; padding: 0 10px; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--c-ink-muted); font: inherit; font-size: var(--text-sm); font-weight: 500; cursor: pointer; white-space: nowrap;" style-hover="color: var(--c-ink); background: var(--c-surface);">{{ s.label }}</button></sc-if>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button onClick="{{ prev }}" disabled="{{ atStart }}" style="height: var(--control-md); padding: 0 16px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink); font: inherit; font-weight: 600; cursor: pointer;" style-hover="border-color: var(--c-ink);">Back</button>
+        <button onClick="{{ next }}" style="height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-primary); border-radius: var(--radius-md); background: var(--c-primary); color: var(--c-on-solid); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-primary-hover);">{{ nextLabel }}</button>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">Step {{ stepNo }} of 6 · <strong style="color: var(--c-ink);">{{ who }}</strong> · {{ where }}</span>
+      <span style="text-wrap: pretty;">{{ text }}</span>
+      <sc-if value="{{ offPath }}" hint-placeholder-val="{{ false }}"><span role="status" style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">Off the walkthrough. Press "{{ nextLabel }}" or a step number to return.</span></sc-if>
+      <sc-if value="{{ hasNote }}" hint-placeholder-val="{{ false }}"><span role="status" style="font-size: var(--text-sm); line-height: var(--lh-sm); font-weight: 600;">{{ note }}</span></sc-if>
+    </div>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1000}}">
+class Component extends DCLogic {
+  state = { step: 0, view: null, nav: 0, note: '' };
+  KNOWN = { ridgeline: 'maple', brightway: 'maple', summit: 'maple', granite: 'maple', birchwood: 'maple', lakeshore: 'cedar', stonebridge: 'cedar', fieldstone: 'riverside' };
+  STEPS = [
+    { who: 'Elena Park (Leadership)', where: 'Projects', screen: 'tiles', role: 'leadership',
+      text: 'Maple Court Residences is At risk: 1 expired, $6,250 on hold. She presses "Payment hold list →" to see who is held.' },
+    { who: 'Elena Park (Leadership)', where: 'Payment hold list, Maple Court Residences', screen: 'hold', role: 'leadership', project: 'maple',
+      text: 'Who must not be paid on Oct 15, 2026, and why: Birchwood Earthworks Inc. (Policy expired; No W-9 on file) and Granite Ridge Masonry (No W-9 on file).' },
+    { who: 'Dana Reyes (Accountant)', where: 'Worklist, Maple Court Residences', screen: 'worklist', role: 'accountant', project: 'maple',
+      text: 'Two rows need her: Brightway Electric is waiting for approval and Summit Mechanical needs review. She opens Brightway Electric.' },
+    { who: 'Dana Reyes (Accountant)', where: 'Brightway Electric', screen: 'record', role: 'accountant', record: 'brightway',
+      text: 'She checks the PDF beside the values. Every line passes, so she presses Approve. Her name goes on the decision.' },
+    { who: 'Marcus Webb (Project manager)', where: 'Ridgeline Roofing LLC', screen: 'record', role: 'project_manager', record: 'ridgeline',
+      text: 'Umbrella: $1,000,000 shown, $2,000,000 required. He opens "What Reject sends", then presses Reject. The correction request goes to Ridgeline Roofing LLC.' },
+    { who: 'The CFO (viewing as Leadership)', where: 'Return on investment', screen: 'roi', role: 'leadership',
+      text: 'The likely net value per year, low and high beside it, the floor called out, and every input with its basis.' }
+  ];
+  viewOf(i) { const s = this.STEPS[i]; return { screen: s.screen, role: s.role, project: s.project, record: s.record }; }
+  same(a, b) { return a.screen === b.screen && (a.record || '') === (b.record || '') && (a.screen !== 'hold' && a.screen !== 'worklist' || a.project === b.project); }
+  top() { if (typeof window !== 'undefined') window.scrollTo(0, 0); }
+  go(v) {
+    const step = this.state.step;
+    const advance = step < 5 && this.same(v, this.viewOf(step + 1));
+    const nextStep = advance ? step + 1 : step;
+    const view = advance ? Object.assign({}, v, { role: this.STEPS[nextStep].role }) : v;
+    clearTimeout(this.t);
+    this.setState(s => ({ view, step: nextStep, nav: s.nav + 1, note: '' }));
+    this.top();
+  }
+  componentWillUnmount() { clearTimeout(this.t); }
+  onScreenClick(e) {
+    const b = e.target && e.target.closest ? e.target.closest('button') : null;
+    if (!b || b.disabled) return;
+    const label = b.textContent.trim(), step = this.state.step, v = this.current();
+    const hit = (step === 3 && label === 'Approve' && v.record === 'brightway') || (step === 4 && label === 'Reject' && v.record === 'ridgeline');
+    if (!hit) return;
+    clearTimeout(this.t);
+    this.setState({ note: 'Done. Moving to step ' + (step + 2) + ' in a moment.' });
+    this.t = setTimeout(() => this.jump(step + 1), 1800);
+  }
+  jump(i) { clearTimeout(this.t); this.setState(s => ({ step: i, view: null, nav: s.nav + 1, note: '' })); this.top(); }
+  current() { return this.state.view ?? this.viewOf(this.state.step); }
+  renderVals() {
+    const step = this.state.step, s = this.STEPS[step], v = this.current();
+    const offPath = !this.same(v, this.viewOf(step));
+    const say = note => this.setState({ note });
+    return {
+      navKey: 'n' + this.state.nav,
+      screenClick: e => this.onScreenClick(e),
+      role: v.role, project: v.project || 'maple', record: v.record || 'brightway',
+      sTiles: v.screen === 'tiles', sHold: v.screen === 'hold', sWorklist: v.screen === 'worklist',
+      sRecord: v.screen === 'record', sDashboard: v.screen === 'dashboard', sRoi: v.screen === 'roi',
+      onNav: k => {
+        const map = { projects: 'tiles', dashboard: 'dashboard', worklist: 'worklist', hold: 'hold', roi: 'roi' };
+        const p = this.KNOWN[v.record] || v.project || 'maple';
+        this.go({ screen: map[k] || 'tiles', role: v.role, project: (k === 'worklist' && p !== 'oak') ? 'maple' : p });
+      },
+      openProject: key => {
+        if (key === 'maple' || key === 'oak') this.go({ screen: 'worklist', role: v.role, project: key });
+        else say('This prototype has worklist rows for Maple Court Residences and Oak Hollow Clinic only.');
+      },
+      openRecord: (rec, r) => {
+        if (this.KNOWN[rec]) this.go({ screen: 'record', role: r || v.role, record: rec });
+        else say('This record has no detail page in the sample data. Open one of the records named in the walkthrough.');
+      },
+      back: () => {
+        const p = this.KNOWN[v.record];
+        if (p === 'maple') this.go({ screen: 'worklist', role: v.role, project: 'maple' });
+        else say('The worklist sample covers Maple Court Residences only.');
+      },
+      steps: this.STEPS.map((x, i) => ({ label: String(i + 1), on: i === step, off: i !== step, pick: () => this.jump(i) })),
+      stepNo: step + 1, who: s.who, where: s.where, text: s.text, offPath,
+      note: this.state.note, hasNote: !!this.state.note,
+      atStart: step === 0 && !offPath,
+      nextLabel: offPath ? 'Back to step ' + (step + 1) : (step === 5 ? 'Start again' : 'Next: step ' + (step + 2)),
+      prev: () => offPath ? this.jump(step) : (step > 0 ? this.jump(step - 1) : null),
+      next: () => offPath ? this.jump(step) : this.jump(step === 5 ? 0 : step + 1)
+    };
+  }
+}
+</script>
+</body>
+</html>

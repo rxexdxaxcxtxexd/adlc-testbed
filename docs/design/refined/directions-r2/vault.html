@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vault · Certificate compliance · Sample data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base-r2.css">
+<style>
+button,input,textarea,select{font:inherit}
+a{color:inherit}
+button{gap:.5em}.result,.status{gap:.45em}
+
+/* These component rules are copied into each study. The shared CSS has anatomy only. */
+body{background:var(--canvas);color:var(--ink);font:14px/1.55 var(--body-font);font-variant-numeric:tabular-nums}
+button,input,select,textarea{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--focus);outline-offset:4px}
+.chrome{background:var(--chrome);gap:var(--chrome-gap);padding:var(--chrome-pad)}
+.brand{gap:12px}.brand>.icon{width:24px;height:24px}.brand strong{display:block;font-size:14px;font-weight:600}.brand span{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.navigation{gap:4px}.navigation a{display:flex;align-items:center;min-height:44px;padding:8px 12px;text-decoration:none;font-size:12px;color:var(--muted)}
+.navigation a:hover{color:var(--ink);background:var(--hover)}.navigation a[aria-current]{color:var(--ink);font-weight:600}
+.demo{gap:12px;font-size:11px}.demo label{gap:8px;flex-wrap:wrap}.demo-label{font:600 10px/1.5 var(--mono-font);text-transform:uppercase;letter-spacing:.08em}
+.demo select{max-width:100%;min-height:44px;background:var(--surface);color:var(--ink);border:1px solid var(--edge);border-radius:var(--control-radius);padding:7px 28px 7px 10px;font-size:12px}
+.page{padding:var(--page-pad)}.back{display:inline-flex;align-items:center;gap:6px;min-height:44px;text-decoration:none;font-size:12px;color:var(--muted);margin-bottom:var(--back-gap)}
+.back:hover{color:var(--ink);text-decoration:underline;text-underline-offset:4px}
+.record-head{margin-bottom:var(--section-gap)}.header-top{gap:12px}.eyebrow{color:var(--muted);font:500 var(--label-size)/1.5 var(--label-font);letter-spacing:var(--label-tracking)}.record-id{font-family:var(--mono-font)}
+.sample{font-size:11px;color:var(--muted)}
+h1{font:var(--title-weight) var(--title-size)/1.08 var(--display-font);letter-spacing:var(--title-tracking);margin:var(--title-gap) 0 8px;overflow-wrap:anywhere}
+.project-name{color:var(--muted);font-size:14px}.head-state{align-items:center;gap:14px;margin-top:var(--state-gap)}.waiting{font-size:13px}
+.status{padding:var(--status-pad);border-radius:var(--status-radius);color:var(--tone);background:var(--tint);font-size:12px;font-weight:600}
+.facts{gap:var(--fact-gap);margin-top:var(--facts-top);padding-top:var(--facts-pad)}.facts dt{color:var(--muted);font-size:11px}.facts dd{font-size:12px;margin-top:3px}
+.trust{gap:4px 16px;color:var(--muted);font-size:10px;margin-top:var(--trust-gap);line-height:1.6}
+.layout{gap:var(--layout-gap)}.pane{padding:var(--pane-pad)}.pane-head{gap:12px;margin-bottom:var(--head-gap);flex-wrap:wrap}
+.pane h2{font:var(--heading-weight) var(--heading-size)/1.25 var(--heading-font);letter-spacing:var(--heading-tracking)}
+.fine{color:var(--muted);font-size:11px;line-height:1.6}.text-link{color:var(--muted);font-size:11px;text-underline-offset:4px}.text-link:hover{color:var(--ink)}
+.pdf-pages{gap:16px;margin-top:var(--pdf-gap)}.pdf-page{background:#f8f3e8;/* warm document paper */}.pdf-loading{min-height:420px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.step h2{font:var(--step-weight) var(--step-size)/1.15 var(--heading-font);letter-spacing:var(--step-tracking);margin-bottom:var(--step-gap)}
+.step-body>p{margin-bottom:var(--body-gap)}.deficiencies{margin:var(--def-gap) 0}.deficiencies li{gap:9px;padding:var(--def-pad) 0}.failure-mark,.failure-word{color:var(--tone)}
+.field-label{font-size:12px;margin:14px 0 7px;font-weight:600}.field-label span{font-weight:400;color:var(--muted)}
+.field{padding:10px 12px;color:var(--ink);background:var(--field-bg);border:1px solid var(--edge);border-radius:var(--control-radius);min-height:44px;resize:vertical}
+.field::placeholder{color:var(--muted);opacity:1}.field:hover{border-color:var(--ink)}
+.actions{gap:10px;margin:var(--action-gap) 0}
+.button{min-height:44px;padding:10px 18px;background:var(--surface);color:var(--ink);border:1px solid var(--edge);border-radius:var(--button-radius);font-size:13px;font-weight:600}
+.button:hover:not(:disabled){background:var(--hover)}.button:active:not(:disabled){transform:translateY(1px)}
+.button.primary{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}.button.primary:hover:not(:disabled){background:var(--primary-hover)}
+.button.decision{flex:1;background:var(--decision-bg);color:var(--decision-ink);border-color:var(--decision-edge)}.button.decision:hover:not(:disabled){background:var(--decision-hover)}
+.button:disabled{opacity:.65}.text-button{background:transparent;border:0;color:var(--muted);padding:6px 0;font-size:11px;text-decoration:underline;text-underline-offset:4px}
+details{margin-top:16px}summary{font-size:11px;min-height:44px;display:flex;align-items:center;text-decoration:underline;text-underline-offset:4px;color:var(--muted)}
+summary::before{content:'+';margin-right:8px;font-family:var(--mono-font)}details[open] summary::before{content:'−'}
+.email{background:var(--field-bg);padding:14px;font:11px/1.7 var(--mono-font)}.step>.fine{margin-top:var(--trust-gap)}
+.refusal{color:var(--ink);border-left:2px solid var(--edge);padding:10px 12px;background:var(--hover);font-size:12px}
+.confidence{margin-bottom:var(--confidence-gap)}.confidence-top{font-size:12px}.confidence-top>strong{font:var(--confidence-weight) var(--confidence-size)/1.2 var(--number-font)}
+.confidence-track{height:var(--track-height);background:var(--rule);margin:10px 0}.confidence-fill{background:var(--ink)}
+.confidence-mark{width:2px;background:var(--canvas);outline:1px solid var(--ink)}
+.value-row{grid-template-columns:var(--value-columns);gap:var(--row-gap);min-height:var(--row-height);padding:var(--row-pad);border-bottom:var(--row-rule);font-size:var(--row-size)}
+.value-row:last-child{border-bottom:0}.value-row[data-key]:hover{background:var(--hover)}
+.table-head{min-height:30px;color:var(--muted);font:500 10px/1.5 var(--label-font)}
+.found,.required{text-align:right}.result{justify-content:flex-end;font-size:11px;color:var(--tone);white-space:nowrap}
+.label small{font-size:10px;line-height:1.5;color:var(--muted);margin-top:5px;overflow-wrap:anywhere}
+.money{font-family:var(--number-font)}.value-row .field{padding:6px 8px;font-size:12px;min-width:0}.value-row input{text-align:right}
+.w9>p{font-size:13px}.timeline li{padding:var(--timeline-pad) 0;border-bottom:1px solid var(--rule)}.timeline li:last-child{border:0}
+.timeline-meta{gap:5px 12px;color:var(--muted);font-size:10px;margin-bottom:5px}.timeline-meta strong{color:var(--ink);font-size:11px;font-weight:500}
+.timeline li>p:last-child{font-size:12px}.timeline>.fine{margin-bottom:8px}
+.toasts{bottom:24px;right:24px;width:min(420px,calc(100vw - 32px))}
+.toast{gap:12px;background:var(--ink);color:var(--canvas);border:1px solid var(--edge);padding:12px 16px;border-radius:var(--toast-radius);font-size:13px}
+.toast button{background:transparent;color:inherit;border:0;min-height:44px;min-width:44px;font-size:20px}
+.skip{top:12px;left:12px;background:var(--ink);color:var(--canvas);padding:12px}
+[data-tone="green"]{--tone:var(--green);--tint:var(--green-tint)}[data-tone="amber"]{--tone:var(--amber);--tint:var(--amber-tint)}[data-tone="red"]{--tone:var(--red);--tint:var(--red-tint)}
+[data-tone="blue"]{--tone:var(--blue);--tint:var(--blue-tint)}[data-tone="violet"]{--tone:var(--violet);--tint:var(--violet-tint)}[data-tone="neutral"]{--tone:var(--neutral);--tint:var(--neutral-tint)}
+@media(max-width:1000px){
+.chrome{flex-direction:row;align-items:center;gap:16px;padding:20px}.brand{width:100%}.navigation{flex-direction:row;width:100%}.navigation a{font-size:12px}
+.demo{flex-direction:row;width:100%}.demo label{width:auto}.page{padding:24px}.record-head{padding:0 0 24px}.header-top{flex-wrap:wrap}.facts{gap:16px 28px}
+.layout{gap:24px}.pdf-mobile{margin-top:12px}}
+@media(max-width:600px){
+body{font-size:14px}.page,.chrome{padding:20px 16px}.chrome .brand{width:100%}
+.navigation{display:grid;grid-template-columns:1fr 1fr;gap:4px}.navigation a{padding:8px;white-space:normal;min-width:0}
+.demo{display:grid;grid-template-columns:1fr;gap:10px}.demo label{display:grid;grid-template-columns:56px minmax(0,1fr);width:100%}
+.demo select{width:100%;min-width:0}.demo .text-button{justify-content:flex-start}h1{font-size:var(--mobile-title)}
+.head-state{align-items:flex-start;flex-direction:column;gap:10px}.facts{display:flex;flex-direction:column;gap:14px}.trust{flex-direction:column;gap:2px;font-size:10px}
+.pane{padding:var(--mobile-pane-pad)}.pane h2{font-size:18px}.step h2{font-size:var(--mobile-step)}
+.table-head{display:none}.value-row[data-key]{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 56px;gap:6px 12px;padding:14px 0}.value-row .label{grid-column:1/-1}
+.found,.required{text-align:left}.found::before,.required::before{content:attr(data-caption);display:block;font:10px/1.5 var(--body-font);color:var(--muted);margin-bottom:4px}
+.value-row .found .money,.value-row .required .money{font-size:var(--mobile-number)}
+.result{font-size:11px}.actions{flex-wrap:wrap}.actions .button{flex:1}.pane.pdf{padding:0;border:0;background:transparent}
+.pdf .pane-head{flex-direction:column;align-items:flex-start}.timeline-meta{flex-direction:column}}
+
+/* Neutrals have a cool green bias. Brass is the one action accent.
+Radius: panels 6px; buttons 4px; fields 3px; status 20px; document square. No shadows. */
+:root{color-scheme:dark;--canvas:#121a1d;--surface:#192429;--chrome:#151f23;--ink:#e4eae4;--muted:#a9b5b0;--rule:#354340;--edge:#75857d;--hover:#24332f;--field-bg:#151f23;--selection:#35463e;
+--primary:#dcc28e;--on-primary:#141c1f;--primary-hover:#ead3a2;--focus:#dcc28e;
+--green:#94d7ad;--green-tint:#1c352a;--amber:#e4c181;--amber-tint:#352d1e;--red:#f6a5a2;--red-tint:#3b2528;--blue:#a1c4e8;--blue-tint:#22303e;--violet:#cfb5ee;--violet-tint:#30273d;--neutral:#b5c1bf;--neutral-tint:#283230;
+--body-font:'Manrope','Segoe UI',sans-serif;--display-font:var(--body-font);--heading-font:var(--body-font);--label-font:var(--mono-font);--mono-font:'IBM Plex Mono',Consolas,monospace;--number-font:var(--mono-font);
+--title-size:30px;--title-weight:600;--title-tracking:-.04em;--title-gap:16px;--heading-size:13px;--heading-weight:600;--heading-tracking:0;--label-size:10px;--label-tracking:.04em;--step-size:24px;--step-weight:600;--step-tracking:-.035em;
+--chrome-gap:24px;--chrome-pad:28px 20px;--page-pad:24px 32px 40px;--back-gap:12px;--section-gap:28px;--state-gap:16px;--fact-gap:24px;--facts-top:20px;--facts-pad:0;--trust-gap:12px;--layout-gap:24px;--pane-pad:0;--head-gap:12px;--pdf-gap:16px;
+--status-pad:4px 10px;--status-radius:20px;--control-radius:3px;--button-radius:4px;--toast-radius:6px;
+--step-gap:18px;--body-gap:14px;--def-gap:18px;--def-pad:8px;--action-gap:18px;--decision-bg:#24332f;--decision-ink:#e4eae4;--decision-edge:#75857d;--decision-hover:#35463e;
+--confidence-gap:16px;--confidence-weight:500;--confidence-size:20px;--track-height:3px;
+--value-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr) 56px;--row-gap:10px;--row-height:44px;--row-pad:10px 0;--row-rule:1px solid var(--rule);--row-size:11px;--timeline-pad:12px;
+--duration-1:90ms;--duration-2:160ms;--duration-3:240ms;--ease:cubic-bezier(.2,0,0,1);--distance-x:0px;--distance-y:2px;
+--mobile-title:28px;--mobile-step:24px;--mobile-number:12px;--mobile-pane-pad:0}
+.app{grid-template-columns:184px minmax(0,1fr)}
+.chrome{flex-direction:column;align-items:stretch;border-right:1px solid var(--rule)}
+.brand{align-items:flex-start;gap:9px}.brand strong{font-size:12px}.brand .icon{color:var(--primary);width:20px;height:20px}
+.navigation{flex-direction:column;gap:6px}.navigation a{border-radius:4px;font-size:11px;padding:10px 8px}.navigation a[aria-current]{border-left:2px solid var(--primary);background:var(--hover)}
+.demo{margin-top:24px;flex-direction:column;align-items:stretch;border-top:1px solid var(--rule);padding-top:24px}
+.demo label{flex-direction:column;align-items:stretch;gap:7px}.demo select{padding-left:8px;font-size:10px}.demo .text-button{justify-content:flex-start}
+.layout{grid-template-columns:minmax(0,1.14fr) minmax(0,1fr);grid-template-areas:"pdf step" "pdf values" "timeline values" "w9 values";align-items:start}
+.pdf{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:20px}.pdf .pane-head{align-items:flex-start}.pdf .text-link{font-size:10px}
+.step{border-top:1px solid var(--edge);padding-top:20px}.step .eyebrow{color:var(--primary)}
+.values{padding-top:18px;border-top:1px solid var(--rule)}.confidence .fine{margin-top:12px}
+.w9,.timeline{border-top:1px solid var(--rule);padding-top:18px}.value-row .money{font-size:11px}
+@media(max-width:1000px){.chrome{border-right:0;border-bottom:1px solid var(--rule);flex-direction:row}.demo{border:0;margin:0;padding:0;flex-direction:row}.demo label{flex-direction:row}.brand{align-items:center}.navigation{flex-direction:row}}
+@media(max-width:600px){.demo{display:grid}.demo label{display:grid}.navigation{display:grid}.value-row .money{font-size:12px}}
+.button{transition:transform var(--duration-1) var(--ease)}
+.pdf-page{animation:settle var(--duration-3) var(--ease) both}
+</style>
+<script>window.STUDY_DATA = {
+  "firm": "Harborline Builders",
+  "now": "Oct 8, 2026 · 10:42 AM",
+  "updatedNow": "Oct 8, 2026, 10:42 AM",
+  "limits": [
+    [
+      "glOcc",
+      "General liability",
+      1000000
+    ],
+    [
+      "agg",
+      "Aggregate",
+      2000000
+    ],
+    [
+      "auto",
+      "Auto",
+      1000000
+    ],
+    [
+      "umb",
+      "Umbrella",
+      2000000
+    ],
+    [
+      "wc",
+      "Workers' comp",
+      null
+    ],
+    [
+      "pol",
+      "Pollution",
+      1000000
+    ]
+  ],
+  "records": {
+    "ridgeline": {
+      "id": "REC-001",
+      "name": "Ridgeline Roofing LLC",
+      "scope": "Roofing",
+      "project": "Maple Court Residences",
+      "status": "In review",
+      "waiting": "Waiting for a decision on a deficiency",
+      "next": "decide",
+      "confidence": 93,
+      "w9": true,
+      "pollution": true,
+      "waived": false,
+      "current": "None on file",
+      "expiry": "Jan 15, 2027",
+      "updated": "Oct 8, 2026, 9:20 AM",
+      "values": {
+        "glOcc": 1000000,
+        "agg": 2000000,
+        "auto": 1000000,
+        "umb": 1000000,
+        "wc": 1000000,
+        "pol": 1000000,
+        "ai": true,
+        "addr": true,
+        "holder": true,
+        "insuredName": "Ridgeline Roofing Partners LLC",
+        "cancel": 30
+      },
+      "confText": "Above the 85% line, so the values were not sent for a second look. Code ran the check; the deficiencies wait for a person.",
+      "address": "41 Quarry Road, Millbrook",
+      "timeline": [
+        {
+          "when": "Oct 8, 2026 · 9:20 AM",
+          "who": "System",
+          "text": "Sent to Marcus Webb (Project manager) for a decision on the deficiencies."
+        },
+        {
+          "when": "Oct 8, 2026 · 9:19 AM",
+          "who": "System",
+          "text": "Checked against the Maple Court Residences requirements. Fails: umbrella, insured name."
+        },
+        {
+          "when": "Oct 8, 2026 · 9:18 AM",
+          "who": "System",
+          "text": "Read automatically. Reading confidence 93%."
+        },
+        {
+          "when": "Oct 8, 2026 · 9:12 AM",
+          "who": "Ridgeline Roofing LLC (Subcontractor)",
+          "text": "Uploaded a certificate through the upload link."
+        },
+        {
+          "when": "Sep 28, 2026 · 2:05 PM",
+          "who": "System",
+          "text": "Upload link sent to Ridgeline Roofing LLC."
+        },
+        {
+          "when": "Sep 28, 2026 · 2:04 PM",
+          "who": "Dana Reyes (Accountant)",
+          "text": "Added Ridgeline Roofing LLC to Maple Court Residences."
+        }
+      ]
+    },
+    "brightway": {
+      "id": "REC-014",
+      "name": "Brightway Electric",
+      "scope": "Electrical",
+      "project": "Maple Court Residences",
+      "status": "In review",
+      "waiting": "Waiting for approval",
+      "next": "approve",
+      "confidence": 96,
+      "w9": true,
+      "pollution": false,
+      "waived": false,
+      "current": "None on file",
+      "expiry": "Mar 31, 2027",
+      "updated": "Oct 8, 2026, 8:47 AM",
+      "values": {
+        "glOcc": 2000000,
+        "agg": 2000000,
+        "auto": 1000000,
+        "umb": 2000000,
+        "wc": 1000000,
+        "pol": 1000000,
+        "ai": true,
+        "addr": true,
+        "holder": true,
+        "insuredName": "Brightway Electric",
+        "cancel": 30
+      },
+      "confText": "Above the 85% line. The values were read automatically; you still approve.",
+      "address": "9 Foundry Lane, Westbrook",
+      "timeline": [
+        {
+          "when": "Oct 8, 2026 · 8:47 AM",
+          "who": "System",
+          "text": "Every line passes. Waiting for approval because the review mode is Review all."
+        },
+        {
+          "when": "Oct 8, 2026 · 8:46 AM",
+          "who": "System",
+          "text": "Read automatically. Reading confidence 96%."
+        },
+        {
+          "when": "Oct 8, 2026 · 8:40 AM",
+          "who": "Brightway Electric (Subcontractor)",
+          "text": "Uploaded a certificate through the upload link."
+        },
+        {
+          "when": "Sep 30, 2026 · 10:15 AM",
+          "who": "System",
+          "text": "Upload link sent to Brightway Electric."
+        }
+      ]
+    }
+  },
+  "direction": "vault"
+};</script>
+</head><body>
+<a class="skip" href="#main">Skip to record</a><div id="app" class="app"></div><div class="toasts" aria-live="polite"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="pdf-data-r2.js"></script><script src="record-r2.js"></script>
+</body></html>

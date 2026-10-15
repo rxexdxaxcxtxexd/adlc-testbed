@@ -1,0 +1,5 @@
+#!/bin/sh
+# Refuses a commit that stages a key-shaped string.
+# Install once per clone, from the repo root:
+#   git config core.hooksPath coi-poc/scripts/git-hooks
+exec node "$(dirname "$0")/../checks/secrets.js" --staged

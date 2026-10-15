@@ -1,0 +1,214 @@
+/* Direction studies: structure shared by all three directions.
+   Holds layout, motion keyframes, reduced motion and accessibility rules only.
+   Every color, font, size, radius, shadow and duration comes from the direction's tokens. */
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: var(--fw-regular) var(--fs-base)/var(--lh-base) var(--font-ui);
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  font-feature-settings: var(--ui-features, normal);
+}
+h1, h2, h3, p, dl, dd, ol, ul, figure { margin: 0; }
+ol, ul { padding: 0; list-style: none; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+.ic { width: 16px; height: 16px; flex: none; }
+.num, .cert-num, .rid, time, kbd { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-feature-settings: var(--num-features, "tnum"); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.line:focus-visible { outline-offset: -2px; }
+[hidden] { display: none !important; }
+
+/* ---------- App frame ---------- */
+.app { min-height: 100vh; }
+.app[data-chrome="rail"] { display: grid; grid-template-columns: var(--rail-w) minmax(0, 1fr); }
+.app[data-chrome="rail"] .chrome { position: sticky; top: 0; height: 100vh; overflow: auto; }
+.page { max-width: var(--page-max); margin: 0 auto; padding: var(--page-pad-top) var(--page-pad-x) 64px; display: flex; flex-direction: column; gap: var(--gap-section); min-width: 0; }
+.back { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+
+/* Chrome pieces */
+.nav ul { display: flex; }
+.nav-item { display: flex; align-items: center; gap: 10px; text-decoration: none; white-space: nowrap; }
+.demo { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
+.demo-row { display: inline-flex; align-items: center; gap: 8px; }
+.seg { display: inline-flex; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+
+/* ---------- Record head ---------- */
+.rec-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "id trust" "facts facts"; gap: 12px 32px; align-items: end; }
+.rec-id { grid-area: id; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.rec-head > .trust { grid-area: trust; }
+.facts { grid-area: facts; display: flex; flex-wrap: wrap; gap: 4px 28px; }
+.fact { display: flex; gap: 8px; align-items: baseline; }
+.rec-title-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; }
+.rec-title { text-wrap: balance; }
+.rec-state { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; }
+.pill, .res, .hold-flag, .summary { display: inline-flex; align-items: center; gap: 6px; }
+.trust { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+
+/* ---------- Body grid (areas set per direction) ---------- */
+.rd-body { display: grid; gap: var(--gap-pane); align-items: start; grid-template-areas: var(--areas); grid-template-columns: var(--cols); }
+.pane { min-width: 0; }
+.pane.pdf { grid-area: pdf; position: sticky; top: var(--sticky-top, 16px); display: flex; flex-direction: column; max-height: calc(100vh - 32px); }
+.pane.step { grid-area: step; }
+.pane.values { grid-area: values; container-type: inline-size; }
+.pane.w9 { grid-area: w9; }
+.pane.timeline { grid-area: timeline; }
+.pane-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px 16px; flex-wrap: wrap; }
+.pane-title-wrap { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pdf-scroll { overflow: auto; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 16px; }
+.link-out { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---------- Certificate stand-in (pdf.js canvases in the build) ---------- */
+.cert-page { position: relative; aspect-ratio: 8.5 / 11; max-width: 100%; padding: 7%; display: flex; flex-direction: column; gap: 14px; overflow: hidden; font-size: 10px; line-height: 1.35; flex: none; }
+.cert-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding-bottom: 8px; }
+.cert-top div { display: flex; flex-direction: column; gap: 2px; }
+.cert-top strong { font-size: 12.5px; }
+.cert-stamp { padding: 3px 5px; font-weight: 700; letter-spacing: .04em; white-space: nowrap; font-size: 9px; }
+.cert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+.cert-field { display: flex; flex-direction: column; gap: 2px; padding: 3px 4px; margin: -3px -4px; }
+.cert-cap { font-size: 8px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.cert-table { display: flex; flex-direction: column; }
+.cert-row { display: grid; grid-template-columns: 1.5fr 1fr; padding: 4px 7px; }
+.cert-bars { display: flex; flex-direction: column; gap: 6px; }
+.cert-bar { display: block; height: 5px; border-radius: 2px; }
+.cert-water { position: absolute; left: 50%; top: 58%; transform: translate(-50%, -50%) rotate(-28deg); font-size: 64px; font-weight: 700; letter-spacing: .1em; pointer-events: none; }
+.cert-skel { width: 100%; }
+[data-k] { transition: background-color var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out); }
+
+/* ---------- Value lines ---------- */
+.lines { display: flex; flex-direction: column; }
+.line { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) minmax(0, 1fr) var(--res-w); gap: 4px 16px; align-items: center; }
+.line > * { min-width: 0; }
+.c-found, .c-req { text-align: var(--num-align, left); }
+.c-res { justify-self: end; }
+.c-label { display: flex; flex-direction: column; gap: 2px; }
+.line-sub { display: block; }
+.c-found { display: flex; flex-direction: column; gap: 3px; align-items: var(--num-flex, flex-start); }
+.cell-field { width: 100%; max-width: 220px; }
+.lines.is-checking .line:not(.line-head) .c-res { opacity: .35; }
+.lines.is-checking .line:not(.line-head) .c-res .res { animation: pulse var(--skel-dur, 1.4s) ease-in-out infinite; }
+@container (max-width: 560px) {
+  .line-head { display: none !important; }
+  .line { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "l r" "f q"; align-items: start; }
+  .c-label { grid-area: l; } .c-res { grid-area: r; } .c-found { grid-area: f; } .c-req { grid-area: q; }
+  .c-found, .c-req { text-align: left; align-items: flex-start; }
+  .c-found::before, .c-req::before { content: attr(data-cap); display: block; }
+}
+
+/* ---------- Panel pieces ---------- */
+.step-head { display: flex; flex-direction: column; gap: 2px; }
+.step-body { display: flex; flex-direction: column; gap: 14px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 10px; white-space: nowrap;
+  transition: background-color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out), transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out); }
+.btn:active:not(:disabled) { transform: translateY(1px) scale(.985); }
+.btn-progress { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; transform: scaleX(0); transform-origin: 0 50%; opacity: 0; }
+.btn.is-busy .btn-progress { opacity: 1; animation: progress 1.1s var(--ease-inout) infinite; }
+.btn.is-busy { cursor: progress; }
+.defs { display: flex; flex-direction: column; gap: 8px; }
+.defs li { display: grid; grid-template-columns: 16px 1fr; gap: 8px; align-items: start; }
+.defs li .ic { margin-top: 3px; }
+.def-sub { display: block; }
+.note { width: 100%; resize: vertical; min-height: 76px; }
+.refusal { display: grid; grid-template-columns: 18px 1fr; gap: 10px; align-items: start; }
+.refusal .ic { margin-top: 2px; }
+.refusal > span { display: flex; flex-direction: column; gap: 2px; }
+.email { white-space: pre-wrap; margin: 10px 0 0; font: inherit; }
+.disclose summary { cursor: pointer; }
+
+/* ---------- Confidence ---------- */
+.conf { display: flex; flex-direction: column; gap: 8px; }
+.conf-top { display: flex; justify-content: space-between; align-items: baseline; }
+.conf-track { position: relative; }
+.conf-fill { position: absolute; left: 0; top: 0; bottom: 0; width: var(--w); }
+.conf-mark { position: absolute; top: -4px; bottom: -4px; left: var(--at); width: 2px; transform: translateX(-1px); }
+.conf-mark span { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 3px; white-space: nowrap; }
+.conf-text { margin-top: 14px; }
+
+/* ---------- W-9 + timeline ---------- */
+.w9-row { display: flex; justify-content: space-between; align-items: center; gap: 12px 16px; flex-wrap: wrap; }
+.w9-text { display: flex; flex-direction: column; gap: 4px; }
+.w9-text p, .w9-refused { display: inline-flex; align-items: center; gap: 6px; }
+.tl { display: flex; flex-direction: column; }
+.tl-item { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 12px; position: relative; }
+.tl-mark { width: 24px; height: 24px; display: grid; place-items: center; position: relative; z-index: 1; }
+.tl-mark .ic { width: 13px; height: 13px; }
+.tl-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.tl-meta { display: flex; flex-wrap: wrap; gap: 2px 10px; }
+.tl-change { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tl-skel { display: flex; flex-direction: column; gap: 6px; padding: 10px 0; }
+
+/* ---------- Skeletons ---------- */
+.skel { display: block; border-radius: var(--r-sm); background: var(--sunken); animation: pulse var(--skel-dur, 1.4s) ease-in-out infinite; }
+.skel-pill { border-radius: 999px; }
+.skel-btn { border-radius: var(--r-md); }
+.page.is-loading .rec-id, .page.is-loading .pane.step, .page.is-loading .pane.values, .page.is-loading .pane.w9, .page.is-loading .pane.timeline { display: flex; flex-direction: column; gap: 12px; }
+.line-skel { display: grid; grid-template-columns: 1.45fr 1fr 1fr 56px; gap: 16px; align-items: center; padding: 12px 0; }
+
+/* ---------- Toasts + keyboard sheet ---------- */
+.toasts { position: fixed; right: 20px; bottom: 20px; z-index: 50; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; pointer-events: none; max-width: calc(100vw - 32px); }
+.toast { pointer-events: auto; display: grid; grid-template-columns: 16px minmax(0, 1fr) 24px; gap: 10px; align-items: center; max-width: 420px; }
+.toast-x { width: 24px; height: 24px; display: grid; place-items: center; border: 0; background: transparent; padding: 0; }
+.sheet { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; }
+.sheet-card { width: min(440px, 100%); }
+.sheet-head { display: flex; justify-content: space-between; align-items: center; }
+.sheet-close { width: 32px; height: 32px; display: grid; place-items: center; border: 0; background: transparent; }
+.keys { display: flex; flex-direction: column; }
+.keys > div { display: grid; grid-template-columns: 96px 1fr; gap: 12px; align-items: center; }
+.keys dt { display: flex; gap: 4px; }
+
+/* ---------- Motion system: transform and opacity only (plus color) ---------- */
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+@keyframes progress { 0% { transform: scaleX(0); transform-origin: 0 50%; } 50% { transform: scaleX(1); transform-origin: 0 50%; } 50.1% { transform-origin: 100% 50%; } 100% { transform: scaleX(0); transform-origin: 100% 50%; } }
+@keyframes resolve { from { opacity: 0; transform: translateY(var(--rise, 4px)); } to { opacity: 1; transform: none; } }
+@keyframes draw { from { opacity: 0; transform: scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes enter { from { opacity: 0; transform: translateY(calc(var(--rise, 4px) * -1.5)); } to { opacity: 1; transform: none; } }
+@keyframes swap { from { opacity: 0; transform: translateX(-4px); } to { opacity: 1; transform: none; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes toastIn { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes toastOut { to { opacity: 0; transform: translateY(4px); } }
+@keyframes pop { from { opacity: 0; transform: translateY(6px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes changed { 0% { background-color: var(--changed-bg); } 100% { background-color: transparent; } }
+@keyframes status { 0% { opacity: .2; transform: scale(.94); } 100% { opacity: 1; transform: none; } }
+.m-resolve { animation: resolve var(--dur-3) var(--ease-out) both; }
+.m-draw { animation: draw var(--dur-3) var(--ease-out) both; }
+.m-enter { animation: enter var(--dur-2) var(--ease-out) both; }
+.m-swap { animation: swap var(--dur-2) var(--ease-out) both; }
+.m-fade { animation: fade var(--dur-2) var(--ease-out) both; }
+.m-panel { animation: resolve var(--dur-2) var(--ease-out) both; }
+.m-toast-in { animation: toastIn var(--dur-2) var(--ease-out) both; }
+.m-toast-out { animation: toastOut var(--dur-1) var(--ease-inout) both; }
+.m-pop { animation: pop var(--dur-2) var(--ease-out) both; }
+.m-status { animation: status var(--dur-2) var(--ease-out) both; }
+.line.m-changed { animation: changed calc(var(--dur-3) * 4) var(--ease-inout) both; }
+.line.m-changed .res { animation: status var(--dur-2) var(--ease-out) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
+  .m-resolve, .m-draw, .m-enter, .m-swap, .m-panel, .m-toast-in, .m-pop, .m-status { animation: fade 120ms linear both !important; }
+  .skel, .btn.is-busy .btn-progress { animation: none !important; }
+  .btn.is-busy .btn-progress { transform: scaleX(1); opacity: .6; }
+}
+
+/* ---------- Narrow widths ---------- */
+@media (max-width: 1080px) {
+  .rd-body { grid-template-columns: minmax(0, 1fr) !important; grid-template-areas: "step" "values" "pdf" "w9" "timeline" !important; }
+  .pane.pdf { position: static; max-height: none; }
+  .pdf-scroll { flex-direction: row; overflow-x: auto; }
+  .pdf-scroll .cert-page { width: min(420px, 85%); }
+}
+@media (max-width: 860px) {
+  .app[data-chrome="rail"] { grid-template-columns: minmax(0, 1fr); }
+  .app[data-chrome="rail"] .chrome { position: static; height: auto; }
+}
+@media (max-width: 640px) {
+  .rec-head { grid-template-columns: minmax(0, 1fr); grid-template-areas: "id" "facts" "trust"; }
+  .page { padding-left: 16px; padding-right: 16px; }
+  .toasts { left: 16px; right: 16px; align-items: stretch; }
+  .toast { max-width: none; }
+  .actions .btn { flex: 1 1 auto; }
+}

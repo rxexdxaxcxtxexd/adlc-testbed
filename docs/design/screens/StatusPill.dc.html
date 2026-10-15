@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="./tokens.css">
+<style>body{margin:0;font-family:var(--font-sans)}</style>
+</helmet>
+<sc-if value="{{ awaiting }}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-awaiting-tint); color: var(--st-awaiting); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 600; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6" stroke-dasharray="2.6 2.1"></circle></svg>Awaiting</span></sc-if>
+<sc-if value="{{ needsReview }}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-needs-review-tint); color: var(--st-needs-review); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 600; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M8 2L14.5 13.5H1.5Z"></path><path d="M8 6.5v3"></path><circle cx="8" cy="11.5" r="0.4"></circle></svg>Needs review</span></sc-if>
+<sc-if value="{{ inReview }}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-in-review-tint); color: var(--st-in-review); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 600; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"></circle><path d="M8 2a6 6 0 0 1 0 12Z" fill="currentColor"></path></svg>In review</span></sc-if>
+<sc-if value="{{ compliant }}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-compliant-tint); color: var(--st-compliant); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 600; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6"></circle><path d="M5.3 8.2l1.9 1.9 3.6-3.8"></path></svg>Compliant</span></sc-if>
+<sc-if value="{{ expiringSoon }}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-expiring-soon-tint); color: var(--st-expiring-soon); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 600; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6"></circle><path d="M8 4.8V8l2.2 1.4"></path></svg>Expiring soon</span></sc-if>
+<sc-if value="{{ expired }}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-expired-tint); color: var(--st-expired); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 600; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6"></circle><path d="M5.8 5.8l4.4 4.4M10.2 5.8l-4.4 4.4"></path></svg>Expired</span></sc-if>
+<sc-if value="{{ closed }}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-closed-tint); color: var(--st-closed); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: 600; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2.5" y="2.5" width="11" height="11" rx="2"></rect><path d="M5.5 8h5"></path></svg>Closed</span></sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:160,&quot;height&quot;:40},&quot;status&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Awaiting&quot;,&quot;Needs review&quot;,&quot;In review&quot;,&quot;Compliant&quot;,&quot;Expiring soon&quot;,&quot;Expired&quot;,&quot;Closed&quot;],&quot;default&quot;:&quot;Compliant&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.props.status ?? 'Compliant';
+    return { awaiting: s === 'Awaiting', needsReview: s === 'Needs review', inReview: s === 'In review', compliant: s === 'Compliant', expiringSoon: s === 'Expiring soon', expired: s === 'Expired', closed: s === 'Closed' };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="./tokens.css">
+<style>
+body { margin: 0; background: var(--c-canvas); color: var(--c-ink); font-family: var(--font-sans); font-size: var(--text-base); line-height: var(--lh-base); -webkit-font-smoothing: antialiased; }
+a { color: var(--c-blue-fg); } a:hover { color: var(--c-primary-hover); }
+*:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+@keyframes skel { 0%,100% { opacity: 1 } 50% { opacity: .55 } }
+</style>
+</helmet>
+<div style="max-width: 1280px; margin: 0 auto; padding: 40px 32px 96px; display: flex; flex-direction: column; gap: 64px;">
+
+<header style="display: flex; flex-direction: column; gap: 12px;">
+  <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+    <span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted); letter-spacing: var(--tracking-caps); text-transform: uppercase;">Round 1 + round 2 additions · Brief §11 item 2</span>
+    <span style="display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border: 1px dashed var(--c-ink-muted); border-radius: var(--radius-sm); font-size: var(--text-xs); font-weight: 600; color: var(--c-ink); background: var(--c-surface);"><svg width="10" height="10" viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" transform="rotate(45 5 5)" fill="currentColor"></rect></svg>Sample data</span>
+  </div>
+  <h1 style="margin: 0; font-size: var(--text-2xl); line-height: var(--lh-2xl); font-weight: 700; letter-spacing: -0.01em;">Design tokens and components</h1>
+  <p style="margin: 0; max-width: 720px; color: var(--c-ink-muted); text-wrap: pretty;">Certificate compliance tool, internal app and upload page. Every token lives in <span style="font-family: var(--font-mono); font-size: var(--text-sm);">tokens.css</span> as a CSS custom property; every component below uses only those tokens. Section 03 holds the components added in round 2.</p>
+</header>
+
+<section style="display: flex; flex-direction: column; gap: 32px;">
+  <div style="display: flex; align-items: baseline; gap: 16px; border-bottom: 1px solid var(--c-ink); padding-bottom: 12px;">
+    <span style="font-family: var(--font-mono); font-size: var(--text-sm); color: var(--c-ink-muted);">01</span>
+    <h2 style="margin: 0; font-size: var(--text-xl); line-height: var(--lh-xl); font-weight: 700;">Design tokens</h2>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h3 style="margin: 0; font-size: var(--text-lg); line-height: var(--lh-lg); font-weight: 600;">Status colors and contrast</h3>
+    <p style="margin: 0; max-width: 760px; color: var(--c-ink-muted); text-wrap: pretty;">Ratios are calculated in the page from the live token values with the WCAG 2.1 relative-luminance formula. AA thresholds: <strong style="color: var(--c-ink);">4.5:1</strong> for normal text (1.4.3), <strong style="color: var(--c-ink);">3:1</strong> for a fill that must be seen against its surroundings (1.4.11). Red is reserved for Expired, At risk and Fail.</p>
+    <div style="overflow-x: auto; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+      <div style="min-width: 1080px; display: grid; grid-template-columns: 220px 150px repeat(5, minmax(0, 1fr)) 150px;">
+        <div style="padding: 12px 16px; font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted); border-bottom: 1px solid var(--c-border);">Family · used for</div>
+        <div style="padding: 12px 16px; font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted); border-bottom: 1px solid var(--c-border);">Swatches</div>
+        <div style="padding: 12px 16px; font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted); border-bottom: 1px solid var(--c-border);">Text on surface</div>
+        <div style="padding: 12px 16px; font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted); border-bottom: 1px solid var(--c-border);">Text on canvas</div>
+        <div style="padding: 12px 16px; font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted); border-bottom: 1px solid var(--c-border);">Text on tint</div>
+        <div style="padding: 12px 16px; font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted); border-bottom: 1px solid var(--c-border);">White on fill</div>
+        <div style="padding: 12px 16px; font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted); border-bottom: 1px solid var(--c-border);">Fill vs surface</div>
+        <div style="padding: 12px 16px; font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted); border-bottom: 1px solid var(--c-border);">Tint vs surface</div>
+        <sc-for list="{{ statusRows }}" as="row" hint-placeholder-count="7">
+          <div style="padding: 14px 16px; border-bottom: 1px solid var(--c-border); display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-weight: 600;">{{ row.name }}</span>
+            <span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">{{ row.uses }}</span>
+          </div>
+          <div style="padding: 14px 16px; border-bottom: 1px solid var(--c-border); display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <span style="width: 28px; height: 28px; border-radius: var(--radius-sm); background: {{ row.fg }};"></span>
+              <span style="width: 28px; height: 28px; border-radius: var(--radius-sm); background: {{ row.tint }}; border: 1px solid var(--c-border);"></span>
+            </div>
+            <span style="font-family: var(--font-mono); font-size: 11px; line-height: 14px; color: var(--c-ink-muted);">{{ row.fg }} / {{ row.tint }}</span>
+          </div>
+          <sc-for list="{{ row.checks }}" as="c" hint-placeholder-count="5">
+            <div style="padding: 14px 16px; border-bottom: 1px solid var(--c-border); display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+              <span style="font-family: var(--font-mono); font-size: var(--text-md); font-weight: 500;">{{ c.ratio }}</span>
+              <sc-if value="{{ c.pass }}" hint-placeholder-val="{{ true }}">
+                <span style="display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-xs); font-weight: 600; color: var(--c-green-fg);"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8.5l3 3 7-7"></path></svg>Pass, needs {{ c.need }}</span>
+              </sc-if>
+              <sc-if value="{{ c.fail }}" hint-placeholder-val="{{ false }}">
+                <span style="display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-xs); font-weight: 600; color: var(--c-red-fg);"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l8 8M12 4l-8 8"></path></svg>Fail, needs {{ c.need }}</span>
+              </sc-if>
+            </div>
+          </sc-for>
+          <div style="padding: 14px 16px; border-bottom: 1px solid var(--c-border); display: flex; flex-direction: column; gap: 4px;">
+            <span style="font-family: var(--font-mono); font-size: var(--text-md); font-weight: 500; color: var(--c-ink-muted);">{{ row.tintRatio }}</span>
+            <span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">Not relied on: word and icon carry the meaning</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <p style="margin: 0; max-width: 760px; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">Why the last column is allowed to be low: a tinted pill is never the only signal. Its word passes 4.5:1 on the tint, and an icon sits beside it (1.4.1). Where a fill alone must be seen, such as the tile color bar, the solid fill is used, which passes 3:1.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h3 style="margin: 0; font-size: var(--text-lg); line-height: var(--lh-lg); font-weight: 600;">Neutrals and action colors</h3>
+    <div style="overflow-x: auto; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+      <div style="min-width: 860px; display: grid; grid-template-columns: 64px 220px 140px minmax(0, 1fr) 120px 140px;">
+        <div style="padding: 12px 16px; border-bottom: 1px solid var(--c-border);"></div>
+        <div style="padding: 12px 16px; font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted); border-bottom: 1px solid var(--c-border);">Token</div>
+        <div style="padding: 12px 16px; font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted); border-bottom: 1px solid var(--c-border);">Value</div>
+        <div style="padding: 12px 16px; font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted); border-bottom: 1px solid var(--c-border);">Checked against</div>
+        <div style="padding: 12px 16px; font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted); border-bottom: 1px solid var(--c-border);">Ratio</div>
+        <div style="padding: 12px 16px; font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted); border-bottom: 1px solid var(--c-border);">Result</div>
+        <sc-for list="{{ uiRows }}" as="u" hint-placeholder-count="10">
+          <div style="padding: 10px 16px; border-bottom: 1px solid var(--c-border);"><span style="display: block; width: 28px; height: 28px; border-radius: var(--radius-sm); background: {{ u.hex }}; border: 1px solid var(--c-border);"></span></div>
+          <div style="padding: 10px 16px; border-bottom: 1px solid var(--c-border); font-family: var(--font-mono); font-size: var(--text-sm);">{{ u.token }}</div>
+          <div style="padding: 10px 16px; border-bottom: 1px solid var(--c-border); font-family: var(--font-mono); font-size: var(--text-sm); color: var(--c-ink-muted);">{{ u.hex }}</div>
+          <div style="padding: 10px 16px; border-bottom: 1px solid var(--c-border); font-size: var(--text-sm);">{{ u.against }}</div>
+          <div style="padding: 10px 16px; border-bottom: 1px solid var(--c-border); font-family: var(--font-mono); font-weight: 500;">{{ u.ratio }}</div>
+          <div style="padding: 10px 16px; border-bottom: 1px solid var(--c-border);">
+            <sc-if value="{{ u.pass }}" hint-placeholder-val="{{ true }}"><span style="font-size: var(--text-xs); font-weight: 600; color: var(--c-green-fg);">Pass, needs {{ u.need }}</span></sc-if>
+            <sc-if value="{{ u.fail }}" hint-placeholder-val="{{ false }}"><span style="font-size: var(--text-xs); font-weight: 600; color: var(--c-red-fg);">Fail, needs {{ u.need }}</span></sc-if>
+            <sc-if value="{{ u.info }}" hint-placeholder-val="{{ false }}"><span style="font-size: var(--text-xs); color: var(--c-ink-muted);">Decorative only</span></sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 16px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm);">
+      <h3 style="margin: 0; font-size: var(--text-lg); line-height: var(--lh-lg); font-weight: 600;">Type scale</h3>
+      <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">Public Sans for everything. IBM Plex Mono for IDs and dollar amounts, with tabular figures.</p>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: grid; grid-template-columns: 120px 1fr; align-items: baseline; gap: 12px;"><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">3xl 40/48 700</span><span style="font-size: var(--text-3xl); line-height: var(--lh-3xl); font-weight: 700; font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.02em;">$41,200</span></div>
+        <div style="display: grid; grid-template-columns: 120px 1fr; align-items: baseline; gap: 12px;"><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">2xl 32/40 700</span><span style="font-size: var(--text-2xl); line-height: var(--lh-2xl); font-weight: 700; letter-spacing: -0.01em;">Compliant 31 of 35</span></div>
+        <div style="display: grid; grid-template-columns: 120px 1fr; align-items: baseline; gap: 12px;"><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">xl 24/32 700</span><span style="font-size: var(--text-xl); line-height: var(--lh-xl); font-weight: 700;">Payment hold list</span></div>
+        <div style="display: grid; grid-template-columns: 120px 1fr; align-items: baseline; gap: 12px;"><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">lg 20/28 600</span><span style="font-size: var(--text-lg); line-height: var(--lh-lg); font-weight: 600;">Maple Court Residences</span></div>
+        <div style="display: grid; grid-template-columns: 120px 1fr; align-items: baseline; gap: 12px;"><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">md 17/24 600</span><span style="font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Ridgeline Roofing LLC</span></div>
+        <div style="display: grid; grid-template-columns: 120px 1fr; align-items: baseline; gap: 12px;"><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">base 15/22 400</span><span style="font-size: var(--text-base); line-height: var(--lh-base);">Waiting for a decision on a deficiency</span></div>
+        <div style="display: grid; grid-template-columns: 120px 1fr; align-items: baseline; gap: 12px;"><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">sm 13/18 400</span><span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">Approved by Dana Reyes (Accountant), Oct 8</span></div>
+        <div style="display: grid; grid-template-columns: 120px 1fr; align-items: baseline; gap: 12px;"><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">xs 12/16 400</span><span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">Source: Compliance records · Updated Oct 8, 2026, 9:02 AM</span></div>
+        <div style="display: grid; grid-template-columns: 120px 1fr; align-items: baseline; gap: 12px;"><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">mono sm</span><span style="font-family: var(--font-mono); font-size: var(--text-sm); color: var(--c-ink-muted);">REC-001 · PRJ-001</span></div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <div style="display: flex; flex-direction: column; gap: 12px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm);">
+        <h3 style="margin: 0; font-size: var(--text-lg); line-height: var(--lh-lg); font-weight: 600;">Spacing</h3>
+        <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">4px base. --space-1 to --space-11.</p>
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <sc-for list="{{ spaces }}" as="s" hint-placeholder-count="11">
+            <div style="display: grid; grid-template-columns: 90px 44px 1fr; align-items: center; gap: 12px;">
+              <span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">{{ s.name }}</span>
+              <span style="font-family: var(--font-mono); font-size: var(--text-xs);">{{ s.px }}</span>
+              <span style="height: 10px; width: {{ s.px }}; background: var(--c-primary); border-radius: 1px;"></span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px;">
+        <div style="display: flex; flex-direction: column; gap: 12px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 24px; box-shadow: var(--shadow-sm);">
+          <h3 style="margin: 0; font-size: var(--text-lg); line-height: var(--lh-lg); font-weight: 600;">Radius</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;"><span style="height: 48px; background: var(--c-sunken); border: 1px solid var(--c-border-strong); border-radius: var(--radius-sm);"></span><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">sm 4 · inputs</span></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><span style="height: 48px; background: var(--c-sunken); border: 1px solid var(--c-border-strong); border-radius: var(--radius-md);"></span><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">md 6 · buttons</span></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><span style="height: 48px; background: var(--c-sunken); border: 1px solid var(--c-border-strong); border-radius: var(--radius-lg);"></span><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">lg 10 · cards</span></div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><span style="height: 48px; background: var(--c-sunken); border: 1px solid var(--c-border-strong); border-radius: var(--radius-pill);"></span><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">pill · status</span></div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px; background: var(--c-canvas); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 24px;">
+          <h3 style="margin: 0; font-size: var(--text-lg); line-height: var(--lh-lg); font-weight: 600;">Shadow</h3>
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="height: 40px; background: var(--c-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); display: flex; align-items: center; padding: 0 12px; font-family: var(--font-mono); font-size: var(--text-xs);">sm · cards at rest</div>
+            <div style="height: 40px; background: var(--c-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-md); display: flex; align-items: center; padding: 0 12px; font-family: var(--font-mono); font-size: var(--text-xs);">md · tile hover</div>
+            <div style="height: 40px; background: var(--c-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); display: flex; align-items: center; padding: 0 12px; font-family: var(--font-mono); font-size: var(--text-xs);">lg · menus, dialogs</div>
+            <div style="height: 40px; background: var(--c-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-focus); display: flex; align-items: center; padding: 0 12px; font-family: var(--font-mono); font-size: var(--text-xs);">focus · keyboard ring</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <details style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg);">
+    <summary style="padding: 16px 24px; cursor: pointer; font-weight: 600;">tokens.css source</summary>
+    <pre style="margin: 0; padding: 0 24px 24px; font-family: var(--font-mono); font-size: var(--text-xs); line-height: 18px; color: var(--c-ink); white-space: pre-wrap; overflow-x: auto;">{{ css }}</pre>
+  </details>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 40px;">
+  <div style="display: flex; align-items: baseline; gap: 16px; border-bottom: 1px solid var(--c-ink); padding-bottom: 12px;">
+    <span style="font-family: var(--font-mono); font-size: var(--text-sm); color: var(--c-ink-muted);">02</span>
+    <h2 style="margin: 0; font-size: var(--text-xl); line-height: var(--lh-xl); font-weight: 700;">Components</h2>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">"Sample data" badge</h3>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+          <span style="display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border: 1px dashed var(--c-ink-muted); border-radius: var(--radius-sm); font-size: var(--text-xs); font-weight: 600; color: var(--c-ink); background: var(--c-surface);"><svg width="10" height="10" viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" transform="rotate(45 5 5)" fill="currentColor"></rect></svg>Sample data</span>
+          <span style="display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 10px; border: 1px dashed var(--c-ink-muted); border-radius: var(--radius-sm); font-size: var(--text-sm); font-weight: 600; color: var(--c-ink); background: var(--c-surface);"><svg width="11" height="11" viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" transform="rotate(45 5 5)" fill="currentColor"></rect></svg>Sample data · all names fictional</span>
+        </div>
+        <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">Dashed outline reads as a label, not a status. Small size sits beside every figure; large size goes in the header where the eye lands.</p>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">"Demo only" role switcher</h3>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <div role="group" aria-label="Demo only: view as" style="display: inline-flex; align-items: center; gap: 10px; padding: 6px 6px 6px 12px; border: 1.5px dashed var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-sunken); align-self: flex-start; flex-wrap: wrap;">
+          <span style="display: flex; flex-direction: column; line-height: 1.1;">
+            <span style="font-size: 11px; font-weight: 700; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink);">Demo only</span>
+            <span style="font-size: var(--text-xs); color: var(--c-ink-muted);">View as</span>
+          </span>
+          <div style="display: flex; gap: 2px;">
+            <sc-for list="{{ roles }}" as="r" hint-placeholder-count="3">
+              <sc-if value="{{ r.on }}" hint-placeholder-val="{{ false }}">
+                <button aria-pressed="true" onClick="{{ r.pick }}" style="height: 32px; padding: 0 12px; border: 1px solid var(--c-ink); border-radius: var(--radius-sm); background: var(--c-surface); color: var(--c-ink); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer; box-shadow: var(--shadow-sm);">{{ r.label }}</button>
+              </sc-if>
+              <sc-if value="{{ r.off }}" hint-placeholder-val="{{ true }}">
+                <button aria-pressed="false" onClick="{{ r.pick }}" style="height: 32px; padding: 0 12px; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--c-ink-muted); font: inherit; font-size: var(--text-sm); font-weight: 500; cursor: pointer;" style-hover="color: var(--c-ink); background: var(--c-surface);">{{ r.label }}</button>
+              </sc-if>
+            </sc-for>
+          </div>
+        </div>
+        <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">Showing the {{ roleName }} view. Dashed frame on a grey well, so it reads as a demo control, not a permission setting.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Status pill</h3>
+    <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <span style="font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted);">Record status</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+          <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-awaiting-tint); color: var(--st-awaiting); font-size: var(--text-sm); font-weight: 600;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6" stroke-dasharray="2.6 2.1"></circle></svg>Awaiting</span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-needs-review-tint); color: var(--st-needs-review); font-size: var(--text-sm); font-weight: 600;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M8 2L14.5 13.5H1.5Z"></path><path d="M8 6.5v3"></path><circle cx="8" cy="11.5" r="0.4"></circle></svg>Needs review</span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-in-review-tint); color: var(--st-in-review); font-size: var(--text-sm); font-weight: 600;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"></circle><path d="M8 2a6 6 0 0 1 0 12Z" fill="currentColor"></path></svg>In review</span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-compliant-tint); color: var(--st-compliant); font-size: var(--text-sm); font-weight: 600;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6"></circle><path d="M5.3 8.2l1.9 1.9 3.6-3.8"></path></svg>Compliant</span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-expiring-soon-tint); color: var(--st-expiring-soon); font-size: var(--text-sm); font-weight: 600;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6"></circle><path d="M8 4.8V8l2.2 1.4"></path></svg>Expiring soon</span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-expired-tint); color: var(--st-expired); font-size: var(--text-sm); font-weight: 600;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6"></circle><path d="M5.8 5.8l4.4 4.4M10.2 5.8l-4.4 4.4"></path></svg>Expired</span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-closed-tint); color: var(--st-closed); font-size: var(--text-sm); font-weight: 600;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2.5" y="2.5" width="11" height="11" rx="2"></rect><path d="M5.5 8h5"></path></svg>Closed</span>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px;">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <span style="font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted);">Check result (per line)</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            <span style="display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px 0 6px; border-radius: var(--radius-sm); background: var(--c-green-tint); color: var(--line-pass); font-size: var(--text-sm); font-weight: 600;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3.5 8.5l3 3 6-6.5"></path></svg>Pass</span>
+            <span style="display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px 0 6px; border-radius: var(--radius-sm); background: var(--c-red-tint); color: var(--line-fail); font-size: var(--text-sm); font-weight: 600;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"></path></svg>Fail</span>
+            <span style="display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px 0 6px; border-radius: var(--radius-sm); background: var(--c-neutral-tint); color: var(--line-waived); font-size: var(--text-sm); font-weight: 600;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"></circle><path d="M4.5 11.5l7-7"></path></svg>Waived</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <span style="font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted);">Payment hold flag (not a status)</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+            <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-sm); background: var(--flag-hold); color: var(--c-on-solid); font-size: var(--text-sm); font-weight: 600;"><svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><rect x="3.5" y="3" width="3" height="10" rx="0.5"></rect><rect x="9.5" y="3" width="3" height="10" rx="0.5"></rect></svg>On payment hold</span>
+            <span style="font-size: var(--text-sm); color: var(--c-ink-muted);">Reasons: Policy expired; No W-9 on file</span>
+          </div>
+        </div>
+      </div>
+      <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">Shape tells kinds apart: rounded pill for record status, square tag for line results, solid black tag for the hold flag. A record can be Compliant and on payment hold at the same time, so the two never merge.</p>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Project tile</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+      <a href="#" style="text-decoration: none; color: var(--c-ink); background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; display: flex; flex-direction: column;" style-hover="box-shadow: var(--shadow-md); border-color: var(--c-border-strong);">
+        <div style="height: 6px; background: var(--tile-at-risk);"></div>
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <span style="display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-sm); background: var(--tile-at-risk); color: var(--c-on-solid); font-size: var(--text-sm); font-weight: 700;"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><rect x="2.5" y="2.5" width="11" height="11" transform="rotate(45 8 8)"></rect></svg>At risk</span>
+            <span style="font-size: var(--text-lg); line-height: var(--lh-lg); font-weight: 600;">Maple Court Residences</span>
+            <span style="font-size: var(--text-base);">Compliant <strong>31</strong> of <strong>35</strong> expected</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+            <span>Expired</span><span style="font-family: var(--font-mono); font-weight: 500; text-align: right; color: var(--c-red-fg);">1</span>
+            <span>Expiring within 30 days</span><span style="font-family: var(--font-mono); font-weight: 500; text-align: right;">2</span>
+            <span>Below required limits</span><span style="font-family: var(--font-mono); font-weight: 500; text-align: right;">1</span>
+          </div>
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 12px; background: var(--c-hold-tint); border-radius: var(--radius-md);">
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: 600;"><svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><rect x="3.5" y="3" width="3" height="10"></rect><rect x="9.5" y="3" width="3" height="10"></rect></svg>On hold this pay cycle</span>
+            <span style="font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 600; font-variant-numeric: tabular-nums;">$6,250</span>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">
+            <span>Compliance records · Oct 8, 9:02 AM</span>
+            <span style="display: inline-flex; align-items: center; gap: 4px; height: 18px; padding: 0 6px; border: 1px dashed var(--c-ink-muted); border-radius: var(--radius-sm); font-weight: 600; color: var(--c-ink);">Sample data</span>
+          </div>
+        </div>
+      </a>
+      <a href="#" style="text-decoration: none; color: var(--c-ink); background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; display: flex; flex-direction: column;" style-hover="box-shadow: var(--shadow-md); border-color: var(--c-border-strong);">
+        <div style="height: 6px; background: var(--tile-watch);"></div>
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <span style="display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-sm); background: var(--tile-watch); color: var(--c-on-solid); font-size: var(--text-sm); font-weight: 700;"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5L15 14H1Z"></path></svg>Watch</span>
+            <span style="font-size: var(--text-lg); line-height: var(--lh-lg); font-weight: 600;">Cedar Point Lofts</span>
+            <span style="font-size: var(--text-base);">Compliant <strong>26</strong> of <strong>28</strong> expected</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+            <span>Expired</span><span style="font-family: var(--font-mono); font-weight: 500; text-align: right;">0</span>
+            <span>Expiring within 30 days</span><span style="font-family: var(--font-mono); font-weight: 500; text-align: right;">2</span>
+            <span>Below required limits</span><span style="font-family: var(--font-mono); font-weight: 500; text-align: right;">0</span>
+          </div>
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 12px; background: var(--c-canvas); border-radius: var(--radius-md);">
+            <span style="font-size: var(--text-sm); font-weight: 600; color: var(--c-ink-muted);">On hold this pay cycle</span>
+            <span style="font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 600; color: var(--c-ink-muted); font-variant-numeric: tabular-nums;">$0</span>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">
+            <span>Compliance records · Oct 8, 9:02 AM</span>
+            <span style="display: inline-flex; align-items: center; gap: 4px; height: 18px; padding: 0 6px; border: 1px dashed var(--c-ink-muted); border-radius: var(--radius-sm); font-weight: 600; color: var(--c-ink);">Sample data</span>
+          </div>
+        </div>
+      </a>
+      <a href="#" style="text-decoration: none; color: var(--c-ink); background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; display: flex; flex-direction: column;" style-hover="box-shadow: var(--shadow-md); border-color: var(--c-border-strong);">
+        <div style="height: 6px; background: var(--tile-on-track);"></div>
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <span style="display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-sm); background: var(--tile-on-track); color: var(--c-on-solid); font-size: var(--text-sm); font-weight: 700;"><svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="6.5"></circle></svg>On track</span>
+            <span style="font-size: var(--text-lg); line-height: var(--lh-lg); font-weight: 600;">Oak Hollow Clinic</span>
+            <span style="font-size: var(--text-base);">Compliant <strong>22</strong> of <strong>22</strong> expected</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+            <span>Expired</span><span style="font-family: var(--font-mono); font-weight: 500; text-align: right;">0</span>
+            <span>Expiring within 30 days</span><span style="font-family: var(--font-mono); font-weight: 500; text-align: right;">0</span>
+            <span>Below required limits</span><span style="font-family: var(--font-mono); font-weight: 500; text-align: right;">0</span>
+          </div>
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 12px; background: var(--c-canvas); border-radius: var(--radius-md);">
+            <span style="font-size: var(--text-sm); font-weight: 600; color: var(--c-ink-muted);">On hold this pay cycle</span>
+            <span style="font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 600; color: var(--c-ink-muted); font-variant-numeric: tabular-nums;">$0</span>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">
+            <span>Compliance records · Oct 8, 9:02 AM</span>
+            <span style="display: inline-flex; align-items: center; gap: 4px; height: 18px; padding: 0 6px; border: 1px dashed var(--c-ink-muted); border-radius: var(--radius-sm); font-weight: 600; color: var(--c-ink);">Sample data</span>
+          </div>
+        </div>
+      </a>
+    </div>
+    <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">Each tile color has its own shape: diamond for At risk, triangle for Watch, circle for On track. Dollars on hold get their own band so money is never just a count. Hover lifts the tile; the whole tile is the link to that project's worklist.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Metric card with source and freshness</h3>
+    <div style="display: grid; grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)); gap: 20px;">
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 24px; display: flex; flex-direction: column; gap: 16px; justify-content: space-between;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: var(--text-sm); font-weight: 600; color: var(--c-ink-muted);">Across 4 projects</span>
+          <span style="font-size: var(--text-2xl); line-height: var(--lh-2xl); font-weight: 700; letter-spacing: -0.01em;">Compliant <span style="font-family: var(--font-mono); font-weight: 600;">109</span> of <span style="font-family: var(--font-mono); font-weight: 600;">121</span> expected</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">
+          <span>Source: Compliance records</span><span>Updated Oct 8, 2026, 9:02 AM</span>
+          <span style="display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border: 1px dashed var(--c-ink-muted); border-radius: var(--radius-sm); font-weight: 600; color: var(--c-ink);">Sample data</span>
+        </div>
+      </div>
+      <a href="#" style="text-decoration: none; color: var(--c-ink); background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 20px; display: flex; flex-direction: column; gap: 10px;" style-hover="border-color: var(--c-border-strong); box-shadow: var(--shadow-md);">
+        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: 600;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--c-red-fg)" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6"></circle><path d="M5.8 5.8l4.4 4.4M10.2 5.8l-4.4 4.4"></path></svg>Expired</span>
+        <span style="font-family: var(--font-mono); font-size: var(--text-2xl); line-height: var(--lh-2xl); font-weight: 600;">1</span>
+        <span style="font-size: var(--text-sm); color: var(--c-blue-fg); font-weight: 600;">View 1 record →</span>
+        <div style="display: flex; flex-direction: column; gap: 2px; font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted); border-top: 1px solid var(--c-border); padding-top: 10px;">
+          <span>Source: Compliance records</span><span>Updated Oct 8, 2026, 9:02 AM · <strong style="color: var(--c-ink);">Sample data</strong></span>
+        </div>
+      </a>
+      <a href="#" style="text-decoration: none; color: var(--c-ink); background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 20px; display: flex; flex-direction: column; gap: 10px;" style-hover="border-color: var(--c-border-strong); box-shadow: var(--shadow-md);">
+        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: 600;"><svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><rect x="3.5" y="3" width="3" height="10"></rect><rect x="9.5" y="3" width="3" height="10"></rect></svg>Dollars on hold</span>
+        <span style="font-family: var(--font-mono); font-size: var(--text-2xl); line-height: var(--lh-2xl); font-weight: 600; font-variant-numeric: tabular-nums;">$6,250</span>
+        <span style="font-size: var(--text-sm); color: var(--c-blue-fg); font-weight: 600;">Open payment hold list →</span>
+        <div style="display: flex; flex-direction: column; gap: 2px; font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted); border-top: 1px solid var(--c-border); padding-top: 10px;">
+          <span>Source: Pay applications</span><span>Updated Oct 8, 2026, 9:02 AM · <strong style="color: var(--c-ink);">Sample data</strong></span>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Table row (worklist)</h3>
+    <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow-x: auto;">
+      <div style="min-width: 900px;">
+        <div style="display: grid; grid-template-columns: minmax(0, 2.2fr) 150px minmax(0, 2fr) 120px minmax(0, 2fr) 92px; gap: 16px; padding: 10px 20px; border-bottom: 1px solid var(--c-border); font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted);">
+          <span>Subcontractor</span><span>Status</span><span>Waiting for</span><span>Expires</span><span>Last action</span><span></span>
+        </div>
+        <div style="padding: 8px 20px; background: var(--c-canvas); border-bottom: 1px solid var(--c-border); font-size: var(--text-xs); font-weight: 700; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink);">Needs you · 2</div>
+        <div style="display: grid; grid-template-columns: minmax(0, 2.2fr) 150px minmax(0, 2fr) 120px minmax(0, 2fr) 92px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--c-border); box-shadow: inset 3px 0 0 var(--c-primary);" style-hover="background: var(--c-canvas);">
+          <span style="display: flex; flex-direction: column;"><span style="font-weight: 600;">Brightway Electric</span><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">REC-014</span></span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-in-review-tint); color: var(--st-in-review); font-size: var(--text-sm); font-weight: 600; justify-self: start;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"></circle><path d="M8 2a6 6 0 0 1 0 12Z" fill="currentColor"></path></svg>In review</span>
+          <span style="font-weight: 600;">Waiting for approval</span>
+          <span style="font-family: var(--font-mono); font-size: var(--text-sm);">Mar 31, 2027</span>
+          <span style="font-size: var(--text-sm); color: var(--c-ink-muted);">Read automatically, Oct 8</span>
+          <button style="height: 32px; padding: 0 14px; border: 1px solid var(--c-primary); border-radius: var(--radius-md); background: var(--c-primary); color: var(--c-on-solid); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer;" style-hover="background: var(--c-primary-hover);">Open</button>
+        </div>
+        <div style="display: grid; grid-template-columns: minmax(0, 2.2fr) 150px minmax(0, 2fr) 120px minmax(0, 2fr) 92px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--c-border); box-shadow: inset 3px 0 0 var(--c-primary);" style-hover="background: var(--c-canvas);">
+          <span style="display: flex; flex-direction: column;"><span style="font-weight: 600;">Summit Mechanical</span><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">REC-021</span></span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-needs-review-tint); color: var(--st-needs-review); font-size: var(--text-sm); font-weight: 600; justify-self: start;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M8 2L14.5 13.5H1.5Z"></path><path d="M8 6.5v3"></path><circle cx="8" cy="11.5" r="0.4"></circle></svg>Needs review</span>
+          <span style="font-weight: 600;">Unreadable file</span>
+          <span style="font-family: var(--font-mono); font-size: var(--text-sm); color: var(--c-ink-muted);">None on file</span>
+          <span style="font-size: var(--text-sm); color: var(--c-ink-muted);">Uploaded by subcontractor, Oct 7</span>
+          <button style="height: 32px; padding: 0 14px; border: 1px solid var(--c-primary); border-radius: var(--radius-md); background: var(--c-primary); color: var(--c-on-solid); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer;" style-hover="background: var(--c-primary-hover);">Open</button>
+        </div>
+        <div style="padding: 8px 20px; background: var(--c-canvas); border-bottom: 1px solid var(--c-border); font-size: var(--text-xs); font-weight: 700; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted);">Everyone else · 33</div>
+        <div style="display: grid; grid-template-columns: minmax(0, 2.2fr) 150px minmax(0, 2fr) 120px minmax(0, 2fr) 92px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--c-border);" style-hover="background: var(--c-canvas);">
+          <span style="display: flex; flex-direction: column;"><span style="font-weight: 600;">Ridgeline Roofing LLC</span><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">REC-001</span></span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-in-review-tint); color: var(--st-in-review); font-size: var(--text-sm); font-weight: 600; justify-self: start;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="6"></circle><path d="M8 2a6 6 0 0 1 0 12Z" fill="currentColor"></path></svg>In review</span>
+          <span>Waiting for a decision on a deficiency</span>
+          <span style="font-family: var(--font-mono); font-size: var(--text-sm);">Jan 15, 2027</span>
+          <span style="font-size: var(--text-sm); color: var(--c-ink-muted);">Sent to Marcus Webb (Project manager), Oct 8</span>
+          <button style="height: 32px; padding: 0 14px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer;" style-hover="background: var(--c-canvas); border-color: var(--c-ink);">Open</button>
+        </div>
+        <div style="display: grid; grid-template-columns: minmax(0, 2.2fr) 150px minmax(0, 2fr) 120px minmax(0, 2fr) 92px; gap: 16px; align-items: center; padding: 14px 20px;" style-hover="background: var(--c-canvas);">
+          <span style="display: flex; flex-direction: column;"><span style="font-weight: 600;">Birchwood Earthworks Inc.</span><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">REC-002</span></span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-expired-tint); color: var(--st-expired); font-size: var(--text-sm); font-weight: 600; justify-self: start;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6"></circle><path d="M5.8 5.8l4.4 4.4M10.2 5.8l-4.4 4.4"></path></svg>Expired</span>
+          <span style="color: var(--c-ink-muted);">Waiting for a new certificate</span>
+          <span style="font-family: var(--font-mono); font-size: var(--text-sm); color: var(--c-red-fg);">Sep 30, 2026</span>
+          <span style="font-size: var(--text-sm); color: var(--c-ink-muted);">7-day follow-up sent by System, Oct 1</span>
+          <button style="height: 32px; padding: 0 14px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer;" style-hover="background: var(--c-canvas); border-color: var(--c-ink);">Open</button>
+        </div>
+      </div>
+    </div>
+    <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">Rows that need the current role sit in a labelled group at the top, with a navy edge and a primary Open button. Everyone else gets the secondary button. ID is small and secondary under the name.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Value-vs-requirement line</h3>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden;">
+        <div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 84px; gap: 12px; padding: 10px 20px; border-bottom: 1px solid var(--c-border); font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted);"><span>Coverage</span><span>Found</span><span>Required</span><span>Result</span></div>
+        <div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 84px; gap: 12px; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--c-border);">
+          <span>General liability</span>
+          <span style="font-family: var(--font-mono); font-size: var(--text-sm); font-variant-numeric: tabular-nums;">$1,000,000</span>
+          <span style="font-family: var(--font-mono); font-size: var(--text-sm); color: var(--c-ink-muted); font-variant-numeric: tabular-nums;">$1,000,000</span>
+          <span style="display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px 0 6px; border-radius: var(--radius-sm); background: var(--c-green-tint); color: var(--line-pass); font-size: var(--text-sm); font-weight: 600; justify-self: start;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3.5 8.5l3 3 6-6.5"></path></svg>Pass</span>
+        </div>
+        <div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 84px; gap: 12px; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--c-border); background: var(--c-red-tint);">
+          <span style="font-weight: 600;">Umbrella</span>
+          <span style="font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 600; color: var(--c-red-fg); font-variant-numeric: tabular-nums;">$1,000,000</span>
+          <span style="font-family: var(--font-mono); font-size: var(--text-sm); font-variant-numeric: tabular-nums;">$2,000,000</span>
+          <span style="display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px 0 6px; border-radius: var(--radius-sm); background: var(--c-surface); color: var(--line-fail); font-size: var(--text-sm); font-weight: 600; justify-self: start;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"></path></svg>Fail</span>
+        </div>
+        <div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 84px; gap: 12px; align-items: start; padding: 12px 20px; border-bottom: 1px solid var(--c-border);">
+          <span style="display: flex; flex-direction: column; gap: 4px;"><span>Additional insured endorsement</span><span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">Waived by Marcus Webb (Project manager), Oct 8: "Owner confirmed in writing; endorsement follows."</span></span>
+          <span style="font-size: var(--text-sm);">Not printed</span>
+          <span style="font-size: var(--text-sm); color: var(--c-ink-muted);">Printed</span>
+          <span style="display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px 0 6px; border-radius: var(--radius-sm); background: var(--c-neutral-tint); color: var(--line-waived); font-size: var(--text-sm); font-weight: 600; justify-self: start;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"></circle><path d="M4.5 11.5l7-7"></path></svg>Waived</span>
+        </div>
+        <div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr) 84px; gap: 12px; align-items: start; padding: 12px 20px; background: var(--c-canvas);">
+          <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font-weight: 600;">Auto</span><span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">Correcting a value. The check runs again when you save.</span></span>
+          <span style="display: flex; flex-direction: column; gap: 6px;">
+            <label style="font-size: var(--text-xs); color: var(--c-ink-muted);">Found</label>
+            <input value="1,000,000" aria-label="Auto limit found" style="height: var(--control-md); width: 100%; box-sizing: border-box; padding: 0 10px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-sm); background: var(--c-surface); font-family: var(--font-mono); font-size: var(--text-sm); color: var(--c-ink);" style-focus="outline: none; box-shadow: var(--shadow-focus); border-color: var(--c-focus);">
+            <span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">Was $100,000</span>
+          </span>
+          <span style="font-family: var(--font-mono); font-size: var(--text-sm); color: var(--c-ink-muted); padding-top: 28px;">$1,000,000</span>
+          <span style="font-size: var(--text-sm); color: var(--c-ink-muted); padding-top: 28px;">Recheck</span>
+        </div>
+      </div>
+      <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">States: pass, fail (row tinted, found value in red), waived (with name, role, date and note), and correcting.</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Confidence indicator</h3>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 20px; display: flex; flex-direction: column; gap: 24px;">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;"><span style="font-weight: 600;">Reading confidence</span><span style="font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 600;">96%</span></div>
+          <div style="position: relative; height: 8px; background: var(--c-sunken); border-radius: var(--radius-pill);">
+            <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 96%; background: var(--c-ink); border-radius: var(--radius-pill);"></div>
+            <div style="position: absolute; left: 85%; top: -4px; bottom: -4px; width: 2px; background: var(--c-ink); box-shadow: 0 0 0 2px var(--c-surface);"></div>
+          </div>
+          <div style="position: relative; height: 16px; font-size: var(--text-xs); color: var(--c-ink-muted);"><span style="position: absolute; left: 85%; transform: translateX(-50%);">85%</span></div>
+          <span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">Above the 85% line. Values were read automatically; you still approve.</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;"><span style="font-weight: 600;">Reading confidence</span><span style="font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 600;">72%</span></div>
+          <div style="position: relative; height: 8px; background: var(--c-sunken); border-radius: var(--radius-pill);">
+            <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 72%; background: var(--c-amber-solid); border-radius: var(--radius-pill);"></div>
+            <div style="position: absolute; left: 85%; top: -4px; bottom: -4px; width: 2px; background: var(--c-ink); box-shadow: 0 0 0 2px var(--c-surface);"></div>
+          </div>
+          <div style="position: relative; height: 16px; font-size: var(--text-xs); color: var(--c-ink-muted);"><span style="position: absolute; left: 85%; transform: translateX(-50%);">85%</span></div>
+          <span style="display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; height: 24px; padding: 0 10px 0 8px; border-radius: var(--radius-pill); background: var(--st-needs-review-tint); color: var(--st-needs-review); font-size: var(--text-sm); font-weight: 600;"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M8 2L14.5 13.5H1.5Z"></path><path d="M8 6.5v3"></path><circle cx="8" cy="11.5" r="0.4"></circle></svg>Below 85%: a person checks every value</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px; background: var(--c-amber-tint); border-radius: var(--radius-md);">
+          <span style="display: flex; flex-direction: column;"><span style="font-weight: 600; color: var(--c-amber-fg);">Unreadable file</span><span style="font-size: var(--text-sm); color: var(--c-ink);">No values could be read. A person must review.</span></span>
+          <span style="font-family: var(--font-mono); font-size: var(--text-lg); font-weight: 600; color: var(--c-amber-fg);">n/a</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Timeline item</h3>
+      <ol style="list-style: none; margin: 0; padding: 20px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); display: flex; flex-direction: column;">
+        <li style="display: grid; grid-template-columns: 20px 1fr; gap: 12px;">
+          <span style="display: flex; flex-direction: column; align-items: center;"><span style="width: 12px; height: 12px; margin-top: 5px; border-radius: 50%; background: var(--c-ink);"></span><span style="flex: 1; width: 2px; background: var(--c-border);"></span></span>
+          <span style="display: flex; flex-direction: column; gap: 2px; padding-bottom: 20px;"><span style="font-size: var(--text-xs); color: var(--c-ink-muted); font-family: var(--font-mono);">Oct 8, 2026 · 10:42 AM</span><span><strong>Dana Reyes</strong> <span style="color: var(--c-ink-muted);">(Accountant)</span></span><span style="font-size: var(--text-sm); line-height: var(--lh-sm);">Approved the certificate.</span></span>
+        </li>
+        <li style="display: grid; grid-template-columns: 20px 1fr; gap: 12px;">
+          <span style="display: flex; flex-direction: column; align-items: center;"><span style="width: 12px; height: 12px; margin-top: 5px; border-radius: 50%; background: var(--c-surface); border: 2px solid var(--c-ink); box-sizing: border-box;"></span><span style="flex: 1; width: 2px; background: var(--c-border);"></span></span>
+          <span style="display: flex; flex-direction: column; gap: 4px; padding-bottom: 20px;"><span style="font-size: var(--text-xs); color: var(--c-ink-muted); font-family: var(--font-mono);">Oct 8, 2026 · 10:40 AM</span><span><strong>Dana Reyes</strong> <span style="color: var(--c-ink-muted);">(Accountant)</span></span><span style="font-size: var(--text-sm); line-height: var(--lh-sm);">Corrected auto limit</span><span style="display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; padding: 4px 8px; background: var(--c-canvas); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: var(--text-sm);"><span style="text-decoration: line-through; color: var(--c-ink-muted);">$100,000</span><span aria-hidden="true">→</span><span style="font-weight: 600;">$1,000,000</span></span></span>
+        </li>
+        <li style="display: grid; grid-template-columns: 20px 1fr; gap: 12px;">
+          <span style="display: flex; flex-direction: column; align-items: center;"><span style="width: 10px; height: 10px; margin-top: 6px; background: var(--c-border-strong); transform: rotate(45deg);"></span></span>
+          <span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-size: var(--text-xs); color: var(--c-ink-muted); font-family: var(--font-mono);">Oct 8, 2026 · 9:15 AM</span><span><strong>System</strong></span><span style="font-size: var(--text-sm); line-height: var(--lh-sm);">Read automatically. Reading confidence 78%, below 85%, so sent to a person.</span></span>
+        </li>
+      </ol>
+      <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">Filled dot: decision. Ring: correction (old → new). Grey diamond: System event.</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Buttons</h3>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 20px; display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: grid; grid-template-columns: 90px 1fr; gap: 12px; align-items: center;">
+          <span style="font-size: var(--text-xs); color: var(--c-ink-muted); font-family: var(--font-mono);">primary</span>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <button style="height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-primary); border-radius: var(--radius-md); background: var(--c-primary); color: var(--c-on-solid); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-primary-hover);" style-focus="outline: none; box-shadow: var(--shadow-focus);">Approve</button>
+            <button style="height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-primary); border-radius: var(--radius-md); background: var(--c-primary-hover); color: var(--c-on-solid); font: inherit; font-weight: 600; box-shadow: var(--shadow-focus);">Focused</button>
+            <button disabled="" style="height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-sunken); border-radius: var(--radius-md); background: var(--c-sunken); color: var(--c-ink-muted); font: inherit; font-weight: 600; cursor: not-allowed;">Waive</button>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 90px 1fr; gap: 12px; align-items: center;">
+          <span style="font-size: var(--text-xs); color: var(--c-ink-muted); font-family: var(--font-mono);">secondary</span>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <button style="height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-canvas); border-color: var(--c-ink);" style-focus="outline: none; box-shadow: var(--shadow-focus);">Correct a value</button>
+            <button style="height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-canvas); border-color: var(--c-ink);" style-focus="outline: none; box-shadow: var(--shadow-focus);">Reject</button>
+            <button disabled="" style="height: var(--control-md); padding: 0 18px; border: 1px dashed var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink-muted); font: inherit; font-weight: 600; cursor: not-allowed;">Disabled</button>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 90px 1fr; gap: 12px; align-items: center;">
+          <span style="font-size: var(--text-xs); color: var(--c-ink-muted); font-family: var(--font-mono);">large · phone</span>
+          <button style="height: var(--control-lg); width: 100%; max-width: 343px; padding: 0 20px; border: 1px solid var(--c-primary); border-radius: var(--radius-md); background: var(--c-primary); color: var(--c-on-solid); font: inherit; font-size: var(--text-md); font-weight: 600; cursor: pointer;" style-hover="background: var(--c-primary-hover);" style-focus="outline: none; box-shadow: var(--shadow-focus);">Choose a PDF and send</button>
+        </div>
+        <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">One primary per view: the next action for this role. Reject stays secondary, so red stays reserved for fail. A disabled button always has a refused-action message beside it.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Refused-action message</h3>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button disabled="" aria-describedby="refuse-1" style="height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-sunken); border-radius: var(--radius-md); background: var(--c-sunken); color: var(--c-ink-muted); font: inherit; font-weight: 600; cursor: not-allowed;">Waive</button>
+          <button disabled="" style="height: var(--control-md); padding: 0 18px; border: 1px dashed var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink-muted); font: inherit; font-weight: 600; cursor: not-allowed;">Reject</button>
+        </div>
+        <div id="refuse-1" role="status" style="display: grid; grid-template-columns: 20px 1fr; gap: 10px; padding: 12px 14px; background: var(--c-canvas); border: 1px solid var(--c-border-strong); border-radius: var(--radius-md);">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--c-ink)" stroke-width="1.6" stroke-linecap="round" style="margin-top: 2px;"><rect x="3" y="7" width="10" height="7" rx="1.5"></rect><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"></path></svg>
+          <span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 600;">Only the project manager or leadership can waive a deficiency.</span><span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">You are viewing as Accountant. Marcus Webb (Project manager) has been asked to decide.</span></span>
+        </div>
+        <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">Calm, not an error: neutral well, lock icon, one plain sentence saying why, then who can act.</p>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Empty state</h3>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 40px 24px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px;">
+        <span style="width: 44px; height: 44px; border-radius: 50%; background: var(--c-green-tint); color: var(--c-green-fg); display: flex; align-items: center; justify-content: center;"><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3.5 8.5l3 3 6-6.5"></path></svg></span>
+        <span style="font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600; max-width: 360px; text-wrap: pretty;">No one is on payment hold for the pay cycle of Oct 15, 2026.</span>
+        <span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">Source: Pay applications · Updated Oct 8, 2026, 9:02 AM · <strong style="color: var(--c-ink);">Sample data</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Skeleton (loading)</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;" aria-busy="true" aria-label="Loading">
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); overflow: hidden;">
+        <div style="height: 6px; background: var(--c-sunken);"></div>
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+          {{ skelTile }}
+        </div>
+      </div>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+        {{ skelMetric }}
+      </div>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 8px 20px; display: flex; flex-direction: column;">
+        {{ skelRows }}
+      </div>
+    </div>
+    <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">Shapes match the loaded layout so nothing jumps when data arrives (server calls take 1 to 3 seconds). Gentle opacity pulse; static when the user prefers reduced motion.</p>
+  </div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 40px;">
+  <div style="display: flex; align-items: baseline; gap: 16px; border-bottom: 1px solid var(--c-ink); padding-bottom: 12px;">
+    <span style="font-family: var(--font-mono); font-size: var(--text-sm); color: var(--c-ink-muted);">03</span>
+    <h2 style="margin: 0; font-size: var(--text-xl); line-height: var(--lh-xl); font-weight: 700;">Round 2 additions</h2>
+    <span style="font-size: var(--text-sm); color: var(--c-ink-muted);">Approved in the Batch A review. No new tokens.</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Navigation tabs</h3>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 0 12px; display: flex; gap: 4px; overflow-x: auto;">
+        <button style="height: 44px; padding: 0 12px; border: 0; background: transparent; font: inherit; font-size: var(--text-sm); font-weight: 500; color: var(--c-ink-muted); white-space: nowrap; cursor: pointer;" style-hover="color: var(--c-ink); box-shadow: inset 0 -3px 0 var(--c-border);">Projects</button>
+        <button style="height: 44px; padding: 0 12px; border: 0; background: transparent; font: inherit; font-size: var(--text-sm); font-weight: 500; color: var(--c-ink-muted); white-space: nowrap; cursor: pointer;" style-hover="color: var(--c-ink); box-shadow: inset 0 -3px 0 var(--c-border);">Compliance dashboard</button>
+        <button aria-current="page" style="height: 44px; padding: 0 12px; border: 0; background: transparent; font: inherit; font-size: var(--text-sm); font-weight: 700; color: var(--c-ink); box-shadow: inset 0 -3px 0 var(--c-ink); white-space: nowrap; cursor: pointer;">Worklist</button>
+        <button style="height: 44px; padding: 0 12px; border: 0; background: transparent; font: inherit; font-size: var(--text-sm); font-weight: 500; color: var(--c-ink-muted); white-space: nowrap; cursor: pointer;" style-hover="color: var(--c-ink); box-shadow: inset 0 -3px 0 var(--c-border);">Payment hold list</button>
+        <button style="height: 44px; padding: 0 12px; border: 0; background: transparent; font: inherit; font-size: var(--text-sm); font-weight: 500; color: var(--c-ink-muted); white-space: nowrap; cursor: pointer;" style-hover="color: var(--c-ink); box-shadow: inset 0 -3px 0 var(--c-border);">Return on investment</button>
+      </div>
+      <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">Current view: bold ink with a 3px ink underline and aria-current. Hover: a grey underline. The same five tabs for every role; only the starting view changes. Below tablet width the row scrolls sideways.</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Back link and project picker</h3>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; gap: 20px; align-items: flex-start;">
+        <button style="display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px 0 6px; border: 0; border-radius: var(--radius-sm); background: transparent; font: inherit; font-size: var(--text-sm); font-weight: 600; color: var(--c-blue-fg); cursor: pointer;" style-hover="background: var(--c-sunken);"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3.5L5.5 8l4.5 4.5"></path></svg>Worklist: Maple Court Residences</button>
+        <label style="display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); color: var(--c-ink-muted);">
+          <span>Project</span>
+          <select aria-label="Project" style="height: 30px; padding: 0 8px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-sm); background: var(--c-surface); font: inherit; font-size: var(--text-sm); font-weight: 600; color: var(--c-ink); cursor: pointer;">
+            <option>Maple Court Residences</option><option>Cedar Point Lofts</option><option>Riverside Commons</option><option>Oak Hollow Clinic</option>
+          </select>
+        </label>
+      </div>
+      <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">The back link names where it goes. The picker is a native select, so the keyboard and the phone get the system control for free.</p>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Review mode control</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 24px;">
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;"><span style="font-size: var(--text-sm); font-weight: 600;">Review mode</span><span style="font-size: var(--text-xs); color: var(--c-ink-muted);">Leadership: enabled</span></div>
+        <div role="radiogroup" aria-label="Review mode" style="display: flex; gap: 2px; padding: 3px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface);">
+          <button role="radio" aria-checked="true" style="flex: 1; height: 34px; padding: 0 12px; border: 0; border-radius: var(--radius-sm); background: var(--c-primary); color: var(--c-on-solid); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer; white-space: nowrap;">Review all</button>
+          <button role="radio" aria-checked="false" style="flex: 1; height: 34px; padding: 0 12px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--c-ink); font: inherit; font-size: var(--text-sm); font-weight: 500; cursor: pointer; white-space: nowrap;" style-hover="background: var(--c-canvas);">Review deficiencies</button>
+          <button role="radio" aria-checked="false" style="flex: 1; height: 34px; padding: 0 12px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--c-ink); font: inherit; font-size: var(--text-sm); font-weight: 500; cursor: pointer; white-space: nowrap;" style-hover="background: var(--c-canvas);">Automatic</button>
+        </div>
+        <span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">Review all: a passing certificate waits for the accountant to approve it.</span>
+      </div>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px;"><span style="font-size: var(--text-sm); font-weight: 600;">Review mode</span><span style="font-size: var(--text-xs); color: var(--c-ink-muted);">Other roles: disabled</span></div>
+        <div role="radiogroup" aria-label="Review mode" aria-disabled="true" style="display: flex; gap: 2px; padding: 3px; border: 1px dashed var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-sunken);">
+          <button role="radio" aria-checked="true" aria-disabled="true" style="flex: 1; height: 34px; padding: 0 12px; border: 1px solid var(--c-ink-muted); border-radius: var(--radius-sm); background: var(--c-surface); color: var(--c-ink); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: not-allowed; white-space: nowrap;">Review all</button>
+          <button role="radio" aria-checked="false" aria-disabled="true" style="flex: 1; height: 34px; padding: 0 12px; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--c-ink-muted); font: inherit; font-size: var(--text-sm); font-weight: 500; cursor: not-allowed; white-space: nowrap;">Review deficiencies</button>
+          <button role="radio" aria-checked="false" aria-disabled="true" style="flex: 1; height: 34px; padding: 0 12px; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--c-ink-muted); font: inherit; font-size: var(--text-sm); font-weight: 500; cursor: not-allowed; white-space: nowrap;">Automatic</button>
+        </div>
+        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="7" width="10" height="7" rx="1.5"></rect><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"></path></svg>Only leadership can change the review mode.</span>
+      </div>
+    </div>
+    <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">Disabled uses aria-disabled rather than disabled, so a press can still show the full refused-action message. The dashed well marks it as not editable without relying on color.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Success message</h3>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+        <div role="status" style="display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: start; padding: 12px 14px; background: var(--c-green-tint); border: 1px solid var(--c-green-fg); border-radius: var(--radius-md);">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--c-green-fg)" stroke-width="2" stroke-linecap="round" style="margin-top: 2px;"><path d="M3.5 8.5l3 3 6-6.5"></path></svg>
+          <span style="font-weight: 600;">Approved. The subcontractor has been emailed.</span>
+        </div>
+        <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">Shown above the record header after an action, with role="status". The text is always the code's own message, from ACTION_DONE in Review.gs.</p>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Error message with "Try again"</h3>
+      <div style="background: var(--c-canvas); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 24px;">
+        <div role="alert" style="display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 24px; background: var(--c-surface); border: 1px solid var(--c-border-strong); border-radius: var(--radius-lg);">
+          <div style="display: grid; grid-template-columns: 24px 1fr; gap: 12px;">
+            <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="var(--c-ink)" stroke-width="1.6" stroke-linecap="round" style="margin-top: 1px;"><circle cx="8" cy="8" r="6.2"></circle><path d="M8 4.8v3.8"></path><circle cx="8" cy="11" r="0.5" fill="var(--c-ink)"></circle></svg>
+            <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">The worklist could not load.</span><span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">The server did not answer. Nothing was changed. Try again in a moment; if it keeps failing, tell the owner of this tool.</span></span>
+          </div>
+          <button style="margin-left: 36px; height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-canvas); border-color: var(--c-ink);">Try again</button>
+        </div>
+      </div>
+      <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">Neutral, because red is reserved for At risk, Expired and fail. It says what failed, that nothing changed, and what to do next.</p>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Text area</h3>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+        <label style="display: flex; flex-direction: column; gap: 6px;">
+          <span style="font-size: var(--text-sm); font-weight: 600;">Waiver note <span style="font-weight: 400; color: var(--c-ink-muted);">(required to waive)</span></span>
+          <textarea rows="3" placeholder="Why is this acceptable? For example: the owner agreed in writing." style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-sm); background: var(--c-surface); font: inherit; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink); resize: vertical;" style-focus="outline: none; box-shadow: var(--shadow-focus); border-color: var(--c-focus);"></textarea>
+        </label>
+        <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">Same edge, radius and focus ring as the input. "Required" is in the label, not just an asterisk.</p>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Email draft preview</h3>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="border: 1px solid var(--c-border); border-radius: var(--radius-md); background: var(--c-canvas); overflow: hidden;">
+          <div style="display: grid; grid-template-columns: 64px 1fr; gap: 4px 12px; padding: 10px 14px; border-bottom: 1px solid var(--c-border); font-size: var(--text-sm); line-height: var(--lh-sm);">
+            <span style="color: var(--c-ink-muted);">To</span><span>office@lakeshoreglazing.example</span>
+            <span style="color: var(--c-ink-muted);">Subject</span><span style="font-weight: 600;">Certificate of insurance: Lakeshore Glazing Co.</span>
+          </div>
+          <div style="padding: 14px; white-space: pre-wrap; font-size: var(--text-sm); line-height: var(--lh-sm);">Please resend your certificate as a standard PDF. Upload it here: [upload link]</div>
+        </div>
+        <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">The fixed text from resendText and correctionText in Lifecycle.gs, word for word. Shown before sending; nothing goes out until the person presses the button.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Certificate-style page</h3>
+    <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start;">
+      <div style="width: 340px; background: var(--c-sunken); padding: 20px; border-radius: var(--radius-lg);">
+        <div role="img" aria-label="Sample certificate page" style="position: relative; background: var(--c-surface); aspect-ratio: 8.5 / 11; box-shadow: var(--shadow-md); padding: 7%; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; overflow: hidden; font-size: 8px; line-height: 11px; color: var(--c-ink);">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; border-bottom: 1.5px solid var(--c-ink); padding-bottom: 8px;">
+            <div style="display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 10px; line-height: 13px; font-weight: 700;">Certificate of insurance</span><span style="color: var(--c-ink-muted);">Generic certificate-style layout</span></div>
+            <span style="padding: 3px 4px; border: 1.5px solid var(--c-ink); font-weight: 700; white-space: nowrap;">SAMPLE: fictional certificate</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px;">
+            <div style="display: flex; flex-direction: column;"><span style="font-size: 7px; font-weight: 700; text-transform: uppercase; color: var(--c-ink-muted);">Insured</span><span style="font-weight: 600;">Brightway Electric</span></div>
+            <div style="display: flex; flex-direction: column;"><span style="font-size: 7px; font-weight: 700; text-transform: uppercase; color: var(--c-ink-muted);">Issued by</span><span style="font-weight: 600;">Fairhaven Insurance Agency</span></div>
+          </div>
+          <div style="display: flex; flex-direction: column; border: 1px solid var(--c-border-strong);">
+            <div style="display: grid; grid-template-columns: 1.5fr 1fr; padding: 3px 6px; background: var(--c-sunken); font-weight: 700;"><span>Coverage</span><span>Limit</span></div>
+            <div style="display: grid; grid-template-columns: 1.5fr 1fr; padding: 3px 6px; border-top: 1px solid var(--c-border);"><span>General liability</span><span style="font-family: var(--font-mono);">$1,000,000</span></div>
+            <div style="display: grid; grid-template-columns: 1.5fr 1fr; padding: 3px 6px; border-top: 1px solid var(--c-border);"><span>Aggregate</span><span style="font-family: var(--font-mono);">$2,000,000</span></div>
+            <div style="display: grid; grid-template-columns: 1.5fr 1fr; padding: 3px 6px; border-top: 1px solid var(--c-border);"><span>Umbrella</span><span style="font-family: var(--font-mono);">$2,000,000</span></div>
+          </div>
+          <div style="height: 5px; width: 90%; background: var(--c-sunken);"></div>
+          <div style="height: 5px; width: 70%; background: var(--c-sunken);"></div>
+          <span aria-hidden="true" style="position: absolute; left: 50%; top: 58%; transform: translate(-50%, -50%) rotate(-28deg); font-size: 48px; line-height: 1; font-weight: 700; color: var(--c-ink); opacity: .05; white-space: nowrap;">SAMPLE</span>
+        </div>
+      </div>
+      <p style="margin: 0; flex: 1 1 320px; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">A stand-in for the pdf.js canvases, for mockups only (§3.7). Not the industry form: only a title, two name blocks, a coverage table using the code's labels, placeholder bars, a "SAMPLE: fictional certificate" stamp and a faint watermark. Two more states: unreadable (the page blurred, with a caption) and no file (a dashed empty frame).</p>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Selected metric card</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <button aria-pressed="false" style="text-align: left; font: inherit; color: var(--c-ink); background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 20px; display: flex; flex-direction: column; gap: 10px; cursor: pointer;" style-hover="border-color: var(--c-border-strong);">
+          <span style="display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: 600;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--c-red-fg)" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6"></circle><path d="M5.8 5.8l4.4 4.4M10.2 5.8l-4.4 4.4"></path></svg>Expired</span>
+          <span style="font-family: var(--font-mono); font-size: var(--text-2xl); line-height: var(--lh-2xl); font-weight: 600;">1</span>
+          <span style="font-size: var(--text-sm); color: var(--c-blue-fg); font-weight: 600;">View 1 record →</span>
+          <span style="display: flex; flex-direction: column; gap: 2px; font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted); border-top: 1px solid var(--c-border); padding-top: 10px;"><span>Source: Certificates</span><span>Updated Oct 8, 2026, 9:20 AM · <strong style="color: var(--c-ink);">Sample data</strong></span></span>
+        </button>
+        <button aria-pressed="true" style="text-align: left; font: inherit; color: var(--c-ink); background: var(--c-surface); border: 1px solid var(--c-ink); border-radius: var(--radius-lg); box-shadow: inset 0 -3px 0 var(--c-ink), var(--shadow-sm); padding: 20px; display: flex; flex-direction: column; gap: 10px; cursor: pointer;">
+          <span style="display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: 600;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--c-amber-fg)" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="6"></circle><path d="M8 4.8V8l2.2 1.4"></path></svg>Expiring within 30 days</span>
+          <span style="font-family: var(--font-mono); font-size: var(--text-2xl); line-height: var(--lh-2xl); font-weight: 600;">5</span>
+          <span style="font-size: var(--text-sm); color: var(--c-blue-fg); font-weight: 600;">View 5 records →</span>
+          <span style="display: flex; flex-direction: column; gap: 2px; font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted); border-top: 1px solid var(--c-border); padding-top: 10px;"><span>Source: Certificates</span><span>Updated Oct 8, 2026, 9:20 AM · <strong style="color: var(--c-ink);">Sample data</strong></span></span>
+        </button>
+      </div>
+      <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">The metric card from section 02 as a button. Selected: ink edge, a 3px ink bar along the bottom, and aria-pressed="true". The records behind the selected card are listed below the cards.</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Hold summary band</h3>
+      <div style="display: flex; align-items: stretch; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); flex-wrap: wrap;">
+        <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 2px; border-right: 1px solid var(--c-border);"><span style="font-size: var(--text-sm); font-weight: 600; color: var(--c-ink-muted);">Pay date of the current cycle</span><span style="font-family: var(--font-mono); font-size: var(--text-lg); line-height: var(--lh-lg); font-weight: 600;">Oct 15, 2026</span></div>
+        <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 2px; border-right: 1px solid var(--c-border);"><span style="display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: 600; color: var(--c-ink-muted);"><svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><rect x="3.5" y="3" width="3" height="10"></rect><rect x="9.5" y="3" width="3" height="10"></rect></svg><span>Total dollars on hold</span></span><span style="font-family: var(--font-mono); font-size: var(--text-2xl); line-height: var(--lh-2xl); font-weight: 600;">$6,250</span></div>
+        <div style="padding: 16px 20px; display: flex; flex-direction: column; justify-content: center; gap: 4px; flex: 1; min-width: 200px; font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);"><span>Source: Pay applications, Compliance records · Maple Court Residences</span><span>Updated Oct 6, 2026, 7:00 AM (pay-cycle check)</span><span style="display: inline-flex; align-self: flex-start; align-items: center; height: 18px; padding: 0 6px; border: 1px dashed var(--c-ink-muted); border-radius: var(--radius-sm); font-weight: 600; color: var(--c-ink);">Sample data</span></div>
+      </div>
+      <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">Pay date, total on hold and source in one strip, covering one project, as the code does. It sits at the top of the payment hold list so the money is never below the fold (§8.2). The compact version above the tiles is a button to the list.</p>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Tile color legend</h3>
+    <div style="display: flex; gap: 12px 32px; flex-wrap: wrap; align-items: baseline; padding: 14px 18px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg);">
+      <span style="font-size: var(--text-sm); font-weight: 700;">How the color is chosen <span style="font-weight: 400; color: var(--c-ink-muted);">(first match wins)</span></span>
+      <span style="display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);"><svg width="12" height="12" viewBox="0 0 16 16" fill="var(--tile-at-risk)"><rect x="2.5" y="2.5" width="11" height="11" transform="rotate(45 8 8)"></rect></svg><strong>At risk:</strong> anyone expired or on payment hold</span>
+      <span style="display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);"><svg width="12" height="12" viewBox="0 0 16 16" fill="var(--tile-watch)"><path d="M8 1.5L15 14H1Z"></path></svg><strong>Watch:</strong> anyone expiring within 30 days, awaiting, needing review or with a certificate in the queue</span>
+      <span style="display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);"><svg width="12" height="12" viewBox="0 0 16 16" fill="var(--tile-on-track)"><circle cx="8" cy="8" r="6.5"></circle></svg><strong>On track:</strong> everyone compliant</span>
+    </div>
+    <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">Sits under the tiles. Each rule keeps its tile shape, so it works without color and answers "why is this red?" without adding a number.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">ROI line row, input row and "Not shown" message <span style="font-weight: 400; color: var(--c-ink-muted);">(ROI page only)</span></h3>
+    <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow-x: auto;">
+      <div style="min-width: 860px;">
+        <div style="display: grid; grid-template-columns: minmax(0, 3fr) 140px 140px 140px; gap: 16px; padding: 10px 20px; border-bottom: 1px solid var(--c-border); font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted);"><span>Line</span><span style="text-align: right;">Low case</span><span style="text-align: right;">Likely</span><span style="text-align: right;">High case</span></div>
+        <div style="display: grid; grid-template-columns: minmax(0, 3fr) 140px 140px 140px; gap: 16px; align-items: baseline; padding: 14px 20px; border-bottom: 1px solid var(--c-border);">
+          <span style="display: flex; flex-direction: column; gap: 2px;"><span>Audit prep saved</span><span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">hours saved per audit × audits per year × accountant cost per hour</span></span>
+          <span style="font-family: var(--font-mono); text-align: right;">$320</span><span style="font-family: var(--font-mono); text-align: right;">$650</span><span style="font-family: var(--font-mono); text-align: right;">$2,640</span>
+        </div>
+        <div style="display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 452px); gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--c-border); background: var(--c-canvas);">
+          <span style="display: flex; flex-direction: column; gap: 2px;"><span>Lapse risk avoided</span><span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">payments to a lapsed subcontractor per year × cost per claim × share the tool catches</span></span>
+          <span style="display: grid; grid-template-columns: 16px 1fr; gap: 8px; align-items: start; justify-self: end; padding: 8px 12px; border: 1px dashed var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface);"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--c-ink)" stroke-width="1.6" stroke-linecap="round" style="margin-top: 3px;"><rect x="3" y="7" width="10" height="7" rx="1.5"></rect><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"></path></svg><span style="font-size: var(--text-sm); line-height: var(--lh-sm);"><strong>Not shown.</strong> Missing: the basis for cost when a lapse leads to a claim.</span></span>
+        </div>
+        <div style="display: grid; grid-template-columns: minmax(0, 3fr) 140px 140px 140px; gap: 16px; align-items: baseline; padding: 14px 20px; border-top: 2px solid var(--c-ink);">
+          <span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 700;">Net value</span><span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">hours saved + lapse risk avoided + audit prep saved − running cost</span></span>
+          <span style="font-family: var(--font-mono); text-align: right; font-weight: 700;">$1,050</span><span style="font-family: var(--font-mono); text-align: right; font-weight: 700;">$11,283</span><span style="font-family: var(--font-mono); text-align: right; font-weight: 700;">$57,759</span>
+        </div>
+      </div>
+    </div>
+    <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow-x: auto;">
+      <div style="min-width: 900px;">
+        <div style="display: grid; grid-template-columns: minmax(0, 2.4fr) 100px 100px 100px minmax(0, 3fr); gap: 16px; padding: 10px 20px; border-bottom: 1px solid var(--c-border); font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted);"><span>Input</span><span style="text-align: right;">Low case</span><span style="text-align: right;">Likely</span><span style="text-align: right;">High case</span><span>Basis</span></div>
+        <div style="display: grid; grid-template-columns: minmax(0, 2.4fr) 100px 100px 100px minmax(0, 3fr); gap: 16px; align-items: baseline; padding: 11px 20px; border-bottom: 1px solid var(--c-border);">
+          <span style="font-size: var(--text-sm);">Reading spend per year</span><span style="font-family: var(--font-mono); font-size: var(--text-sm); text-align: right;">$0.27</span><span style="font-family: var(--font-mono); font-size: var(--text-sm); text-align: right; font-weight: 600;">$0.53</span><span style="font-family: var(--font-mono); font-size: var(--text-sm); text-align: right;">$1.33</span>
+          <span style="font-size: var(--text-sm);"><strong>sourced:</strong> <span style="color: var(--c-ink-muted);">research note C4 (reading cost)</span></span>
+        </div>
+        <div style="display: grid; grid-template-columns: minmax(0, 2.4fr) 100px 100px 100px minmax(0, 3fr); gap: 16px; align-items: baseline; padding: 11px 20px; border-bottom: 1px solid var(--c-border);">
+          <span style="font-size: var(--text-sm);">Upkeep hours per month</span><span style="font-family: var(--font-mono); font-size: var(--text-sm); text-align: right;">6 h</span><span style="font-family: var(--font-mono); font-size: var(--text-sm); text-align: right; font-weight: 600;">4 h</span><span style="font-family: var(--font-mono); font-size: var(--text-sm); text-align: right;">2 h</span>
+          <span style="font-size: var(--text-sm);"><strong>estimate:</strong> <span style="color: var(--c-ink-muted);">placeholder, set in the ROI ticket</span></span>
+        </div>
+        <div style="display: grid; grid-template-columns: minmax(0, 2.4fr) 100px 100px 100px minmax(0, 3fr); gap: 16px; align-items: baseline; padding: 11px 20px; box-shadow: inset 0 0 0 1px var(--c-border-strong); background: var(--c-canvas);">
+          <span style="font-size: var(--text-sm); font-weight: 600;">Cost when a lapse leads to a claim</span><span style="font-family: var(--font-mono); font-size: var(--text-sm); text-align: right;">$5,000</span><span style="font-family: var(--font-mono); font-size: var(--text-sm); text-align: right; font-weight: 600;">$15,000</span><span style="font-family: var(--font-mono); font-size: var(--text-sm); text-align: right;">$40,000</span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: 600;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="7" width="10" height="7" rx="1.5"></rect><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"></path></svg>Missing basis. Add "sourced:" or "estimate:" with the reasoning.</span>
+        </div>
+      </div>
+    </div>
+    <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">Line row: the name, a how-it's-worked-out sentence in plain words, then low, likely and high in mono. Net value gets an ink rule above it. When an input lacks a value or basis, the line is replaced by the dashed "Not shown" message, which names the missing input, and the input row is outlined. "Not shown" is used on the ROI page only.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h3 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Record detail at narrow width <span style="font-weight: 400; color: var(--c-ink-muted);">· approved in the Batch C review · no new tokens</span></h3>
+    <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 20px 24px; display: flex; flex-direction: column; gap: 14px;">
+      <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); max-width: 820px; text-wrap: pretty;">The rule uses a container query on the PDF-and-values row (<span style="font-family: var(--font-mono);">.rd-split</span>, <span style="font-family: var(--font-mono);">container-type: inline-size</span>), not a screen-width rule. It follows the component's own width, so it also works inside a frame. At 1440 the screen is pixel-identical to the approved version.</p>
+      <div style="display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 0; border: 1px solid var(--c-border); border-radius: var(--radius-md); overflow: hidden; font-size: var(--text-sm); line-height: var(--lh-sm);">
+        <span style="padding: 10px 14px; background: var(--c-canvas); border-bottom: 1px solid var(--c-border); font-weight: 600;">Component width</span><span style="padding: 10px 14px; background: var(--c-canvas); border-bottom: 1px solid var(--c-border); font-weight: 600;">What changes</span>
+        <span style="padding: 10px 14px; border-bottom: 1px solid var(--c-border); font-family: var(--font-mono);">984 px and wider</span><span style="padding: 10px 14px; border-bottom: 1px solid var(--c-border);">Nothing. The PDF and values sit side by side and the PDF pane is sticky.</span>
+        <span style="padding: 10px 14px; border-bottom: 1px solid var(--c-border); font-family: var(--font-mono);">Under 984 px</span><span style="padding: 10px 14px; border-bottom: 1px solid var(--c-border);">The columns stack (440 + 24 + 520 no longer fit). The PDF pane stops being sticky, so it can't cover the values. That is a page of about 1048 wide.</span>
+        <span style="padding: 10px 14px; font-family: var(--font-mono);">Under 576 px</span><span style="padding: 10px 14px;">Each value line becomes two rows: the label and result, then Found and Required side by side. The column header hides, and Found and Required get small caps labels (<span style="font-family: var(--font-mono);">--text-xs</span>, <span style="font-family: var(--font-mono);">--tracking-caps</span>, <span style="font-family: var(--font-mono);">--c-ink-muted</span>). In editing mode the label takes the full first row and the edit note drops to a third row. Edit inputs are 127 px at 375. That is a page of about 640 wide.</span>
+      </div>
+      <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); text-wrap: pretty;">The "Below 85%: a person checks every value" pill also has a minimum height now instead of a fixed one (24 px, 3 px vertical padding, <span style="font-family: var(--font-mono);">--lh-sm</span>), so it grows to two lines on a phone. It is unchanged on one line. Live examples are in Batch C, frames 4p and 4q.</p>
+    </div>
+  </div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { role: 'accountant', vars: null, css: '' };
+  componentDidMount() {
+    const read = () => {
+      const cs = getComputedStyle(document.documentElement);
+      const v = n => cs.getPropertyValue(n).trim().toUpperCase();
+      if (!v('--c-surface')) return setTimeout(read, 100);
+      const out = {};
+      ['surface','canvas','sunken','on-solid','ink','ink-muted','border','border-strong','primary','focus'].forEach(k => out[k] = v('--c-' + k));
+      ['green','amber','red','blue','violet','neutral','hold'].forEach(f => ['fg','solid','tint'].forEach(t => out[f + '-' + t] = v('--c-' + f + '-' + t)));
+      this.setState({ vars: out });
+    };
+    read();
+    fetch('./tokens.css').then(r => r.text()).then(css => this.setState({ css })).catch(() => {});
+  }
+  lum(h) {
+    h = h.replace('#', '');
+    const c = [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16) / 255).map(x => x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4));
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  ratio(a, b) {
+    const x = this.lum(a), y = this.lum(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  }
+  check(a, b, need) {
+    const r = this.ratio(a, b);
+    return { ratio: r.toFixed(2) + ':1', need: need + ':1', pass: r >= need, fail: r < need };
+  }
+  skel(w, h, extra) {
+    const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return React.createElement('div', { style: Object.assign({ width: w, height: h, borderRadius: 'var(--radius-sm)', background: 'var(--c-sunken)', animation: reduce ? 'none' : 'skel var(--motion-skeleton)' }, extra || {}) });
+  }
+  renderVals() {
+    const V = this.state.vars;
+    const fams = [
+      ['green', 'Green', 'Compliant · On track · Pass'],
+      ['amber', 'Amber', 'Needs review · Expiring soon · Watch'],
+      ['red', 'Red', 'Expired · At risk · Fail'],
+      ['blue', 'Blue', 'Awaiting'],
+      ['violet', 'Violet', 'In review'],
+      ['neutral', 'Neutral', 'Closed · Waived'],
+      ['hold', 'Hold (ink)', 'Payment hold flag']
+    ];
+    const statusRows = V ? fams.map(([k, name, uses]) => ({
+      name, uses, fg: V[k + '-fg'], tint: V[k + '-tint'],
+      checks: [
+        this.check(V[k + '-fg'], V.surface, 4.5),
+        this.check(V[k + '-fg'], V.canvas, 4.5),
+        this.check(V[k + '-fg'], V[k + '-tint'], 4.5),
+        this.check(V['on-solid'], V[k + '-solid'], 4.5),
+        this.check(V[k + '-solid'], V.surface, 3)
+      ],
+      tintRatio: this.ratio(V[k + '-tint'], V.surface).toFixed(2) + ':1'
+    })) : undefined;
+    const u = (token, key, against, bg, need) => {
+      const c = need ? this.check(V[key], V[bg], need) : { ratio: this.ratio(V[key], V[bg]).toFixed(2) + ':1', need: '', pass: false, fail: false };
+      return Object.assign({ token, hex: V[key], against, info: !need }, c);
+    };
+    const uiRows = V ? [
+      u('--c-ink', 'ink', 'Text on surface', 'surface', 4.5),
+      u('--c-ink', 'ink', 'Text on sunken', 'sunken', 4.5),
+      u('--c-ink-muted', 'ink-muted', 'Text on surface', 'surface', 4.5),
+      u('--c-ink-muted', 'ink-muted', 'Text on canvas', 'canvas', 4.5),
+      u('--c-ink-muted', 'ink-muted', 'Text on sunken (disabled buttons)', 'sunken', 4.5),
+      u('--c-on-solid', 'on-solid', 'Label on --c-primary', 'primary', 4.5),
+      u('--c-border-strong', 'border-strong', 'Input and button edge vs surface', 'surface', 3),
+      u('--c-border-strong', 'border-strong', 'Input and button edge vs canvas', 'canvas', 3),
+      u('--c-focus', 'focus', 'Focus ring vs surface', 'surface', 3),
+      u('--c-focus', 'focus', 'Focus ring vs canvas', 'canvas', 3),
+      u('--c-border', 'border', 'Divider vs surface', 'surface', 0)
+    ] : undefined;
+    const names = { accountant: 'Accountant', project_manager: 'Project manager', leadership: 'Leadership' };
+    const roles = Object.keys(names).map(k => ({ label: names[k], on: this.state.role === k, off: this.state.role !== k, pick: () => this.setState({ role: k }) }));
+    const S = (w, h, x) => this.skel(w, h, x);
+    const row = i => React.createElement('div', { key: i, style: { display: 'grid', gridTemplateColumns: '1.6fr 1fr 0.8fr', gap: 12, alignItems: 'center', padding: '14px 0', borderBottom: i < 3 ? '1px solid var(--c-border)' : 'none' } }, S('80%', 14), S(96, 22, { borderRadius: 'var(--radius-pill)' }), S('70%', 12));
+    return {
+      statusRows, uiRows, roles, roleName: names[this.state.role],
+      css: this.state.css || 'Loading tokens.css…',
+      spaces: [['--space-1', '2px'], ['--space-2', '4px'], ['--space-3', '8px'], ['--space-4', '12px'], ['--space-5', '16px'], ['--space-6', '20px'], ['--space-7', '24px'], ['--space-8', '32px'], ['--space-9', '40px'], ['--space-10', '48px'], ['--space-11', '64px']].map(([name, px]) => ({ name, px })),
+      skelTile: [S(72, 24, { key: 1 }), S('70%', 20, { key: 2 }), S('55%', 14, { key: 3 }), S('100%', 12, { key: 4 }), S('100%', 12, { key: 5 }), S('100%', 44, { key: 6, borderRadius: 'var(--radius-md)' }), S('60%', 10, { key: 7 })],
+      skelMetric: [S('40%', 14, { key: 1 }), S('30%', 36, { key: 2 }), S('50%', 14, { key: 3 }), S('75%', 10, { key: 4, marginTop: 8 })],
+      skelRows: [0, 1, 2, 3].map(row)
+    };
+  }
+}
+</script>
+</body>
+</html>

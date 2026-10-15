@@ -1,0 +1,11 @@
+{
+  "name": "coi-poc-dev",
+  "private": true,
+  "description": "Development tooling only. Nothing here deploys to Apps Script, and there are no dependencies.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

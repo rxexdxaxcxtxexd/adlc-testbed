@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="./tokens.css">
+<style>body{margin:0;background:var(--c-canvas);color:var(--c-ink);font-family:var(--font-sans);font-size:var(--text-base);line-height:var(--lh-base);-webkit-font-smoothing:antialiased}a{color:var(--c-blue-fg)}a:hover{color:var(--c-primary-hover)}*:focus-visible{outline:none;box-shadow:var(--shadow-focus)}@keyframes skel{0%,100%{opacity:1}50%{opacity:.55}}</style>
+</helmet>
+<div style="min-height: 100%; background: var(--c-canvas); font-family: var(--font-sans); color: var(--c-ink); font-size: var(--text-base); line-height: var(--lh-base);">
+<dc-import name="Chrome" role="{{ role }}" active="worklist" on-role="{{ setRole }}" on-nav="{{ onNav }}" hint-size="100%,110px"></dc-import>
+<main style="max-width: 1440px; box-sizing: border-box; margin: 0 auto; padding: 28px 32px 64px; display: flex; flex-direction: column; gap: 24px;">
+
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 20px 32px; flex-wrap: wrap;">
+    <div style="display: flex; flex-direction: column; gap: 8px; min-width: 0;">
+      <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <span style="font-size: var(--text-xs); font-weight: 700; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted);">Worklist</span>
+        <label style="display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); color: var(--c-ink-muted);">
+          <span>Project</span>
+          <select aria-label="Project" value="{{ projectKey }}" onChange="{{ noop }}" style="height: 30px; padding: 0 8px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-sm); background: var(--c-surface); font: inherit; font-size: var(--text-sm); font-weight: 600; color: var(--c-ink); cursor: pointer;">
+            <option value="maple">Maple Court Residences</option>
+            <option value="cedar">Cedar Point Lofts</option>
+            <option value="riverside">Riverside Commons</option>
+            <option value="oak">Oak Hollow Clinic</option>
+          </select>
+        </label>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;">
+        <h1 style="margin: 0; font-size: var(--text-xl); line-height: var(--lh-xl); font-weight: 700;">{{ projectName }}</h1>
+        <span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">{{ projectId }}</span>
+      </div>
+      <sc-if value="{{ isLoaded }}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; align-items: center; gap: 6px 14px; flex-wrap: wrap;">
+          <span style="font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">Compliant <span style="font-family: var(--font-mono);">{{ compliant }}</span> of <span style="font-family: var(--font-mono);">{{ expected }}</span> expected</span>
+          <span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">Source: Compliance records · Updated Oct 8, 2026, 9:20 AM</span>
+          <span style="display: inline-flex; align-items: center; gap: 4px; height: 18px; padding: 0 6px; border: 1px dashed var(--c-ink-muted); border-radius: var(--radius-sm); font-size: var(--text-xs); font-weight: 600; color: var(--c-ink);">Sample data</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+        <div aria-hidden="true" style="display: flex; align-items: center; gap: 14px;">{{ skHeadline }}</div>
+      </sc-if>
+    </div>
+
+    <sc-if value="{{ isLoaded }}" hint-placeholder-val="{{ true }}">
+      <div style="width: 480px; max-width: 100%; box-sizing: border-box; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap;">
+          <span style="font-size: var(--text-sm); font-weight: 600;">Review mode</span>
+          <span style="font-size: var(--text-xs); color: var(--c-ink-muted);">{{ modeSetBy }}</span>
+        </div>
+        <sc-if value="{{ canChange }}" hint-placeholder-val="{{ false }}">
+          <div role="radiogroup" aria-label="Review mode" style="display: flex; gap: 2px; padding: 3px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface);">
+            <sc-for list="{{ modes }}" as="m" hint-placeholder-count="3">
+              <sc-if value="{{ m.on }}" hint-placeholder-val="{{ false }}"><button role="radio" aria-checked="true" onClick="{{ m.pick }}" style="flex: 1; height: 34px; padding: 0 12px; border: 0; border-radius: var(--radius-sm); background: var(--c-primary); color: var(--c-on-solid); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer; white-space: nowrap;">{{ m.label }}</button></sc-if>
+              <sc-if value="{{ m.off }}" hint-placeholder-val="{{ true }}"><button role="radio" aria-checked="false" onClick="{{ m.pick }}" style="flex: 1; height: 34px; padding: 0 12px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--c-ink); font: inherit; font-size: var(--text-sm); font-weight: 500; cursor: pointer; white-space: nowrap;" style-hover="background: var(--c-canvas);">{{ m.label }}</button></sc-if>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ cannotChange }}" hint-placeholder-val="{{ true }}">
+          <div role="radiogroup" aria-label="Review mode" aria-disabled="true" style="display: flex; gap: 2px; padding: 3px; border: 1px dashed var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-sunken);">
+            <sc-for list="{{ modes }}" as="m" hint-placeholder-count="3">
+              <sc-if value="{{ m.on }}" hint-placeholder-val="{{ false }}"><button role="radio" aria-checked="true" aria-disabled="true" onClick="{{ m.pick }}" style="flex: 1; height: 34px; padding: 0 12px; border: 1px solid var(--c-ink-muted); border-radius: var(--radius-sm); background: var(--c-surface); color: var(--c-ink); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: not-allowed; white-space: nowrap;">{{ m.label }}</button></sc-if>
+              <sc-if value="{{ m.off }}" hint-placeholder-val="{{ true }}"><button role="radio" aria-checked="false" aria-disabled="true" onClick="{{ m.pick }}" style="flex: 1; height: 34px; padding: 0 12px; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--c-ink-muted); font: inherit; font-size: var(--text-sm); font-weight: 500; cursor: not-allowed; white-space: nowrap;">{{ m.label }}</button></sc-if>
+            </sc-for>
+          </div>
+        </sc-if>
+        <span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted); text-wrap: pretty;">{{ modeHelp }}</span>
+        <sc-if value="{{ modeChanged }}" hint-placeholder-val="{{ false }}">
+          <span role="status" style="font-size: var(--text-sm); line-height: var(--lh-sm); font-weight: 600;">Applies to certificates that arrive after the change.</span>
+        </sc-if>
+        <sc-if value="{{ showLockNote }}" hint-placeholder-val="{{ true }}">
+          <span style="display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="7" width="10" height="7" rx="1.5"></rect><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"></path></svg>Only leadership can change the review mode.</span>
+        </sc-if>
+        <sc-if value="{{ refused }}" hint-placeholder-val="{{ false }}">
+          <div role="status" style="display: grid; grid-template-columns: 20px 1fr; gap: 10px; padding: 12px 14px; background: var(--c-canvas); border: 1px solid var(--c-border-strong); border-radius: var(--radius-md);">
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--c-ink)" stroke-width="1.6" stroke-linecap="round" style="margin-top: 2px;"><rect x="3" y="7" width="10" height="7" rx="1.5"></rect><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"></path></svg>
+            <span style="display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 600;">Only leadership can change the review mode.</span><span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">You are viewing as {{ roleLabel }}. Elena Park (Leadership) can change it. Nothing was changed.</span></span>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+    <div role="alert" style="display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 28px; background: var(--c-surface); border: 1px solid var(--c-border-strong); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);">
+      <div style="display: grid; grid-template-columns: 24px 1fr; gap: 12px;">
+        <svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="var(--c-ink)" stroke-width="1.6" stroke-linecap="round" style="margin-top: 1px;"><circle cx="8" cy="8" r="6.2"></circle><path d="M8 4.8v3.8"></path><circle cx="8" cy="11" r="0.5" fill="var(--c-ink)"></circle></svg>
+        <span style="display: flex; flex-direction: column; gap: 4px;"><span style="font-size: var(--text-md); line-height: var(--lh-md); font-weight: 600;">The worklist could not load.</span><span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); max-width: 620px; text-wrap: pretty;">The server did not answer. Nothing was changed. Try again in a moment; if it keeps failing, tell the owner of this tool.</span></span>
+      </div>
+      <button onClick="{{ retry }}" style="margin-left: 36px; height: var(--control-md); padding: 0 18px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink); font: inherit; font-weight: 600; cursor: pointer;" style-hover="background: var(--c-canvas); border-color: var(--c-ink);">Try again</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+    <div aria-busy="true" aria-label="Loading the worklist" style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 8px 20px;">{{ skRows }}</div>
+  </sc-if>
+
+  <sc-if value="{{ isLoaded }}" hint-placeholder-val="{{ true }}">
+    <div role="table" aria-label="Compliance records" style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow-x: auto;">
+      <div style="min-width: 1000px;">
+        <div role="row" style="display: grid; grid-template-columns: minmax(0, 2.2fr) 180px minmax(0, 2fr) 128px minmax(0, 2.2fr) 84px; gap: 16px; padding: 10px 20px; border-bottom: 1px solid var(--c-border); font-size: var(--text-xs); font-weight: 600; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted);">
+          <span>Subcontractor</span><span>Status</span><span>Waiting for</span><span>Expires</span><span>Last action</span><span></span>
+        </div>
+        <div style="padding: 8px 20px; background: var(--c-canvas); border-bottom: 1px solid var(--c-border); font-size: var(--text-xs); font-weight: 700; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink);">Needs you · {{ roleLabel }}</div>
+        <sc-if value="{{ needEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--c-border);">
+            <span style="width: 32px; height: 32px; border-radius: 50%; background: var(--c-green-tint); color: var(--c-green-fg); display: flex; align-items: center; justify-content: center; flex: none;"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3.5 8.5l3 3 6-6.5"></path></svg></span>
+            <span style="display: flex; flex-direction: column;"><span style="font-weight: 600;">Nothing needs you today.</span><span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">A row appears here when a certificate waits for the {{ roleLower }}.</span></span>
+          </div>
+        </sc-if>
+        <sc-for list="{{ needRows }}" as="r" hint-placeholder-count="2">
+          <div role="row" onClick="{{ r.open }}" style="display: grid; grid-template-columns: minmax(0, 2.2fr) 180px minmax(0, 2fr) 128px minmax(0, 2.2fr) 84px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--c-border); box-shadow: inset 3px 0 0 var(--c-primary); cursor: pointer;" style-hover="background: var(--c-canvas);">
+            <span style="display: flex; flex-direction: column; min-width: 0;"><span style="font-weight: 600;">{{ r.name }}</span><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">{{ r.id }} · {{ r.scope }}</span></span>
+            <span style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start;"><dc-import name="StatusPill" status="{{ r.status }}" hint-size="120px,24px"></dc-import></span>
+            <span style="font-weight: 600;">{{ r.waiting }}</span>
+            <sc-if value="{{ r.expNone }}" hint-placeholder-val="{{ false }}"><span style="font-size: var(--text-sm); color: var(--c-ink-muted);">None on file</span></sc-if>
+            <sc-if value="{{ r.expNormal }}" hint-placeholder-val="{{ true }}"><span style="font-family: var(--font-mono); font-size: var(--text-sm);">{{ r.expiry }}</span></sc-if>
+            <span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">{{ r.last }}</span>
+            <button onClick="{{ r.open }}" style="height: 32px; padding: 0 14px; border: 1px solid var(--c-primary); border-radius: var(--radius-md); background: var(--c-primary); color: var(--c-on-solid); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer;" style-hover="background: var(--c-primary-hover);">Open</button>
+          </div>
+        </sc-for>
+        <div style="padding: 8px 20px; background: var(--c-canvas); border-bottom: 1px solid var(--c-border); font-size: var(--text-xs); font-weight: 700; letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--c-ink-muted);">Everyone else</div>
+        <sc-for list="{{ otherRows }}" as="r" hint-placeholder-count="6">
+          <div role="row" onClick="{{ r.open }}" style="display: grid; grid-template-columns: minmax(0, 2.2fr) 180px minmax(0, 2fr) 128px minmax(0, 2.2fr) 84px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--c-border); cursor: pointer;" style-hover="background: var(--c-canvas);">
+            <span style="display: flex; flex-direction: column; min-width: 0;"><span style="font-weight: 600;">{{ r.name }}</span><span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted);">{{ r.id }} · {{ r.scope }}</span></span>
+            <span style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start;">
+              <dc-import name="StatusPill" status="{{ r.status }}" hint-size="120px,24px"></dc-import>
+              <sc-if value="{{ r.onHold }}" hint-placeholder-val="{{ false }}">
+                <span style="display: flex; flex-direction: column; gap: 2px;">
+                  <span style="display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; height: 22px; padding: 0 8px 0 6px; border-radius: var(--radius-sm); background: var(--flag-hold); color: var(--c-on-solid); font-size: var(--text-xs); font-weight: 600; white-space: nowrap;"><svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor"><rect x="3.5" y="3" width="3" height="10" rx="0.5"></rect><rect x="9.5" y="3" width="3" height="10" rx="0.5"></rect></svg>On payment hold</span>
+                  <span style="font-size: var(--text-xs); line-height: var(--lh-xs); color: var(--c-ink-muted);">{{ r.hold }}</span>
+                </span>
+              </sc-if>
+            </span>
+            <sc-if value="{{ r.hasWaiting }}" hint-placeholder-val="{{ false }}"><span>{{ r.waiting }}</span></sc-if>
+            <sc-if value="{{ r.noWaiting }}" hint-placeholder-val="{{ true }}"><span style="font-size: var(--text-sm); color: var(--c-ink-muted);">Nothing waiting</span></sc-if>
+            <sc-if value="{{ r.expRed }}" hint-placeholder-val="{{ false }}"><span style="font-family: var(--font-mono); font-size: var(--text-sm); font-weight: 500; color: var(--c-red-fg);">{{ r.expiry }}</span></sc-if>
+            <sc-if value="{{ r.expNone }}" hint-placeholder-val="{{ false }}"><span style="font-size: var(--text-sm); color: var(--c-ink-muted);">None on file</span></sc-if>
+            <sc-if value="{{ r.expNormal }}" hint-placeholder-val="{{ true }}"><span style="font-family: var(--font-mono); font-size: var(--text-sm);">{{ r.expiry }}</span></sc-if>
+            <span style="font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted);">{{ r.last }}</span>
+            <button onClick="{{ r.open }}" style="height: 32px; padding: 0 14px; border: 1px solid var(--c-border-strong); border-radius: var(--radius-md); background: var(--c-surface); color: var(--c-ink); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer;" style-hover="background: var(--c-canvas); border-color: var(--c-ink);">Open</button>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1200},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;accountant&quot;,&quot;project_manager&quot;,&quot;leadership&quot;],&quot;default&quot;:&quot;accountant&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;loaded&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;,&quot;refused&quot;],&quot;default&quot;:&quot;loaded&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;project&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;onOpen&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(record: string, role: string) =&gt; void&quot;},&quot;onNav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(view: string) =&gt; void&quot;}}">
+class Component extends DCLogic {
+  state = { role: null, mode: null, refused: null, modeChanged: false, retried: false };
+  NAMES = { accountant: 'Accountant', project_manager: 'Project manager', leadership: 'Leadership' };
+
+  skel(w, h, x) {
+    const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return React.createElement('div', { key: x && x.key, style: Object.assign({ width: w, height: h, borderRadius: 'var(--radius-sm)', background: 'var(--c-sunken)', animation: reduce ? 'none' : 'skel var(--motion-skeleton)' }, x || {}) });
+  }
+
+  compliantNames() {
+    return [['Ironleaf Steel Erectors', 'Steel'], ['Bluestem Landscaping', 'Landscaping'], ['Clearview Glass and Glazing', 'Glazing'], ['Foxglove Painting', 'Painting'], ['Harbor Point Concrete', 'Concrete'], ['Keystone Framing', 'Framing'], ['Lantern Fire Protection', 'Fire protection'], ['Millbrook Insulation', 'Insulation'], ['Oakridge Cabinetry', 'Cabinetry'], ['Prairie Tile and Stone', 'Tile'], ['Quarry Lane Paving', 'Paving'], ['Redfern Flooring', 'Flooring'], ['Silverline Elevators', 'Elevators'], ['Timberline Carpentry', 'Carpentry'], ['Upland Waterproofing', 'Waterproofing'], ['Valley Fence Co.', 'Fencing'], ['Westbrook Doors and Hardware', 'Doors'], ['Yellowpine Siding', 'Siding'], ['Alder Creek Surveying', 'Surveying'], ['Basin Excavation', 'Excavation'], ['Copperfield Sheet Metal', 'Sheet metal'], ['Driftwood Millwork', 'Millwork'], ['Emberline Low Voltage', 'Low voltage'], ['Ashgrove Demolition', 'Demolition'], ['Greenway Site Utilities', 'Site utilities'], ['Highmark Scaffolding', 'Scaffolding'], ['Juniper Signage', 'Signage'], ['Kestrel Acoustics', 'Acoustics']];
+  }
+
+  compliantRows(list, prefix, used) {
+    const exp = ['Jan 31, 2027', 'Feb 28, 2027', 'Mar 15, 2027', 'Apr 30, 2027', 'May 31, 2027', 'Jun 15, 2027', 'Jul 31, 2027', 'Aug 31, 2027', 'Dec 31, 2026'];
+    const when = ['Jul 14', 'Aug 2', 'Aug 19', 'Sep 3', 'Sep 17', 'Jun 28'];
+    let n = 1;
+    return list.map(([name, scope], i) => {
+      while (used.indexOf(n) >= 0) n++;
+      const id = prefix + String(n).padStart(3, '0'); n++;
+      return { id, name, scope, status: 'Compliant', waiting: '', expiry: exp[i % exp.length], last: 'Approved by Dana Reyes (Accountant), ' + when[i % when.length], needs: [] };
+    });
+  }
+
+  data(project) {
+    if (project === 'oak') {
+      return { name: 'Oak Hollow Clinic', id: 'PRJ-004', rows: this.compliantRows(this.compliantNames().slice(0, 22), 'REC-4', []) };
+    }
+    const special = [
+      { id: 'REC-001', name: 'Ridgeline Roofing LLC', scope: 'Roofing', status: 'In review', waiting: 'Waiting for a decision on a deficiency', expiry: '', last: 'Sent to Marcus Webb (Project manager), Oct 8', needs: ['project_manager', 'leadership'], record: 'ridgeline' },
+      { id: 'REC-014', name: 'Brightway Electric', scope: 'Electrical', status: 'In review', waiting: 'Waiting for approval', expiry: '', last: 'Read automatically, Oct 8', needs: ['accountant'], record: 'brightway' },
+      { id: 'REC-021', name: 'Summit Mechanical', scope: 'Mechanical', status: 'Expiring soon', waiting: 'Needs review', expiry: 'Oct 31, 2026', last: 'Read automatically, Oct 8', needs: ['accountant'], record: 'summit' },
+      { id: 'REC-002', name: 'Birchwood Earthworks Inc.', scope: 'Earthwork', status: 'Expired', waiting: '', expiry: 'Sep 30, 2026', expired: true, last: '7-day follow-up sent by System, Sep 23', needs: [], hold: 'Policy expired; No W-9 on file', record: 'birchwood' },
+      { id: 'REC-008', name: 'Granite Ridge Masonry', scope: 'Masonry', status: 'Compliant', waiting: '', expiry: 'Jun 30, 2027', last: 'Approved by Dana Reyes (Accountant), Sep 3', needs: [], hold: 'No W-9 on file', record: 'granite' },
+      { id: 'REC-011', name: 'Pinecrest Plumbing', scope: 'Plumbing', status: 'Expiring soon', waiting: '', expiry: 'Oct 29, 2026', last: '30-day reminder sent by System, Sep 29', needs: [] },
+      { id: 'REC-017', name: 'Northgate Drywall', scope: 'Drywall', status: 'Expiring soon', waiting: '', expiry: 'Nov 3, 2026', last: '30-day reminder sent by System, Oct 4', needs: [] }
+    ];
+    const rest = this.compliantRows(this.compliantNames(), 'REC-0', [1, 2, 8, 11, 14, 17, 21]);
+    return { name: 'Maple Court Residences', id: 'PRJ-001', rows: special.concat(rest) };
+  }
+
+  renderVals() {
+    let view = this.props.state ?? 'loaded';
+    if (view === 'error' && this.state.retried) view = 'loaded';
+    const role = this.state.role ?? this.props.role ?? 'accountant';
+    const roleLabel = this.NAMES[role];
+    const project = view === 'empty' ? 'oak' : (this.props.project ?? 'maple');
+    const d = this.data(project);
+    const order = { 'Expired': 0, 'In review': 1, 'Needs review': 2, 'Awaiting': 3, 'Expiring soon': 4, 'Compliant': 5, 'Closed': 6 };
+    const open = r => () => { if (this.props.onOpen) this.props.onOpen(r.record || r.id, role); };
+    const shape = r => Object.assign({}, r, {
+      open: open(r), onHold: !!r.hold, hasWaiting: !!r.waiting, noWaiting: !r.waiting,
+      expRed: !!r.expired, expNone: !r.expiry, expNormal: !!r.expiry && !r.expired
+    });
+    const needRows = d.rows.filter(r => r.needs.indexOf(role) >= 0).map(shape);
+    const otherRows = d.rows.filter(r => r.needs.indexOf(role) < 0)
+      .sort((a, b) => (order[a.status] - order[b.status]) || a.name.localeCompare(b.name)).map(shape);
+    const expected = d.rows.filter(r => r.status !== 'Closed').length;
+    const compliant = d.rows.filter(r => r.status === 'Compliant' || r.status === 'Expiring soon').length;
+
+    const canChange = role === 'leadership';
+    const refused = !canChange && (this.state.refused ?? (view === 'refused'));
+    const mode = this.state.mode ?? 'review_all';
+    const modeDefs = [['review_all', 'Review all'], ['review_deficiencies', 'Review deficiencies'], ['automatic', 'Automatic']];
+    const help = {
+      review_all: 'Review all: a passing certificate waits for the accountant to approve it.',
+      review_deficiencies: 'Review deficiencies: a passing certificate is approved automatically.',
+      automatic: 'Automatic: the same as Review deficiencies, and each automatic approval is also listed in the weekly summary.'
+    };
+    Object.keys(help).forEach(k => { help[k] += ' In every mode, deficiencies go to the project manager and readings below 85% go to a person.'; });
+    const modes = modeDefs.map(([k, label]) => ({
+      label, on: mode === k, off: mode !== k,
+      pick: () => canChange ? this.setState({ mode: k, modeChanged: k !== 'review_all' || this.state.modeChanged }) : this.setState({ refused: true })
+    }));
+
+    const S = (w, h, x) => this.skel(w, h, x);
+    const skRow = i => React.createElement('div', { key: i, style: { display: 'grid', gridTemplateColumns: '2.2fr 180px 2fr 128px 2.2fr 84px', gap: 16, alignItems: 'center', padding: '16px 0', borderBottom: i < 9 ? '1px solid var(--c-border)' : 'none' } },
+      S('60%', 14, { key: 'a' }), S(104, 24, { key: 'b', borderRadius: 'var(--radius-pill)' }), S('70%', 12, { key: 'c' }), S('80%', 12, { key: 'd' }), S('75%', 12, { key: 'e' }), S(64, 32, { key: 'f', borderRadius: 'var(--radius-md)' }));
+
+    return {
+      role, roleLabel, roleLower: roleLabel.toLowerCase(),
+      setRole: k => this.setState({ role: k, refused: false }),
+      onNav: this.props.onNav,
+      projectKey: project, projectName: d.name, projectId: d.id, noop: () => {},
+      isLoaded: view === 'loaded' || view === 'empty' || view === 'refused',
+      isLoading: view === 'loading', isError: view === 'error',
+      retry: () => this.setState({ retried: true }),
+      compliant, expected, needRows, otherRows, needEmpty: needRows.length === 0,
+      canChange, cannotChange: !canChange, refused, showLockNote: !canChange && !refused,
+      modes, modeHelp: help[mode], modeChanged: canChange && this.state.modeChanged,
+      modeSetBy: this.state.modeChanged && canChange ? 'Changed by Elena Park (Leadership), just now' : 'Set by Elena Park (Leadership), Sep 2',
+      skHeadline: [S(260, 22, { key: 1 }), S(300, 12, { key: 2 })],
+      skRows: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(skRow)
+    };
+  }
+}
+</script>
+</body>
+</html>

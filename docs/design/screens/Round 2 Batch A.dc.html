@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="./tokens.css">
+<style>body{margin:0;background:#E4E2DC;font-family:var(--font-sans);color:var(--c-ink)}a{color:var(--c-blue-fg)}a:hover{color:var(--c-primary-hover)}.dv-turn{padding:48px 56px 40px;border-bottom:1px solid rgba(0,0,0,.1);scroll-margin-top:16px}.dv-thd{display:flex;align-items:baseline;gap:12px;margin:0 0 24px}.dv-tid{font:600 11px var(--font-mono);padding:3px 8px;background:#1B1F24;color:#fff;border-radius:4px;text-decoration:none}.dv-tname{font:700 22px/1.2 var(--font-sans);color:#1B1F24}.dv-tsub{font:400 14px/1.4 var(--font-sans);color:#5F656D}.dv-opts{display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start}.dv-opt{flex:none;display:flex;flex-direction:column;gap:10px;scroll-margin-top:16px}.dv-oid{font:600 11px var(--font-mono);padding:3px 7px;background:rgba(0,0,0,.1);color:#1B1F24;border-radius:5px;text-decoration:none}.dv-olabel{display:flex;align-items:baseline;gap:8px;font:500 14px/1.3 var(--font-sans);color:#1B1F24}.dv-olabel span{color:#5F656D;font-weight:400}.dv-card{max-width:100%;background:var(--c-canvas);border:1px solid rgba(0,0,0,.12);border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden}.dv-opt:target .dv-oid{background:#2563C9;color:#fff}.dv-next{margin:28px 0 0;font:13px/1.5 var(--font-sans);color:#5F656D}</style>
+</helmet>
+
+<section class="dv-turn" id="t0" style="padding-bottom: 48px;">
+  <div style="max-width: 1440px; display: flex; flex-direction: column; gap: 28px;">
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <span style="font-family: var(--font-mono); font-size: var(--text-xs); color: var(--c-ink-muted); letter-spacing: var(--tracking-caps); text-transform: uppercase;">Round 2 · Batch A of 3 · Brief §11 item 3</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border: 1px dashed var(--c-ink-muted); border-radius: var(--radius-sm); font-size: var(--text-xs); font-weight: 600; color: var(--c-ink); background: var(--c-surface);"><svg width="10" height="10" viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" transform="rotate(45 5 5)" fill="currentColor"></rect></svg>Sample data</span>
+      </div>
+      <h1 style="margin: 0; font-size: var(--text-2xl); line-height: var(--lh-2xl); font-weight: 700; letter-spacing: -0.01em;">Shared chrome, compliance record detail, project worklist</h1>
+      <p style="margin: 0; max-width: 820px; color: var(--c-ink-muted); text-wrap: pretty;">Every frame is 1440 wide (one at 768 for the header) and built only from <span style="font-family: var(--font-mono); font-size: var(--text-sm);">tokens.css</span> and the round 1 components. Frames are live: the "Demo only" switcher, review mode, Approve, Correct a value, Waive, Reject, resend and W-9 buttons all work inside each frame.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 20px 22px; display: flex; flex-direction: column; gap: 12px;">
+        <h2 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 700;">Checked against §3, §5, §7</h2>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+          <li><strong>Sample data:</strong> large badge beside the app name on every frame, plus a small badge beside every figure (worklist headline, record header, values card).</li>
+          <li><strong>Demo only:</strong> the round 1 switcher sits in the header of every frame.</li>
+          <li><strong>Status words:</strong> every pill, line result (Pass, Fail, Waived) and hold flag carries its word and a shape. Red only on Expired, fail and the deficiency list.</li>
+          <li><strong>Numbers:</strong> only "Compliant X of Y expected" (§7, per project). Reading confidence and the 85% line come from §6.4. Limits and dates are values read off a certificate, not metrics.</li>
+          <li><strong>Vocabulary:</strong> status, waiting-for and role words exactly as §5. No acronyms but W-9 and PDF. No model or vendor names.</li>
+          <li><strong>Sources:</strong> plain tab names (Compliance records, Certificates, Projects, Activity log) with a timestamp beside each figure.</li>
+        </ul>
+      </div>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 20px 22px; display: flex; flex-direction: column; gap: 12px;">
+        <h2 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 700;">Batch A review: what changed</h2>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+          <li><strong>Summit Mechanical</strong> is now Expiring soon, waiting for Needs review: the status comes from the current certificate. Changed in the worklist, the record header and the pill.</li>
+          <li><strong>Headline</strong> is now "Compliant 32 of 35 expected". It is computed from the rows, so it updates on its own.</li>
+          <li><strong>Requirement lines</strong> now match <span style="font-family: var(--font-mono);">evaluateCoi</span>: the six limits, then "Printed" or "Not printed" for Additional insured endorsement, Project address and Certificate holder, then Insured name as "Matches" or "Does not match" with both names in small text underneath, then Cancellation notice. The Expiry date line is gone. The policy period and expiry date now sit in the record header.</li>
+          <li><strong>Email and deficiency text</strong> is the code's fixed text, word for word. Success messages are the code's, including "W-9 marked on file." and "W-9 marked missing."</li>
+          <li><strong>Status after Reject or resend</strong> follows the current certificate when there is one. See <a class="dv-oid" href="#4n">4n</a> for a rejected renewal that stays Compliant. Otherwise the status is Awaiting.</li>
+          <li><strong>W-9:</strong> marking it on file drops only that reason. See <a class="dv-oid" href="#4o">4o</a>: Birchwood stays on hold for "Policy expired". Marking it missing adds no hold until the next pay-cycle check.</li>
+          <li><strong>Review mode help</strong> now uses the code's behaviour. Fieldstone now reads "The system sends reminders".</li>
+          <li>All nine new components are in <span style="font-family: var(--font-mono);">Components.dc.html</span>, section 03.</li>
+        </ul>
+        <h3 style="margin: 4px 0 0; font-size: var(--text-sm); font-weight: 700;">Still open</h3>
+        <ol style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+          <li>The code's deficiency text for a yes-or-no check reads "Insured name: missing or wrong". The correction request therefore doesn't name the two insured names, so a subcontractor may not know what to fix. On screen I show both names under the line. I left the email unchanged.</li>
+          <li>Birchwood now has two hold reasons (Policy expired; No W-9 on file), to show the partial release. The Batch B hold list will use the same data.</li>
+        </ol>
+      </div>
+      <div style="background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--radius-lg); padding: 20px 22px; display: flex; flex-direction: column; gap: 12px;">
+        <h2 style="margin: 0; font-size: var(--text-md); line-height: var(--lh-md); font-weight: 700;">New components needed (no new tokens)</h2>
+        <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; font-size: var(--text-sm); line-height: var(--lh-sm);">
+          <li><strong>Navigation tabs:</strong> §6.8 needs navigation, and round 1 has none.</li>
+          <li><strong>Project picker:</strong> a plain select. The worklist covers one project at a time.</li>
+          <li><strong>Review mode control:</strong> a three-way control, enabled for Leadership and disabled with a lock for everyone else (§6.3).</li>
+          <li><strong>Success message:</strong> a green confirmation after an action, using the code's own messages.</li>
+          <li><strong>Error message with "Try again":</strong> for the error state. Neutral, because red is reserved.</li>
+          <li><strong>Text area:</strong> for the waiver note. Same style as the input.</li>
+          <li><strong>Email draft preview:</strong> for "please resend" and the correction request.</li>
+          <li><strong>Certificate-style PDF page:</strong> a generic sample page printed "SAMPLE: fictional certificate" (§3.7).</li>
+          <li><strong>Back link:</strong> from the record back to its worklist.</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin: 0; font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--c-ink-muted); max-width: 980px; text-wrap: pretty;">The sample data matches the §10 walkthrough. Maple Court: Compliant 32 of 35 expected. The 32 are 28 plain Compliant records, Granite Ridge, and Pinecrest, Northgate and Summit, which are Expiring soon. One expired: Birchwood Earthworks, on hold for "Policy expired; No W-9 on file". One is Compliant but on hold: Granite Ridge Masonry, "No W-9 on file". Brightway Electric is waiting for approval. Summit Mechanical's renewal needs review at 78%. Ridgeline Roofing is waiting for a decision: umbrella $1M against $2M, and the wrong insured name. Three records come from other projects: Lakeshore Glazing (Cedar Point Lofts, unreadable file), Stonebridge Concrete (Cedar Point Lofts, renewal missing the additional insured endorsement) and Fieldstone Demolition (Riverside Commons, Awaiting).</p>
+  </div>
+</section>
+
+<section class="dv-turn" id="t1">
+  <div class="dv-thd"><a class="dv-tid" href="#t1">6.8</a><span class="dv-tname">Shared chrome</span><span class="dv-tsub">Header with the app name, "Sample data", the "Demo only" switcher and navigation to all five views</span></div>
+  <div class="dv-opts">
+    <div class="dv-opt" id="8a"><div class="dv-olabel"><a class="dv-oid" href="#8a">8a</a>Accountant<span>· lands on Worklist</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="Chrome" role="accountant" active="worklist" hint-size="1440px,110px"></dc-import></div></div>
+    <div class="dv-opt" id="8b"><div class="dv-olabel"><a class="dv-oid" href="#8b">8b</a>Project manager<span>· lands on Worklist</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="Chrome" role="project_manager" active="worklist" hint-size="1440px,110px"></dc-import></div></div>
+    <div class="dv-opt" id="8c"><div class="dv-olabel"><a class="dv-oid" href="#8c">8c</a>Leadership<span>· lands on Projects</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="Chrome" role="leadership" active="projects" hint-size="1440px,110px"></dc-import></div></div>
+    <div class="dv-opt" id="8d"><div class="dv-olabel"><a class="dv-oid" href="#8d">8d</a>Tablet, 768 wide<span>· the switcher wraps; the tabs scroll sideways and never squash</span></div><div class="dv-card" style="width: 768px;"><dc-import name="Chrome" role="leadership" active="roi" hint-size="768px,160px"></dc-import></div></div>
+  </div>
+  <p class="dv-next">The chrome has no loading or error state of its own: it is static and draws before any server call. Every screen below shows it in place.</p>
+</section>
+
+<section class="dv-turn" id="t2">
+  <div class="dv-thd"><a class="dv-tid" href="#t2">6.4</a><span class="dv-tname">Compliance record detail</span><span class="dv-tsub">The PDF on the left, every value against its requirement on the right, the one next step for this role on top</span></div>
+  <div class="dv-opts">
+    <div class="dv-opt" id="4a"><div class="dv-olabel"><a class="dv-oid" href="#4a">4a</a>Loaded: waiting for approval<span>· Accountant · Brightway Electric</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="RecordDetail" record="brightway" role="accountant" view="loaded" hint-size="1440px,1500px"></dc-import></div></div>
+    <div class="dv-opt" id="4b"><div class="dv-olabel"><a class="dv-oid" href="#4b">4b</a>Loaded: renewal below 85%, correcting a value<span>· Accountant · Summit Mechanical, Expiring soon (Auto read as $100,000; the PDF says $1,000,000)</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="RecordDetail" record="summit" role="accountant" view="editing" hint-size="1440px,1500px"></dc-import></div></div>
+    <div class="dv-opt" id="4c"><div class="dv-olabel"><a class="dv-oid" href="#4c">4c</a>Loaded: unreadable file, "please resend" draft<span>· Accountant · Lakeshore Glazing Co.</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="RecordDetail" record="lakeshore" role="accountant" view="loaded" hint-size="1440px,1300px"></dc-import></div></div>
+    <div class="dv-opt" id="4d"><div class="dv-olabel"><a class="dv-oid" href="#4d">4d</a>Loaded: deficiency decision<span>· Project manager · Ridgeline Roofing LLC</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="RecordDetail" record="ridgeline" role="project_manager" view="loaded" hint-size="1440px,1700px"></dc-import></div></div>
+    <div class="dv-opt" id="4e"><div class="dv-olabel"><a class="dv-oid" href="#4e">4e</a>Refused action: role cannot waive<span>· Accountant · Ridgeline Roofing LLC</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="RecordDetail" record="ridgeline" role="accountant" view="loaded" hint-size="1440px,1600px"></dc-import></div></div>
+    <div class="dv-opt" id="4f"><div class="dv-olabel"><a class="dv-oid" href="#4f">4f</a>Refused action: waive without a note<span>· Project manager · Ridgeline Roofing LLC</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="RecordDetail" record="ridgeline" role="project_manager" view="no-note" hint-size="1440px,1700px"></dc-import></div></div>
+    <div class="dv-opt" id="4g"><div class="dv-olabel"><a class="dv-oid" href="#4g">4g</a>Loaded: Compliant and on payment hold<span>· Accountant · Granite Ridge Masonry (No W-9 on file)</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="RecordDetail" record="granite" role="accountant" view="loaded" hint-size="1440px,1500px"></dc-import></div></div>
+    <div class="dv-opt" id="4h"><div class="dv-olabel"><a class="dv-oid" href="#4h">4h</a>After the action: approved<span>· Accountant · Brightway Electric</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="RecordDetail" record="brightway" role="accountant" view="approved" hint-size="1440px,1500px"></dc-import></div></div>
+    <div class="dv-opt" id="4m"><div class="dv-olabel"><a class="dv-oid" href="#4m">4m</a>Loaded: renewal with a deficiency<span>· Project manager · Stonebridge Concrete (current certificate Compliant until Dec 15, 2026)</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="RecordDetail" record="stonebridge" role="project_manager" view="loaded" hint-size="1440px,1700px"></dc-import></div></div>
+    <div class="dv-opt" id="4n"><div class="dv-olabel"><a class="dv-oid" href="#4n">4n</a>After the action: renewal rejected<span>· the status follows the current certificate and stays Compliant</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="RecordDetail" record="stonebridge" role="project_manager" view="rejected" hint-size="1440px,1600px"></dc-import></div></div>
+    <div class="dv-opt" id="4o"><div class="dv-olabel"><a class="dv-oid" href="#4o">4o</a>After the action: W-9 marked, other reason remains<span>· Accountant · Birchwood Earthworks Inc. stays on hold for Policy expired</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="RecordDetail" record="birchwood" role="accountant" view="w9-done" hint-size="1440px,1600px"></dc-import></div></div>
+    <div class="dv-opt" id="4i"><div class="dv-olabel"><a class="dv-oid" href="#4i">4i</a>Empty: no certificate yet<span>· Accountant · Fieldstone Demolition (Awaiting)</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="RecordDetail" record="fieldstone" role="accountant" view="loaded" hint-size="1440px,1100px"></dc-import></div></div>
+    <div class="dv-opt" id="4j"><div class="dv-olabel"><a class="dv-oid" href="#4j">4j</a>Loading<span>· skeleton shaped like the loaded layout</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="RecordDetail" record="brightway" role="accountant" view="loading" hint-size="1440px,1100px"></dc-import></div></div>
+    <div class="dv-opt" id="4k"><div class="dv-olabel"><a class="dv-oid" href="#4k">4k</a>Error: the PDF cannot be drawn<span>· the rest of the record still works</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="RecordDetail" record="brightway" role="accountant" view="pdf-error" hint-size="1440px,1500px"></dc-import></div></div>
+    <div class="dv-opt" id="4l"><div class="dv-olabel"><a class="dv-oid" href="#4l">4l</a>Error: the record cannot load<span>· "Try again" retries</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="RecordDetail" record="brightway" role="accountant" view="error" hint-size="1440px,500px"></dc-import></div></div>
+  </div>
+  <p class="dv-next">Try it: in <a class="dv-oid" href="#4b">4b</a> press "Save and check again", then Approve. In <a class="dv-oid" href="#4d">4d</a> press Reject, or type a note and press Waive. In any frame, switch role with "Demo only" to see the refusal for that role.</p>
+</section>
+
+<section class="dv-turn" id="t3">
+  <div class="dv-thd"><a class="dv-tid" href="#t3">6.3</a><span class="dv-tname">Project worklist</span><span class="dv-tsub">What needs me today: rows for the current role on top, everyone else below</span></div>
+  <div class="dv-opts">
+    <div class="dv-opt" id="3a"><div class="dv-olabel"><a class="dv-oid" href="#3a">3a</a>Loaded<span>· Accountant · Maple Court Residences</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="Worklist" role="accountant" state="loaded" hint-size="1440px,2700px"></dc-import></div></div>
+    <div class="dv-opt" id="3b"><div class="dv-olabel"><a class="dv-oid" href="#3b">3b</a>Loaded<span>· Project manager: the deficiency rises to the top</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="Worklist" role="project_manager" state="loaded" hint-size="1440px,2700px"></dc-import></div></div>
+    <div class="dv-opt" id="3c"><div class="dv-olabel"><a class="dv-oid" href="#3c">3c</a>Loaded<span>· Leadership: review mode can be changed</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="Worklist" role="leadership" state="loaded" hint-size="1440px,2700px"></dc-import></div></div>
+    <div class="dv-opt" id="3d"><div class="dv-olabel"><a class="dv-oid" href="#3d">3d</a>Refused action<span>· Accountant pressed a review mode</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="Worklist" role="accountant" state="refused" hint-size="1440px,2700px"></dc-import></div></div>
+    <div class="dv-opt" id="3e"><div class="dv-olabel"><a class="dv-oid" href="#3e">3e</a>Empty: nothing needs you<span>· Accountant · Oak Hollow Clinic, everyone compliant</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="Worklist" role="accountant" state="empty" hint-size="1440px,1900px"></dc-import></div></div>
+    <div class="dv-opt" id="3f"><div class="dv-olabel"><a class="dv-oid" href="#3f">3f</a>Loading</div><div class="dv-card" style="width: 1440px;"><dc-import name="Worklist" role="accountant" state="loading" hint-size="1440px,900px"></dc-import></div></div>
+    <div class="dv-opt" id="3g"><div class="dv-olabel"><a class="dv-oid" href="#3g">3g</a>Error<span>· "Try again" retries</span></div><div class="dv-card" style="width: 1440px;"><dc-import name="Worklist" role="accountant" state="error" hint-size="1440px,500px"></dc-import></div></div>
+  </div>
+  <p class="dv-next">Next is Batch B (6.1 tiles, 6.2 dashboard, 6.5 payment hold list, 6.6 ROI). It reuses this chrome and the same sample data, so the totals match across screens.</p>
+</section>
+</x-dc>
+</body>
+</html>

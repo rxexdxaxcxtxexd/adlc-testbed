@@ -1,0 +1,155 @@
+{
+  "firm": "Harborline Builders",
+  "now": "Oct 8, 2026 · 10:42 AM",
+  "updatedNow": "Oct 8, 2026, 10:42 AM",
+  "limits": [
+    [
+      "glOcc",
+      "General liability",
+      1000000
+    ],
+    [
+      "agg",
+      "Aggregate",
+      2000000
+    ],
+    [
+      "auto",
+      "Auto",
+      1000000
+    ],
+    [
+      "umb",
+      "Umbrella",
+      2000000
+    ],
+    [
+      "wc",
+      "Workers' comp",
+      null
+    ],
+    [
+      "pol",
+      "Pollution",
+      1000000
+    ]
+  ],
+  "records": {
+    "ridgeline": {
+      "id": "REC-001",
+      "name": "Ridgeline Roofing LLC",
+      "scope": "Roofing",
+      "project": "Maple Court Residences",
+      "status": "In review",
+      "waiting": "Waiting for a decision on a deficiency",
+      "next": "decide",
+      "confidence": 93,
+      "w9": true,
+      "pollution": true,
+      "waived": false,
+      "current": "None on file",
+      "expiry": "Jan 15, 2027",
+      "updated": "Oct 8, 2026, 9:20 AM",
+      "values": {
+        "glOcc": 1000000,
+        "agg": 2000000,
+        "auto": 1000000,
+        "umb": 1000000,
+        "wc": 1000000,
+        "pol": 1000000,
+        "ai": true,
+        "addr": true,
+        "holder": true,
+        "insuredName": "Ridgeline Roofing Partners LLC",
+        "cancel": 30
+      },
+      "confText": "Above the 85% line, so the values were not sent for a second look. Code ran the check; the deficiencies wait for a person.",
+      "address": "41 Quarry Road, Millbrook",
+      "timeline": [
+        {
+          "when": "Oct 8, 2026 · 9:20 AM",
+          "who": "System",
+          "text": "Sent to Marcus Webb (Project manager) for a decision on the deficiencies."
+        },
+        {
+          "when": "Oct 8, 2026 · 9:19 AM",
+          "who": "System",
+          "text": "Checked against the Maple Court Residences requirements. Fails: umbrella, insured name."
+        },
+        {
+          "when": "Oct 8, 2026 · 9:18 AM",
+          "who": "System",
+          "text": "Read automatically. Reading confidence 93%."
+        },
+        {
+          "when": "Oct 8, 2026 · 9:12 AM",
+          "who": "Ridgeline Roofing LLC (Subcontractor)",
+          "text": "Uploaded a certificate through the upload link."
+        },
+        {
+          "when": "Sep 28, 2026 · 2:05 PM",
+          "who": "System",
+          "text": "Upload link sent to Ridgeline Roofing LLC."
+        },
+        {
+          "when": "Sep 28, 2026 · 2:04 PM",
+          "who": "Dana Reyes (Accountant)",
+          "text": "Added Ridgeline Roofing LLC to Maple Court Residences."
+        }
+      ]
+    },
+    "brightway": {
+      "id": "REC-014",
+      "name": "Brightway Electric",
+      "scope": "Electrical",
+      "project": "Maple Court Residences",
+      "status": "In review",
+      "waiting": "Waiting for approval",
+      "next": "approve",
+      "confidence": 96,
+      "w9": true,
+      "pollution": false,
+      "waived": false,
+      "current": "None on file",
+      "expiry": "Mar 31, 2027",
+      "updated": "Oct 8, 2026, 8:47 AM",
+      "values": {
+        "glOcc": 2000000,
+        "agg": 2000000,
+        "auto": 1000000,
+        "umb": 2000000,
+        "wc": 1000000,
+        "pol": 1000000,
+        "ai": true,
+        "addr": true,
+        "holder": true,
+        "insuredName": "Brightway Electric",
+        "cancel": 30
+      },
+      "confText": "Above the 85% line. The values were read automatically; you still approve.",
+      "address": "9 Foundry Lane, Westbrook",
+      "timeline": [
+        {
+          "when": "Oct 8, 2026 · 8:47 AM",
+          "who": "System",
+          "text": "Every line passes. Waiting for approval because the review mode is Review all."
+        },
+        {
+          "when": "Oct 8, 2026 · 8:46 AM",
+          "who": "System",
+          "text": "Read automatically. Reading confidence 96%."
+        },
+        {
+          "when": "Oct 8, 2026 · 8:40 AM",
+          "who": "Brightway Electric (Subcontractor)",
+          "text": "Uploaded a certificate through the upload link."
+        },
+        {
+          "when": "Sep 30, 2026 · 10:15 AM",
+          "who": "System",
+          "text": "Upload link sent to Brightway Electric."
+        }
+      ]
+    }
+  }
+}

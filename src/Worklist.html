@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>COI Check · Harborline Builders</title>
+<?!= include('Styles') ?>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<div class="app" id="app">
+<aside class="side" id="side" aria-label="Main navigation">
+  <div class="side-brand">
+    <button type="button" class="logo" id="side-expand" aria-label="Expand navigation" title="Expand navigation" tabindex="-1"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"></path><path d="M9 12l2 2 4-4"></path></svg></button>
+    <span class="brand-text"><span class="brand-name">COI Check</span><span class="brand-org">Harborline Builders</span></span>
+    <button type="button" class="icon-btn" id="side-collapse" aria-label="Collapse navigation" title="Collapse navigation"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"></path></svg></button>
+  </div>
+  <nav class="side-nav" id="side-nav"></nav>
+  <div class="side-foot">
+    <div class="whocard">
+      <span class="avatar" id="avatar" aria-hidden="true">DR</span>
+      <label for="role" class="who-text"><span class="who-name" id="who-name">Viewing as</span>
+        <select id="role"><option value="accountant">Accountant</option><option value="project_manager">Project manager</option><option value="leadership">Leadership</option></select>
+        <span class="who-demo">Demo only</span>
+      </label>
+    </div>
+    <div class="foot-links">
+      <button type="button" class="foot-btn" data-tour-replay title="Replay the guided tour"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M10 8.5v7l5.5-3.5z"></path></svg><span class="foot-label">Tour</span></button>
+      <button type="button" class="foot-btn" id="about-link" title="About COI Check"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 8h.01"></path></svg><span class="foot-label">About</span></button>
+    </div>
+  </div>
+</aside>
+<div class="side-scrim" id="side-scrim" aria-hidden="true"></div>
+<div class="main-col">
+  <header class="pagehead" id="pagehead">
+    <button type="button" class="btn back" id="back" data-route="worklist" hidden>← Worklist <kbd>Esc</kbd></button>
+    <div class="ph-title" id="ph-title"><h1 id="page-title"></h1><span class="ph-meta" id="page-meta"></span></div>
+    <div class="ph-tools">
+      <span id="ph-picker"></span>
+      <label class="gsearch" id="gsearch"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4"></path></svg>
+        <input id="search" type="search" autocomplete="off" aria-label="Search subcontractors or record IDs" placeholder="Search subcontractors or record IDs"><kbd aria-hidden="true">/</kbd></label>
+    </div>
+  </header>
+  <main id="content" tabindex="-1">
+    <div id="view" aria-live="polite" aria-busy="true"><div class="loading" role="status"><span class="spin"></span>Loading</div></div>
+  </main>
+</div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"><span class="dot"></span><p></p><button type="button">Dismiss</button><span class="count"></span></div>
+<dialog id="editor" aria-labelledby="editor-title"></dialog>
+<script>var INITIAL = <?!= initial ?>;</script>
+<?!= include('AppClient') ?>
+<?!= include('TourSteps') ?>
+<?!= include('Tour') ?>
+</body>
+</html>

@@ -1,0 +1,1346 @@
+<script>
+// One controller serves the Apps Script app and the local preview.
+// Ownership comes from the server's `next` value. Toasts show only after the server returns ok.
+(function () {
+  'use strict';
+  var ORDER = ['projects','dashboard','worklist','holds','directory','notifications'];
+  var ROLE = {accountant:'Accountant', project_manager:'Project manager', leadership:'Leadership'};
+  var MODE_LABEL = {review_all:'Review all', review_deficiencies:'Review deficiencies only', automatic:'Automatic'};
+  var ACTION_LABEL = {approve:'Approve certificate', correct:'Check read values', resend:'Request a readable PDF'};
+  var ACTION_SHORT = {approve:'Approve', decide:'Decide', correct:'Check', resend:'Resend'};
+  var PAGE = 25;
+  function remembered(key, fallback) { try { var v = window.localStorage.getItem('coi.' + key); return v == null ? fallback : v; } catch (e) { return fallback; } }
+  function remember(key, value) { try { window.localStorage.setItem('coi.' + key, value); } catch (e) { /* storage blocked */ } }
+  var state = { view:null, dir:'fwd', project:'PRJ-001', role:ROLE[INITIAL.role] ? INITIAL.role : 'accountant', portfolio:null, detail:null,
+    worklist:null, visible:[], filter:'waiting', search:'', limit:PAGE, cursor:-1, request:0, busy:false, swelled:{}, decided:'',
+    sideOpen:remembered('side','open') !== 'closed' && window.innerWidth > 900, expanded:{worklist:window.innerWidth > 900}, all:null, holdsAll:null, roi:null,
+    data:null, details:{}, fetching:{}, pdfs:{} };
+  var view = document.getElementById('view'), dialog = document.getElementById('editor');
+  var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  function wait(ms) { return reduce ? 0 : ms; }
+
+  // Formatting
+  function esc(value) { return String(value == null ? '' : value).replace(/[&<>"']/g,function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function money(n) {
+    if (n == null) return 'Not shown';
+    var whole = Math.abs(Number(n)) >= 100 || Number(n) % 1 === 0;
+    return (n < 0 ? '-$' : '$') + Math.abs(Number(n)).toLocaleString('en-US',{minimumFractionDigits:whole ? 0 : 2,maximumFractionDigits:whole ? 0 : 2});
+  }
+  function date(iso, noYear) {
+    if (!iso) return '';
+    var d = new Date(String(iso).slice(0,10) + 'T00:00:00Z');
+    if (isNaN(d.getTime())) return String(iso);
+    return d.toLocaleDateString('en-US',noYear ? {month:'short',day:'numeric',timeZone:'UTC'} : {month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
+  }
+  function stamp(iso, noYear) {
+    if (!iso) return '';
+    var s = String(iso);
+    if (s.indexOf('T') < 0) return date(s, noYear);
+    var h = Number(s.slice(11,13));
+    return date(s, noYear) + ', ' + ((h % 12) || 12) + ':' + s.slice(14,16) + ' ' + (h < 12 ? 'AM' : 'PM');
+  }
+  function newest(obj) { var out = ''; Object.keys(obj || {}).forEach(function (k) { if (obj[k] > out) out = obj[k]; }); return out; }
+  function sourceName(text) {
+    var names = {compliance_records:'compliance records', certificates:'certificates', pay_applications:'pay applications', roi_inputs:'ROI inputs', ai_calls:'AI calls'};
+    var parts = String(text || '').split(/,\s*/).map(function (p) { return names[p] || p.replace(/_/g,' '); });
+    var joined = parts.length > 1 ? parts.slice(0,-1).join(', ') + ' and ' + parts[parts.length - 1] : parts[0];
+    return joined.charAt(0).toUpperCase() + joined.slice(1);
+  }
+  // The header shows one update time. Figure panels also show their source text for touch and keyboard users.
+  function updated(text, iso, noYear) { return {text:iso ? 'Updated ' + stamp(iso, noYear) : 'No update recorded', source:'Source: ' + sourceName(text)}; }
+  function source(text, iso) { var u = updated(text, iso); return '<span class="source" title="' + esc(u.source) + '">' + esc(u.text) + '</span>'; }
+  function figureSource(u) { return '<span class="source figure-source">' + esc(u.source) + ' · ' + esc(u.text) + '</span>'; }
+  function badge(word, extra) {
+    var colors = {'Compliant':'green','On track':'green','At risk':'red','Expired':'red','Expiring soon':'amber','Watch':'amber','Needs attention':'amber',
+      'In review':'blue','Needs review':'amber','Awaiting certificate':'neutral','Closed':'neutral','Waived':'violet',
+      'Pass':'green','Fail':'red','Sent':'green','Waiting for approval':'amber','Not sent':'neutral'};
+    return '<span class="badge ' + (colors[word] || 'neutral') + (extra ? ' ' + extra : '') + '">' + esc(word) + '</span>';
+  }
+  function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
+  function shortName(name) { return String(name || '').split(' ')[0]; }
+  function capital(text) { text = String(text || ''); return text.charAt(0).toUpperCase() + text.slice(1); }
+  function firstSentence(text) { var m = /^.*?[.!?](\s|$)/.exec(String(text || '')); return m ? m[0].trim() : String(text || ''); }
+  function initials(name) { return String(name || '').split(/\s+/).filter(Boolean).slice(0,2).map(function (w) { return w.charAt(0).toUpperCase(); }).join(''); }
+
+  // Ownership: the accountant owns approve, correct and resend; the project manager or leadership owns decide.
+  function ownerOf(next) { return next === 'decide' ? 'project_manager' : 'accountant'; }
+  function owned(next) { return !!next && (state.role === 'accountant' ? next !== 'decide' : next === 'decide'); }
+
+  // Toast
+  var toast = document.getElementById('toast'), toastTimer = null, toastLeft = 0, toastStart = 0;
+  function hideToast() { clearTimeout(toastTimer); toast.classList.remove('on'); }
+  function armToast(ms) { clearTimeout(toastTimer); toastLeft = ms; toastStart = Date.now(); toastTimer = setTimeout(hideToast,ms); }
+  function say(text, ok) {
+    toast.classList.remove('on'); void toast.offsetWidth;
+    toast.className = 'toast' + (ok === false ? ' refused' : '');
+    toast.querySelector('p').textContent = text;
+    toast.classList.add('on'); armToast(4500);
+  }
+  toast.querySelector('button').onclick = hideToast;
+  toast.addEventListener('mouseenter',function () { clearTimeout(toastTimer); toastLeft -= Date.now() - toastStart; });
+  toast.addEventListener('mouseleave',function () { if (toast.classList.contains('on')) armToast(Math.max(toastLeft,800)); });
+
+  // Demo mode (ticket 14): the server saves nothing. It returns the rows an action changed, and the page keeps
+  // them in sessionStorage. Every later call sends them back, and the server lays them over fresh data. So a
+  // change survives a view switch or a reload, but not a new tab.
+  var DEMO = !!INITIAL.demo, DEMO_KEY = 'coi.demo.overlay';
+  var OVERLAY_ARGS = {getAppData:0, getWorklist:1, getPaymentHoldList:1, getRecordDetail:1, runReviewAction:4, changeReviewMode:3,
+    getDirectory:0, getTrustChecks:0, getNotifications:0};
+  function demoOverlay() { try { return JSON.parse(window.sessionStorage.getItem(DEMO_KEY) || 'null'); } catch (e) { return null; } }
+  function keepOverlay(overlay) { try { window.sessionStorage.setItem(DEMO_KEY, JSON.stringify(overlay)); } catch (e) { /* storage blocked: the change lasts until the next fresh copy */ } }
+  function rpc(name, args, yes, no) {
+    var fail = no || function () { say('That didn\'t go through. Try again.', false); };
+    if (window.COIPreview) { window.COIPreview.call(name, args, yes, fail); return; }
+    if (DEMO && OVERLAY_ARGS[name] !== undefined) {
+      args = args.slice(0, OVERLAY_ARGS[name]);
+      while (args.length < OVERLAY_ARGS[name]) args.push(null);
+      args.push(demoOverlay());
+      var done = yes;
+      yes = function (result) { if (result && result.demo && result.overlay) keepOverlay(result.overlay); if (done) done(result); };
+    }
+    var run = google.script.run.withSuccessHandler(yes).withFailureHandler(fail);
+    run[name].apply(run, args);
+  }
+
+  // Sidebar: four screens, a count of what waits for this role, and a short list under each screen.
+  var ICONS = {projects:'M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 9h4a1 1 0 0 1 1 1v11M3 21h18M8 8h3M8 12h3M8 16h3',
+    dashboard:'M12 3a9 9 0 1 0 9 9h-9zM15 3.5A9 9 0 0 1 20.5 9H15z',
+    worklist:'M10 6h10M10 12h10M10 18h10M4 6l1.2 1.2L7.5 5M4 12l1.2 1.2L7.5 11M4 18l1.2 1.2L7.5 17',
+    holds:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM10 9v6M14 9v6', roi:'M3 17l6-6 4 4 8-8M15 7h6v6',
+    directory:'M16 19v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 17.5V19M10 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM20 19v-1.5a3.5 3.5 0 0 0-2.5-3.35M15.5 5.2a3 3 0 0 1 0 5.6',
+    notifications:'M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6zM10 19a2 2 0 0 0 4 0',
+    trust:'M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3zM9 12l2 2 4-4'};
+  var NAV_LABEL = {projects:'Projects', dashboard:'Compliance', worklist:'Worklist', holds:'Payment holds', directory:'Subcontractors', notifications:'Notifications'};
+  var side = document.getElementById('side'), sideNav = document.getElementById('side-nav');
+  function mineRows() { return state.all ? state.all.rows.filter(function (r) { return owned(r.next); }) : []; }
+  function sideLists() {
+    var p = state.portfolio ? state.portfolio.projects.slice() : [];
+    var rank = {'At risk':0,'Needs attention':1,'Watch':1,'On track':2};
+    p.sort(function (a, b) { return (rank[a.word] - rank[b.word]) || (b.waiting_count - a.waiting_count); });
+    var issues = state.all ? state.all.rows.filter(function (r) { return r.status === 'Expired' || r.status === 'Expiring soon'; }) : [];
+    issues.sort(function (a, b) { return (Number(b.status === 'Expired') - Number(a.status === 'Expired')) || String(a.expiry).localeCompare(String(b.expiry)); });
+    var holds = state.holdsAll ? state.holdsAll.rows : [];
+    var lists = {
+      projects:{title:'Needs attention first', all:'View all ' + plural(p.length,'project','projects'), items:p.map(function (x) {
+        return {label:x.name, meta:x.waiting_count ? x.waiting_count + ' waiting' : x.word, dot:x.word === 'At risk' ? 'red' : x.word === 'On track' ? 'green' : '', project:x.project_id};
+      })},
+      dashboard:{title:'Expired or expiring soonest', all:'View all ' + plural(issues.length,'issue','issues'), none:'Nothing expired or expiring.', items:issues.map(function (r) {
+        return {label:r.subcontractor, meta:r.status === 'Expired' ? 'Expired' : date(r.expiry,true), dot:r.status === 'Expired' ? 'red' : '', record:r.record_id};
+      })},
+      worklist:{title:'Waiting for you', all:'View all ' + mineRows().length, none:'Nothing waiting for you.', items:mineRows().map(function (r) {
+        return {label:r.subcontractor, meta:ACTION_SHORT[r.next], dot:'', record:r.record_id};
+      })},
+      holds:{title:'Largest holds' + (state.holdsAll && state.holdsAll.pay_date ? ' · ' + date(state.holdsAll.pay_date,true) + ' pay run' : ''), all:'View all ' + plural(holds.length,'hold','holds'), none:'No payments on hold.',
+        items:holds.map(function (r) { return {label:r.subcontractor, meta:money(r.amount_usd), dot:'red', record:r.record_id}; })}
+    };
+    return lists;
+  }
+  function renderSide() {
+    var active = state.view === 'detail' ? 'worklist' : state.view === 'company' ? 'directory' : state.view, lists = sideLists();
+    var counts = {worklist:state.all ? mineRows().length : 0, holds:state.holdsAll ? state.holdsAll.rows.length : 0};
+    sideNav.innerHTML = ORDER.map(function (key) {
+      var on = key === active, list = lists[key], open = !!list && !!state.expanded[key];
+      var count = counts[key] || 0;
+      return '<div class="nav-group"><div class="nav-row' + (on ? ' on' : '') + '">' +
+        '<button class="nav-btn" data-view="' + key + '" aria-current="' + (on ? 'page' : 'false') + '" title="' + NAV_LABEL[key] + '">' +
+        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + ICONS[key] + '"></path></svg>' +
+        '<span class="nav-label">' + NAV_LABEL[key] + '</span>' + (count ? '<span class="nav-count' + (key === 'worklist' ? ' mine' : '') + '" aria-label="' + count + (key === 'worklist' ? ' waiting for you' : ' on hold') + '">' + count + '</span>' : '') + '</button>' +
+        (count ? '<span class="nav-dot" aria-hidden="true"></span>' : '') +
+        (list ? '<button class="nav-toggle" data-toggle="' + key + '" aria-expanded="' + open + '" aria-label="' + (open ? 'Hide' : 'Show') + ' top 5 in ' + NAV_LABEL[key] + '"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>' : '') + '</div>' +
+        (open ? '<div class="nav-sub"><div class="nav-sub-title">' + esc(list.title) + '</div>' +
+          (list.items.length ? list.items.slice(0,5).map(function (it) {
+            return '<button class="item"' + (it.record ? ' data-side-record="' + esc(it.record) + '"' : it.project ? ' data-side-project="' + esc(it.project) + '"' : ' data-side-route="' + esc(it.route) + '"') + '>' +
+              '<span class="d ' + it.dot + '"></span><span class="t">' + esc(it.label) + '</span><span class="m">' + esc(it.meta) + '</span></button>';
+          }).join('') : '<div class="none">' + esc(list.none || 'Nothing to show.') + '</div>') +
+          (list.items.length ? '<button class="all" data-side-all="' + key + '">' + esc(list.all) + ' →</button>' : '') + '</div>' : '') + '</div>';
+    }).join('');
+    sideNav.querySelectorAll('.nav-btn').forEach(function (b) { b.onclick = function () {
+      if (b.dataset.view === 'worklist' && state.view !== 'worklist' && state.view !== 'detail') state.filter = 'waiting';
+      navigate(b.dataset.view);
+    }; });
+    sideNav.querySelectorAll('[data-toggle]').forEach(function (b) { b.onclick = function () { state.expanded[b.dataset.toggle] = !state.expanded[b.dataset.toggle]; renderSide(); sideNav.querySelector('[data-toggle="' + b.dataset.toggle + '"]').focus(); }; });
+    sideNav.querySelectorAll('[data-side-record]').forEach(function (b) { b.onclick = function () { openRecord(b.dataset.sideRecord); }; });
+    prefetchOnHover(sideNav);
+    sideNav.querySelectorAll('[data-side-project]').forEach(function (b) { b.onclick = function () { state.project = b.dataset.sideProject; state.filter = 'waiting'; navigate('worklist'); }; });
+    sideNav.querySelectorAll('[data-side-route]').forEach(function (b) { b.onclick = function () { navigate(b.dataset.sideRoute); }; });
+    sideNav.querySelectorAll('[data-side-all]').forEach(function (b) { b.onclick = function () {
+      var key = b.dataset.sideAll;
+      if (key === 'worklist') { state.project = 'all'; state.filter = 'waiting'; }
+      if (key === 'dashboard') { state.project = 'all'; state.filter = 'Expired'; key = 'worklist'; }
+      if (key === 'holds') state.project = 'all';
+      navigate(key);
+    }; });
+  }
+  // One copy of the list data: portfolio, worklist and holds for every active project, and the ROI estimate.
+  // Screens read it from memory. Only a write asks the server for a fresh copy.
+  function useData(data) {
+    state.data = data; state.portfolio = data.portfolio; state.all = data.worklist; state.holdsAll = data.holds.all; state.roi = data.roi;
+    var p = data.portfolio.projects;
+    if (state.project !== 'all' && p.length && !p.some(function (x) { return x.project_id === state.project; })) state.project = p[0].project_id;
+    showWho();
+  }
+  function loadData(yes, no) {
+    rpc('getAppData',[],function (data) { useData(data); renderSide(); if (yes) yes(); },no || function () {});
+  }
+  // One project's worklist and hold list, cut from the all-projects copy. Null when the project is not active.
+  function worklistFor(id) {
+    var all = state.data.worklist;
+    if (id === 'all') return all;
+    var p = state.portfolio.projects.filter(function (x) { return x.project_id === id; })[0];
+    if (!p) return null;
+    return {project_id:id, project:p.name, review_mode:p.review_mode, review_modes:all.review_modes, mode_set:p.mode_set || null,
+      rows:all.rows.filter(function (r) { return r.project_id === id; })};
+  }
+  function holdsFor(id) { return state.data.holds[id] || null; }
+  // Record detail: one request per record at a time. A hover starts it early, so a click often finds it done.
+  function fetchDetail(id, yes, no) {
+    var waiting = state.fetching[id];
+    if (waiting) { waiting.push([yes,no]); return; }
+    waiting = state.fetching[id] = [[yes,no]];
+    rpc('getRecordDetail',[id],function (data) {
+      state.details[id] = data; delete state.fetching[id];
+      waiting.forEach(function (w) { if (w[0]) w[0](data); });
+    },function (err) {
+      delete state.fetching[id];
+      waiting.forEach(function (w) { if (w[1]) w[1](err); });
+    });
+  }
+  var hoverTimer = null;
+  function prefetchOnHover(root) {
+    root.querySelectorAll('[data-row],[data-side-record]').forEach(function (el) {
+      var id = el.dataset.row || el.dataset.sideRecord;
+      el.addEventListener('mouseenter',function () {
+        clearTimeout(hoverTimer);
+        hoverTimer = setTimeout(function () { if (!state.details[id] && !state.fetching[id]) fetchDetail(id); },120);
+      });
+      el.addEventListener('mouseleave',function () { clearTimeout(hoverTimer); });
+    });
+  }
+  // Under 900px the nav opens over the page, so that choice is not remembered for the wide layout.
+  function overlay() { return !!(window.matchMedia && window.matchMedia('(max-width:900px)').matches); }
+  function setSide(open) {
+    state.sideOpen = open; if (!overlay()) remember('side', open ? 'open' : 'closed');
+    side.classList.toggle('closed', !open);
+    document.getElementById('side-expand').tabIndex = open ? -1 : 0;
+    placeSeg();
+  }
+  document.getElementById('side-collapse').onclick = function () { setSide(false); document.getElementById('side-expand').focus(); };
+  document.getElementById('side-expand').onclick = function () { if (!state.sideOpen) { setSide(true); document.getElementById('side-collapse').focus(); } };
+  side.addEventListener('transitionend',placeSeg);
+  setSide(state.sideOpen);
+  // The scrim, a tap on a destination and Esc close the overlay. Turning the device across 900px resets it.
+  document.getElementById('side-scrim').onclick = function () { setSide(false); document.getElementById('side-expand').focus(); };
+  side.addEventListener('click',function (e) {
+    if (overlay() && state.sideOpen && e.target.closest('.nav-btn,.nav-sub .item,.nav-sub .all,.foot-btn')) setSide(false);
+  });
+  var wasOverlay = overlay();
+  window.addEventListener('resize',function () {
+    var now = overlay(); if (now === wasOverlay) return;
+    wasOverlay = now; setSide(now ? false : remembered('side','open') !== 'closed');
+  });
+
+  // Header: one row per screen. Title and context on the left, screen controls and search on the right.
+  var head = {title:document.getElementById('page-title'), meta:document.getElementById('page-meta'), picker:document.getElementById('ph-picker'),
+    back:document.getElementById('back'), titleBox:document.getElementById('ph-title')};
+  function setHead(title, meta, picker) {
+    var detail = state.view === 'detail';
+    head.back.hidden = !detail; head.titleBox.hidden = detail;
+    head.title.textContent = title || '';
+    head.meta.textContent = meta ? meta.text || meta : '';
+    head.meta.title = meta && meta.source ? meta.source : '';
+    head.picker.innerHTML = picker ? projectPicker() : '';
+    var p = document.getElementById('project-picker');
+    if (p) p.onchange = function () { state.project = p.value; state.limit = PAGE; navigate(state.view); };
+  }
+  head.back.onclick = function () { navigate('worklist'); };
+  function projectPicker() {
+    if (!state.portfolio) return '';
+    return '<select id="project-picker" aria-label="Project"><option value="all"' + (state.project === 'all' ? ' selected' : '') + '>All active projects</option>' +
+      state.portfolio.projects.map(function (p) { return '<option value="' + esc(p.project_id) + '"' + (p.project_id === state.project ? ' selected' : '') + '>' + esc(p.name) + '</option>'; }).join('') + '</select>';
+  }
+  function projectName(id) {
+    if (id === 'all') return 'All active projects';
+    var p = state.portfolio && state.portfolio.projects.filter(function (x) { return x.project_id === id; })[0];
+    return p ? p.name : '';
+  }
+
+  // Search lives in the header. From any other screen it opens the worklist across every project.
+  var search = document.getElementById('search'), searchBox = document.getElementById('gsearch');
+  search.oninput = function () {
+    state.search = search.value; searchBox.classList.toggle('has-text',!!state.search); state.cursor = -1; state.limit = PAGE;
+    if (state.view === 'worklist') {
+      // A search looks at every record in the view, so it lifts any status filter.
+      if (state.search && state.filter !== 'all') {
+        state.filter = 'all';
+        view.querySelectorAll('[data-filter]').forEach(function (x) { x.setAttribute('aria-pressed',String(x.dataset.filter === 'all')); });
+      }
+      if (document.getElementById('work-rows')) renderRows(false);
+      return;
+    }
+    state.project = 'all'; state.filter = 'all'; navigate('worklist');
+  };
+
+  // Navigation
+  function navIndex(name) { return name === 'detail' ? 2.5 : name === 'company' ? ORDER.indexOf('directory') + 0.5 : ORDER.indexOf(name); }
+  window.addEventListener('resize',function () { placeSeg(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { placeSeg(); });
+  function error() {
+    view.setAttribute('aria-busy','false');
+    view.innerHTML = '<section class="page-enter"><div class="empty"><h3>This view didn\'t load</h3><p>Try again. Your saved records are safe.</p><p style="margin-top:14px"><button class="btn secondary" id="retry">Try again</button></p></div></section>';
+    document.getElementById('retry').onclick = function () { navigate(state.view); };
+  }
+  function setView(html, opts) {
+    var enter = opts && opts.quiet ? '' : ' page-enter' + (state.dir === 'back' ? ' back' : '');
+    view.innerHTML = '<section class="page' + enter + '">' + html + '</section>';
+    view.setAttribute('aria-busy','false'); bindRoutes();
+  }
+  function bindRoutes() {
+    view.querySelectorAll('[data-record]').forEach(function (b) { b.onclick = function (e) { e.stopPropagation(); openRecord(b.dataset.record); }; });
+    view.querySelectorAll('[data-route]').forEach(function (b) { b.onclick = function (e) {
+      e.stopPropagation();
+      if (b.dataset.project) state.project = b.dataset.project;
+      if (b.dataset.filterInto) state.filter = b.dataset.filterInto;
+      navigate(b.dataset.route);
+    }; });
+  }
+  function navigate(name, opts) {
+    opts = opts || {};
+    if (state.busy || dialog.open) return;
+    var from = state.view;
+    state.dir = !from || navIndex(name) >= navIndex(from) ? 'fwd' : 'back';
+    if (name !== 'worklist' && name !== 'detail' && state.search) { state.search = ''; search.value = ''; searchBox.classList.remove('has-text'); }
+    if (name !== from) state.limit = PAGE;
+    state.view = name; state.cursor = -1;
+    var request = ++state.request;
+    renderSide();
+    if (!opts.quiet) {
+      setHead(name === 'detail' ? '' : NAV_LABEL[name], '', name === 'worklist' || name === 'holds');
+      view.setAttribute('aria-busy','true');
+      view.innerHTML = '<div class="loading" role="status"><span class="spin" aria-hidden="true"></span>Loading</div>';
+      window.scrollTo(0,0);
+    }
+    function current(fn) { return function (data) { if (request === state.request) { fn(data, opts); if (opts.done) opts.done(); } }; }
+    function load() {
+      if (name === 'projects') current(renderProjects)(state.portfolio);
+      if (name === 'dashboard') current(renderDashboard)(state.portfolio);
+      // The ROI page is hidden (ticket 16): no route reaches 'roi'. Its view code stays for a later return.
+      if (name === 'roi') current(renderRoi)(state.roi);
+      if (name === 'worklist') {
+        var w = worklistFor(state.project);
+        if (w) current(renderWorklist)(w); else rpc('getWorklist',[state.project],current(renderWorklist),current(error));
+      }
+      if (name === 'holds') {
+        var h = holdsFor(state.project);
+        if (h) current(renderHolds)(h); else rpc('getPaymentHoldList',[state.project],current(renderHolds),current(error));
+      }
+      if (name === 'directory') fetchView('directory',askDirectory,'rows',current(renderDirectory),current(error));
+      if (name === 'company') fetchView('directory',askDirectory,'rows',current(renderCompany),current(error));
+      // Data trust is hidden (lane H, 2026-10-10): no route reaches 'trust'. Its view code stays for a later return.
+      if (name === 'trust') fetchView('trust',askTrust,'expected_vs_received',current(renderTrust),current(error));
+      if (name === 'notifications') fetchView('notifications',askNotifications,'rows',current(renderNotes),current(error));
+      if (name === 'detail') {
+        var id = state.detail.record_id, seen = state.details[id];
+        // A record seen before shows at once. The fresh copy replaces it only if something changed.
+        if (seen && !opts.quiet) {
+          current(renderDetail)(seen);
+          fetchDetail(id,function (data) {
+            if (request === state.request && !state.busy && !dialog.open && JSON.stringify(data) !== JSON.stringify(seen)) renderDetail(data,{quiet:true});
+          });
+        } else {
+          if (opts.quiet) delete state.details[id];
+          fetchDetail(id,current(renderDetail),current(error));
+        }
+      }
+    }
+    if (state.data) load();
+    else loadData(function () { if (request === state.request) load(); },current(error));
+  }
+
+  // Role switch: ownership changes everywhere, without a reload.
+  var roleSelect = document.getElementById('role');
+  roleSelect.value = state.role;
+  function showWho() {
+    var p = state.portfolio && state.portfolio.projects.filter(function (x) { return x.project_id === state.project; })[0] || (state.portfolio && state.portfolio.projects[0]);
+    var name = p && p.staff ? p.staff[state.role] : '';
+    document.getElementById('who-name').textContent = name ? 'Viewing as ' + name : 'Viewing as';
+    document.getElementById('avatar').textContent = initials(name || ROLE[state.role]);
+  }
+  function setRole(role) {
+    state.role = role; roleSelect.value = role; showWho(); renderSide();
+    if (state.view === 'detail' && state.detail && state.detail.lines && !dialog.open) { renderDetail(state.detail,{quiet:true}); maybeSwell(false); }
+    if (state.view === 'worklist' && state.worklist && document.getElementById('work-rows')) renderRows(false);
+  }
+  roleSelect.onchange = function (e) { setRole(e.target.value); };
+
+  function countRecords(projects) { return projects.reduce(function (n, p) { return n + p.expected_count; },0); }
+
+  // Projects
+  function renderProjects(data) {
+    var u = updated(data.source + ', ' + data.hold_source.split(/,\s*/)[0], newest(data.last_updated), true);
+    setHead('Projects',{text:plural(data.projects.length,'project','projects') + ' · ' + plural(countRecords(data.projects),'record','records') + ' · ' + u.text, source:u.source});
+    if (!data.projects.length) { setView('<div class="surface table-box"><div class="empty"><h3>No active projects</h3><p>Add a fictional project to begin.</p></div></div>'); return; }
+    setView(figureSource(u) + '<div class="surface table-box" data-tour="projects"><div class="table-scroll"><table class="table cardable" aria-label="Projects"><thead><tr><th>Project</th><th>Health</th><th>Compliant</th><th>Expiring in 30 days</th><th>Expired</th><th>Below limits</th><th>Waiting for a person</th><th class="right">On hold</th></tr></thead><tbody>' +
+      data.projects.map(function (p, i) {
+        var pct = p.expected_count ? Math.round(p.compliant_count / p.expected_count * 100) : 0;
+        var red = function (n, label) { return '<td class="mid" data-label="' + label + '"><strong' + (n > 0 ? ' style="color:var(--red)"' : '') + '>' + n + '</strong></td>'; };
+        return '<tr class="row-in clickable" style="animation-delay:' + wait(i * 50) + 'ms" data-open-project="' + esc(p.project_id) + '">' +
+          '<td class="mid c-title" data-label="Project"><button class="link-btn" data-route="worklist" data-project="' + esc(p.project_id) + '" data-filter-into="waiting">' + esc(p.name) + '</button><span class="id mono">' + esc(p.project_id) + '</span></td>' +
+          '<td class="mid c-chip" data-label="Health">' + badge(p.word) + '</td>' +
+          '<td class="mid" data-label="Compliant"><span class="ratio"><strong>' + p.compliant_count + ' / ' + p.expected_count + '</strong><span class="track" aria-hidden="true"><i style="width:' + pct + '%"></i></span></span></td>' +
+          '<td class="mid" data-label="Expiring in 30 days"><strong>' + p.expiring_30d_count + '</strong></td>' + red(p.expired_count,'Expired') + red(p.below_limits_count,'Below limits') +
+          '<td class="mid" data-label="Waiting for a person">' + (p.waiting_count ? '<span class="waiting-chip"><span class="pulse" aria-hidden="true"></span>' + p.waiting_count + ' waiting</span>' : '<span class="muted">Nothing waiting</span>') + '</td>' +
+          '<td class="mid right" data-label="On hold"><strong' + (p.dollars_on_hold_usd ? '' : ' class="zero"') + '>' + money(p.dollars_on_hold_usd) + '</strong></td></tr>';
+      }).join('') + '</tbody></table></div></div>');
+    view.querySelectorAll('[data-open-project]').forEach(function (tr) { tr.onclick = function () { state.project = tr.dataset.openProject; state.filter = 'waiting'; navigate('worklist'); }; });
+  }
+
+  // Compliance
+  function renderDashboard(data) {
+    var t = data.totals, u = updated(data.source, data.last_updated.compliant_count, true);
+    setHead('Compliance',{text:t.compliant_count + ' of ' + t.expected_count + ' records compliant · ' + u.text, source:u.source});
+    if (!data.projects.length) { setView('<div class="empty"><h3>No active projects</h3><p>No compliance figures to show.</p></div>'); return; }
+    function metric(label, value, key, button, route, filter) {
+      var hold = key === 'dollars_on_hold_usd', u = updated(hold ? data.hold_source : data.source, data.last_updated[key]);
+      return '<div title="' + esc(u.source + ' · ' + u.text) + '"><dt>' + label + '</dt><dd class="v num' + ((key === 'expired_count' || key === 'below_limits_count') && value > 0 ? ' red' : '') + '">' + (hold ? money(value) : value) + '</dd>' +
+        '<dd><button class="btn secondary small" data-project="all" data-route="' + route + '"' + (filter ? ' data-filter-into="' + filter + '"' : '') + '>' + button + '</button></dd><dd>' + figureSource(u) + '</dd></div>';
+    }
+    setView('<dl class="facts strip metrics">' +
+      metric('On payment hold',t.dollars_on_hold_usd,'dollars_on_hold_usd','See payment holds','holds') +
+      metric('Expired',t.expired_count,'expired_count','See expired records','worklist','Expired') +
+      metric('Expiring in 30 days',t.expiring_30d_count,'expiring_30d_count','See expiring records','worklist','Expiring soon') +
+      metric('Below required limits',t.below_limits_count,'below_limits_count','See records waiting','worklist','waiting') + '</dl>' +
+      '<div class="surface table-box" style="margin-top:16px"><div class="table-title">By project</div>' + figureSource(updated(data.source + ', ' + data.hold_source.split(/,\s*/)[0], newest(data.last_updated), true)) + '<div class="table-scroll"><table class="table cardable" aria-label="By project"><thead><tr><th>Project</th><th>Health</th><th>Compliant / expected</th><th class="right">On payment hold</th></tr></thead><tbody>' +
+      data.projects.map(function (p, i) {
+        return '<tr class="row-in" style="animation-delay:' + wait(i * 50) + 'ms"><td class="mid c-title" data-label="Project"><button class="link-btn" data-route="worklist" data-project="' + esc(p.project_id) + '" data-filter-into="waiting">' + esc(p.name) + '</button></td><td class="mid c-chip" data-label="Health">' + badge(p.word) +
+          '</td><td class="mid" data-label="Compliant / expected"><strong>' + p.compliant_count + ' / ' + p.expected_count + '</strong></td><td class="mid right" data-label="On payment hold"><strong>' + money(p.dollars_on_hold_usd) + '</strong></td></tr>';
+      }).join('') + '</tbody></table></div></div>');
+  }
+
+  // Worklist
+  var FILTERS = [['Expired','Expired'],['waiting','Waiting for a person'],['Needs review','Needs review'],['Expiring soon','Expiring in 30 days'],['all','All records']];
+  function matches(r, filter) { return filter === 'all' || (filter === 'waiting' ? !!r.waiting : r.status === filter); }
+  function renderWorklist(data, opts) {
+    state.worklist = data;
+    var all = data.project_id === 'all';
+    var modes = Object.keys(data.review_modes || {});
+    var subs = {}; data.rows.forEach(function (r) { subs[r.subcontractor] = 1; });
+    setHead('Worklist',plural(data.rows.length,'record','records') + ' · ' + plural(Object.keys(subs).length,'subcontractor','subcontractors'),true);
+    setView('<div class="worklist-bar"><div class="seg" role="group" aria-label="Worklist filter" data-tour="filters"><span class="seg-ind" aria-hidden="true"></span>' +
+      FILTERS.map(function (f) { return '<button data-filter="' + f[0] + '" aria-pressed="' + (state.filter === f[0]) + '">' + f[1] + '<span class="n">' + data.rows.filter(function (r) { return matches(r, f[0]); }).length + '</span></button>'; }).join('') + '</div>' +
+      (all ? '' : '<div class="mode-inline"' + (data.mode_set ? ' title="Set by ' + esc(data.mode_set.who) + ' · ' + esc(stamp(data.mode_set.time)) + '"' : '') + '><label for="mode">Review mode</label><select id="mode">' +
+        modes.map(function (key) { return '<option value="' + key + '"' + (data.review_mode === key ? ' selected' : '') + '>' + esc(MODE_LABEL[key] || capital(data.review_modes[key])) + '</option>'; }).join('') +
+        '</select><button class="btn secondary small" id="set-mode">Set mode</button></div>') + '</div>' +
+      '<div class="surface table-box" style="margin-top:16px" data-tour="worklist"><div id="work-rows"></div></div>', opts);
+    renderRows(!(opts && opts.quiet)); placeSeg();
+    view.querySelectorAll('[data-filter]').forEach(function (b) { b.onclick = function () {
+      state.filter = b.dataset.filter; state.cursor = -1; state.limit = PAGE;
+      view.querySelectorAll('[data-filter]').forEach(function (x) { x.setAttribute('aria-pressed',String(x === b)); });
+      placeSeg(); renderRows(true);
+    }; });
+    var set = document.getElementById('set-mode');
+    if (set) set.onclick = function () {
+      mutate('changeReviewMode',[state.role,document.getElementById('mode').value,state.project],{button:set,busyLabel:'Setting',
+        text:function () { return 'Review mode updated. It applies to new certificates. Items already waiting stay in the queue.'; },
+        ok:function (result, show) { show(); }});
+    };
+  }
+  function placeSeg() {
+    var seg = document.querySelector('.seg'); if (!seg) return;
+    var on = seg.querySelector('[aria-pressed=true]'), ind = seg.querySelector('.seg-ind'); if (!on) return;
+    ind.style.width = on.offsetWidth + 'px'; ind.style.transform = 'translateX(' + on.offsetLeft + 'px)';
+    // A strip that scrolls (narrow screens) keeps the chosen chip in view and shows a fade while more is hidden.
+    if (seg.scrollWidth > seg.clientWidth) {
+      if (on.offsetLeft < seg.scrollLeft) seg.scrollLeft = on.offsetLeft - 3;
+      else if (on.offsetLeft + on.offsetWidth > seg.scrollLeft + seg.clientWidth) seg.scrollLeft = on.offsetLeft + on.offsetWidth - seg.clientWidth + 3;
+    }
+    seg.onscroll = function () { fadeSeg(seg); }; fadeSeg(seg);
+  }
+  function fadeSeg(seg) { seg.classList.toggle('more', seg.scrollWidth - seg.clientWidth - seg.scrollLeft > 2); }
+  function nextCell(r) {
+    if (!r.next) return '<span class="chip-none">Nothing waiting</span>';
+    if (owned(r.next)) return '<button class="chip-action" data-act="' + esc(r.record_id) + '"><span class="pulse" aria-hidden="true"></span>' +
+      esc(r.next === 'decide' ? (r.deficiency_count ? 'Decide on ' + plural(r.deficiency_count,'deficiency','deficiencies') : 'Decide on deficiencies') : ACTION_LABEL[r.next]) + ' <span aria-hidden="true">→</span></button>';
+    return '<span class="chip-theirs"><span class="dot hollow" aria-hidden="true"></span>With the ' + (ownerOf(r.next) === 'accountant' ? 'accountant' : 'project manager') + '</span>';
+  }
+  // The byline names real people only. Times stay, so the data manager can still date every action.
+  function byline(r) {
+    if (!r.last_action_time) return '';
+    var who = String(r.last_action_who || '').replace(/\s*\(.*\)$/,'');
+    return '<span class="who">' + (who && who !== 'System' ? esc(who) + ' · ' : '') + esc(stamp(r.last_action_time)) + '</span>';
+  }
+  function renderRows(animate) {
+    view.querySelectorAll('[data-filter]').forEach(function (b) { b.querySelector('.n').textContent = state.worklist.rows.filter(function (r) { return matches(r, b.dataset.filter); }).length; });
+    placeSeg();
+    var q = state.search.toLowerCase();
+    var found = state.worklist.rows.filter(function (r) {
+      return matches(r, state.filter) && (r.subcontractor + ' ' + r.record_id).toLowerCase().indexOf(q) >= 0;
+    }).map(function (r, i) { return {r:r, i:i}; });
+    found.sort(function (a, b) { return (Number(owned(b.r.next)) - Number(owned(a.r.next))) || (Number(!!b.r.next) - Number(!!a.r.next)) || (a.i - b.i); });
+    found = found.map(function (x) { return x.r; });
+    var rows = found.slice(0,state.limit);
+    state.visible = rows;
+    var more = Math.min(PAGE, found.length - rows.length);
+    document.getElementById('work-rows').innerHTML = rows.length ? '<div class="table-scroll"><table class="table cardable cards-1" aria-label="Worklist"><thead><tr><th>Subcontractor</th><th>Status</th><th>Next action</th><th>Expires</th><th>Last action</th></tr></thead><tbody>' +
+      rows.map(function (r, i) {
+        return '<tr data-row="' + esc(r.record_id) + '"' + (animate ? ' class="row-in" style="animation-delay:' + wait(Math.min(i,12) * 50) + 'ms"' : '') + '>' +
+          '<td class="c-title" data-label="Subcontractor"><button class="link-btn" data-record="' + esc(r.record_id) + '">' + esc(r.subcontractor) + '</button><span class="id"><span class="mono">' + esc(r.record_id) + '</span>' + (r.project ? ' · ' + esc(r.project) : '') + '</span></td>' +
+          '<td class="c-chip" data-label="Status">' + badge(r.status) + (r.payment_hold ? '<span class="hold-flag">On payment hold</span>' : '') + '</td>' +
+          '<td class="c-next' + (r.next && owned(r.next) ? ' c-act' : '') + '" data-label="Next action">' + nextCell(r) + '</td>' +
+          '<td data-label="Expires">' + esc(r.expiry ? date(r.expiry) : 'None on file') + '</td>' +
+          '<td class="c-full" data-label="Last action">' + esc(firstSentence(r.last_action) || 'No activity recorded') + byline(r) + '</td></tr>';
+      }).join('') + '</tbody></table></div>' :
+      '<div class="empty"><h3>' + (state.filter === 'waiting' && !state.search ? 'Nothing waiting' : 'No matching records') + '</h3><p>' +
+      (state.filter === 'waiting' && !state.search ? 'No records in this project need a person right now.' : 'Change the filter or the search to see other records.') + '</p></div>';
+    document.getElementById('work-rows').insertAdjacentHTML('beforeend','<div class="table-foot">' + (found.length ? '<span>Showing ' + rows.length + ' of ' + found.length + '</span>' : '') +
+      (more > 0 ? '<button class="btn secondary small" id="more">Show ' + more + ' more</button>' : '') +
+      '<span class="keys" aria-hidden="true"><span>↑ ↓ move</span><span>Enter open</span><span>/ search</span></span></div>');
+    var moreBtn = document.getElementById('more');
+    if (moreBtn) moreBtn.onclick = function () { state.limit += PAGE; renderRows(false); };
+    bindRoutes(); prefetchOnHover(document.getElementById('work-rows'));
+    view.querySelectorAll('[data-act]').forEach(function (b) { b.onclick = function () {
+      var row = rows.filter(function (r) { return r.record_id === b.dataset.act; })[0];
+      if (row.next === 'approve') approveRow(row, b); else openRecord(row.record_id);
+    }; });
+    drawCursor();
+  }
+  function drawCursor() {
+    view.querySelectorAll('#work-rows tbody tr').forEach(function (tr, i) { tr.classList.toggle('cursor', i === state.cursor); });
+  }
+  function approveRow(row, button) {
+    mutate('runReviewAction',[row.record_id,state.role,'approve',{}],{button:button,busyLabel:'Approving',
+      text:function () { return row.subcontractor + ' approved. The approval email is on its way.'; },
+      ok:function (result, show) {
+        // Redraw the rows when the row has left and the fresh data is in, whichever comes last.
+        var left = 2;
+        function both() { if (--left === 0 && state.view === 'worklist' && document.getElementById('work-rows')) { state.worklist = worklistFor(state.project) || state.worklist; renderRows(false); } }
+        exitRow(button.closest('tr'),function () { show(); both(); });
+        return both;
+      }});
+  }
+  function exitRow(tr, done) {
+    if (!tr) { done(); return; }
+    var body = tr.parentNode;
+    body.querySelectorAll('tr').forEach(function (r) { r.classList.remove('row-in'); r.style.animationDelay = ''; });
+    if (reduce) { tr.remove(); done(); return; }
+    var height = tr.offsetHeight + 2, below = [], n = tr.nextElementSibling;
+    while (n) { below.push(n); n = n.nextElementSibling; }
+    tr.classList.add('row-out');
+    setTimeout(function () {
+      tr.remove();
+      below.forEach(function (r) { r.style.transform = 'translateY(' + height + 'px)'; });
+      void body.offsetHeight;
+      below.forEach(function (r) { r.style.transition = 'transform 320ms cubic-bezier(.16,1,.3,1)'; r.style.transform = ''; });
+      setTimeout(done,320);
+    },320);
+  }
+
+  // Payment holds
+  function renderHolds(data, opts) {
+    var u = updated(data.source, data.last_updated, true);
+    setHead('Payment holds',{text:(data.pay_date ? date(data.pay_date) + ' pay run' : 'No current pay run') + ' · ' + u.text, source:u.source},true);
+    var counts = {}, top = '';
+    data.rows.forEach(function (r) { r.reasons.forEach(function (why) { counts[why] = (counts[why] || 0) + 1; if (!top || counts[why] > counts[top]) top = why; }); });
+    setView(figureSource(u) + '<dl class="facts strip holdstrip" data-tour="payrun"><div><dt>On hold this pay run</dt><dd class="v num">' + money(data.total_usd) + '</dd></div>' +
+      '<div><dt>Subcontractors on hold</dt><dd class="v num">' + data.rows.length + '</dd></div>' +
+      '<div><dt>Most common reason</dt><dd class="v reason">' + esc(top || 'None') + '</dd>' + (top ? '<dd class="sub">' + counts[top] + ' of ' + plural(data.rows.length,'hold','holds') + '</dd>' : '') + '</div></dl>' +
+      (data.rows.length ? '<div class="surface table-box" style="margin-top:16px"><div class="table-scroll"><table class="table cardable cards-1" aria-label="Payment holds"><thead><tr><th>Subcontractor</th><th class="right">Billed this cycle</th><th>Reasons</th></tr></thead><tbody>' +
+        data.rows.map(function (r, i) {
+          return '<tr class="row-in" style="animation-delay:' + wait(i * 50) + 'ms"><td class="c-title" data-label="Subcontractor"><button class="link-btn" data-record="' + esc(r.record_id) + '">' + esc(r.subcontractor) + '</button><span class="id"><span class="mono">' + esc(r.record_id) + '</span> · ' + esc(r.project || projectName(state.project)) + '</span></td>' +
+            '<td class="right" data-label="Billed this cycle"><span class="amount">' + money(r.amount_usd) + '</span></td><td data-label="Reasons"><div class="reasons">' + r.reasons.map(function (reason) { return '<span class="badge red">' + esc(reason) + '</span>'; }).join('') + '</div></td></tr>';
+        }).join('') + '</tbody></table></div></div><p class="footnote">Records in review with no bill this cycle are not held.</p>' :
+        '<div class="surface table-box" style="margin-top:16px"><div class="empty"><h3>No payments on hold</h3><p>' + esc(data.empty) + '</p></div></div>'), opts);
+  }
+
+  // ROI
+  function renderRoi(data, opts) {
+    state.roi = data;
+    var u = updated(data.source, data.last_updated, true);
+    setHead('Return on investment',{text:'Estimate from fictional inputs · ' + u.text, source:u.source});
+    function missingNames(keys) { return keys.map(function (key) { return data.inputs[key] ? data.inputs[key].label : key.replace(/_/g,' '); }).join(', '); }
+    function number(n, missing) { return n == null ? 'Not shown' + (missing && missing.length ? '<span class="missing">Missing ' + esc(missingNames(missing)) + '</span>' : '') : money(n); }
+    function inputValue(key, value) {
+      if (value == null) return 'Not shown';
+      if (key === 'catch_rate') return Math.round(value * 100) + '%';
+      return /_usd$/.test(key) ? money(value) : esc(Number(value).toLocaleString('en-US'));
+    }
+    function basis(text) {
+      var m = /^(estimate|sourced):\s*/i.exec(text || ''), body = text ? text.slice(m ? m[0].length : 0) : 'Missing basis';
+      body = body.replace('docs/research/c4-gemini-api-cost.md','Build research on certificate reading cost, Oct 7, 2026');
+      return (m ? '<span class="badge ' + (m[1].toLowerCase() === 'sourced' ? 'green' : 'neutral') + '">' + (m[1].toLowerCase() === 'sourced' ? 'Sourced' : 'Estimate') + '</span><br>' : '') + esc(capital(body));
+    }
+    setView('<div class="well notice"><span class="dot" aria-hidden="true"></span>' + esc(data.basis_note) + '</div>' +
+      '<div class="cases"><div class="surface case likely"><span class="label">Likely case</span><span class="v">' + number(data.net.likely,data.net.missing) + '</span><p>Net value per year</p></div>' +
+      '<div class="strip case"><span class="label">Low case</span><span class="v">' + number(data.net.low,data.net.missing) + '</span><p>The floor. Every input at its least favourable value.</p></div>' +
+      '<div class="strip case"><span class="label">High case</span><span class="v">' + number(data.net.high,data.net.missing) + '</span><p>Net value per year</p></div></div>' +
+      '<div class="panels"><section class="panel"><h2>Value and running cost</h2><div class="table-scroll"><table class="ptable"><thead><tr><th>Per year</th><th class="num">Low</th><th class="num">Likely</th><th class="num">High</th></tr></thead><tbody>' +
+      data.lines.map(function (row) { return '<tr' + (row.key === 'net_value_usd' ? ' class="net"' : '') + '><td>' + esc(row.label) + '</td><td class="num">' + number(row.low,row.missing) + '</td><td class="num">' + number(row.likely,row.missing) + '</td><td class="num">' + number(row.high,row.missing) + '</td></tr>'; }).join('') +
+      '</tbody></table></div><p class="footnote">Low case: ' + esc(String(data.floor_note || '').charAt(0).toLowerCase() + String(data.floor_note || '').slice(1)) + '</p></section>' +
+      '<section class="panel"><h2>Inputs and their basis</h2><div class="table-scroll"><table class="ptable"><thead><tr><th>Input</th><th class="num">Low</th><th class="num">Likely</th><th class="num">High</th><th>Basis</th></tr></thead><tbody>' +
+      Object.keys(data.inputs).map(function (key) { var v = data.inputs[key];
+        return '<tr><td>' + esc(v.label) + '</td><td class="num">' + inputValue(key,v.low) + '</td><td class="num">' + inputValue(key,v.likely) + '</td><td class="num">' + inputValue(key,v.high) + '</td><td class="basis">' + basis(v.basis) + '</td></tr>';
+      }).join('') + '</tbody></table></div></section></div>', opts);
+  }
+
+  // Record detail
+  function openRecord(id) {
+    if (state.busy || dialog.open) return;
+    state.detail = {record_id:id}; navigate('detail');
+  }
+  function gapValues(line, data) {
+    var name = line.field === 'insured_name_matches';
+    return {found:name ? data.values.insured_name : line.found, required:name ? data.subcontractor : line.required};
+  }
+  function checkRows(data, swap) {
+    return '<div class="tr th"><span>Check</span><span>Found</span><span>Required</span><span>Result</span></div>' + data.lines.map(function (line) {
+      var waivedNow = !line.pass && data.waived && !swap;
+      var res = line.pass ? '<span class="pass">Pass</span>' :
+        '<span class="fail" style="opacity:' + (waivedNow ? 0 : 1) + '">Fail</span><span class="waived" style="opacity:' + (waivedNow ? 1 : 0) + '">Waived</span>';
+      var expand = line.field === 'insured_name_matches' && data.values ? '<div class="expand"><span><span class="k">Certificate shows</span><strong>' + esc(data.values.insured_name) +
+        '</strong></span><span><span class="k">Project requires</span><strong>' + esc(data.subcontractor) + '</strong></span></div>' : '';
+      return '<div class="tr' + (!line.pass && (!data.waived || swap) ? ' fail-row' : '') + '" data-line="' + esc(line.field) + '"><span>' + esc(line.label) + '</span><span>' + esc(line.found) + '</span><span>' + esc(line.required) +
+        '</span><span class="res">' + res + '</span>' + expand + '</div>';
+    }).join('');
+  }
+  function renderDetail(data, opts) {
+    opts = opts || {};
+    state.detail = data; state.project = data.project_id;
+    var after = opts.after || '', swap = after === 'waive' && data.waived && !reduce;
+    var fails = data.lines.filter(function (line) { return !line.pass; }), count = fails.length;
+    var mine = owned(data.next), ownerKey = ownerOf(data.next);
+    var ownerName = data.staff[ownerKey] || ROLE[ownerKey], pmName = data.staff.project_manager || 'The project manager';
+    var short = shortName(data.subcontractor);
+    var actionText = data.next === 'decide' ? 'Decide on ' + plural(count,'deficiency','deficiencies') : ACTION_LABEL[data.next];
+    var decided = state.decided === data.record_id;
+    // The banner credits the person who decided, not the system entry that follows the decision.
+    var latest = data.timeline.filter(function (t) { return !/^System$/.test(String(t.who)); })[0] || data.timeline[0];
+
+    // Header card
+    var card;
+    if (mine) card = '<button class="action-card" id="jump"><span class="pulse" aria-hidden="true"></span><span class="card-text"><span class="k">Your next action</span><span class="v">' + esc(actionText) + '</span></span><span class="start">Start</span></button>';
+    else if (data.next) card = '<div class="wait-card"><span class="dot hollow" aria-hidden="true"></span><span class="card-text"><span class="k">Waiting on</span><span class="v">' + esc(ownerName) + ' · ' + ROLE[ownerKey] + '</span></span></div>';
+    else card = '<span class="badge done lg' + (after ? ' fade-in-x' : '') + '">' + (decided ? 'Decision recorded · Nothing waiting' : 'Nothing waiting') + '</span>';
+
+    var coverage = data.expiry ? '<dd class="v">Expires ' + esc(date(data.expiry)) + '</dd><dd class="sub">Approved certificate on file</dd>' : '<dd class="v">No approved certificate</dd><dd class="sub">Nothing on file yet</dd>';
+    var review = data.next && data.certificate_id ? '<dd class="v mono">' + esc(data.certificate_id) + '</dd><dd class="sub">Received ' + esc(date(data.received)) + (data.queued_expiry ? ' · Expires ' + esc(date(data.queued_expiry)) : '') + '</dd>' :
+      '<dd class="v">None</dd><dd class="sub">Nothing waiting for review</dd>';
+    var payment = data.payment_hold ? '<dd class="v red">On hold</dd><dd class="sub">' + esc(data.hold_reasons.join(' · ')) + '</dd>' :
+      '<dd class="v">Not on hold</dd><dd class="sub">' + (data.billed_this_cycle_usd ? 'Billed ' + money(data.billed_this_cycle_usd) + ' this pay cycle' : 'No bill this pay cycle') + '</dd>';
+
+    // Next-step panel
+    var bannerLabel = {approve:'Approval needed', decide:'Decision needed', correct:'Check needed', resend:'Resend needed'}[data.next];
+    // Round 4 panel: the state is the heading, one quiet line under it. No full-bleed banner.
+    var initials = String(ownerName).split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0,2).toUpperCase();
+    var received = (data.certificate_id ? esc(data.certificate_id) + ' · ' : '') + (data.received ? 'Received ' + esc(date(data.received)) : '');
+    var banner = mine ? '<div class="step-head"><span class="pulse" aria-hidden="true"></span><div class="step-title"><h2>' + bannerLabel + '</h2><span class="step-meta">' + received + '</span></div></div>' :
+      data.next ? '<div class="step-head"><span class="dot hollow amber" aria-hidden="true"></span><div class="step-title"><span class="who-chip" title="' + esc(ownerName) + ', ' + ROLE[ownerKey] + '"><span class="av" aria-hidden="true">' + esc(initials) + '</span>' + esc(ownerName) + '</span>' +
+        '<span class="step-meta">Waiting on the ' + ROLE[ownerKey].toLowerCase() + '</span></div></div>' :
+      '<div class="step-head"><span class="dot green" aria-hidden="true"></span><div class="step-title"><h2>' + (decided || data.waived ? 'Decision recorded' : 'Nothing waiting') + '</h2>' +
+        (latest ? '<span class="step-meta">' + esc(String(latest.who).replace(/\s*\(.*\)$/,'')) + ' · ' + esc(date(latest.time)) + '</span>' : '') + '</div></div>';
+    function notOwner(text, role) {
+      return '<div class="view-only"><span class="lock" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg></span>' +
+        '<span class="vo-text"><strong>View only</strong><span>' + text + '</span></span><button class="link-btn small" data-become="' + role + '">View as ' + ROLE[role].toLowerCase() + '</button></div>';
+    }
+    var fix = data.values && state.role === 'accountant' && data.next !== 'correct' ? '<div class="step-foot"><span>Value read wrong?</span><button class="btn secondary small" id="correct">Fix a misread value</button></div>' : '';
+    var body = '';
+    if (data.next === 'decide') {
+      var both = count === 1 ? 'it' : count === 2 ? 'both' : 'all ' + count, gapsWord = count === 1 ? 'this gap' : count === 2 ? 'both gaps' : 'all ' + count + ' gaps';
+      body = '<div class="gap-list">' + fails.map(function (line) {
+          var v = gapValues(line, data);
+          return '<div class="gap"><span class="gap-h"><strong>' + esc(line.label) + '</strong><span class="fail-tag">Fail</span></span><span class="k">Found</span><span class="found">' + esc(v.found) + '</span><span class="k">Required</span><span class="req">' + esc(v.required) + '</span></div>';
+        }).join('') + '</div>' +
+        (mine ? '<label class="field-label" for="waiver-note">Waiver note</label>' +
+          '<textarea id="waiver-note" placeholder="' + (count === 1 ? 'Why is this gap acceptable for this job?' : 'Why are these gaps acceptable for this job?') + '"></textarea>' +
+          '<div class="two decide-btns"><button class="btn secondary" id="waive">' + (count === 1 ? 'Waive' : 'Waive ' + both) + '</button><button class="btn secondary" id="reject">Reject</button></div>' +
+          '<p class="helper">Reject emails ' + esc(short) + ' a correction request.</p>' :
+          notOwner('Project managers and leadership decide. ' + esc(pmName) + ' has been notified.','project_manager'));
+    } else if (data.next === 'approve') {
+      body = '<p>Passed every check. Approve it and ' + esc(short) + ' gets an approval email.</p>' +
+        (mine ? '<button class="btn primary-action" id="approve">Approve certificate</button>' : notOwner('The accountant approves certificates.','accountant'));
+    } else if (data.next === 'correct') {
+      body = '<p>' + (data.confidence != null && data.confidence < 0.85 ? 'Read confidence is under 85%. ' : '') + 'Compare the values with the certificate, then fix any misread value.</p>' +
+        (mine ? '<button class="btn primary-action" id="correct">Fix a misread value</button>' : notOwner('The accountant checks readings.','accountant'));
+    } else if (data.next === 'resend') {
+      body = '<p>The file couldn\'t be read. Ask ' + esc(short) + ' for a readable PDF.</p>' +
+        (data.draft ? '<div class="well-soft draft">' + esc('To ' + data.draft.to + '\nSubject ' + data.draft.subject + '\n\n' + data.draft.body) + '</div>' : '') +
+        (mine ? '<button class="btn primary-action" id="resend">Send resend request</button>' : notOwner('The accountant sends resend requests.','accountant'));
+    } else {
+      body = '<p>' + (data.waived ? (count === 2 ? 'Both gaps were waived.' : count === 1 ? 'The gap was waived.' : 'The gaps were waived.') + ' The note is on the timeline.' : 'No certificate is waiting for a person.') + '</p>';
+    }
+
+    // Certificate vs. requirements
+    var result = data.check_result === 'Fail' ? '<span class="fail" style="opacity:' + (data.waived && !swap ? 0 : 1) + '">Fail</span><span class="waived" style="opacity:' + (data.waived && !swap ? 1 : 0) + '">Waived</span>' :
+      '<span class="' + (data.check_result === 'Pass' ? 'pass' : '') + '">' + esc(data.check_result) + '</span>';
+    var pct = typeof data.confidence === 'number' ? Math.max(0,Math.min(100,data.confidence * 100)) : null;
+    var confidence = data.reading_confirmed_by ? '<div class="confidence" data-tour="confidence"><div><div class="k">Reading checked</div><div class="sub">' + esc(data.reading_confirmed_by) + '</div></div><strong>Confirmed</strong></div>' :
+      pct == null ? '' : '<div class="confidence" data-tour="confidence"><div><div class="k">Read confidence</div><div class="sub">Under 85% is checked by a person</div></div><strong>' + esc(data.confidence_label) + '</strong>' +
+        '<div class="bar" aria-hidden="true"><i data-width="' + pct + '"' + (pct < 85 ? ' class="low"' : '') + '></i><b style="left:85%"></b></div></div>';
+
+    var wide = window.innerWidth > 900;
+    var pdf = '<div class="pdf-block">' + (data.certificate_id ? '<a class="btn secondary small" id="open-pdf" target="_blank" rel="noopener" href="#" hidden>Open PDF</a>' : '') +
+      '<details class="pdf" id="pdf-panel"' + (wide ? ' open' : '') + '><summary>Certificate</summary><p class="meta">' + esc(data.certificate_id || 'No certificate on file') + (data.received ? ' · Received ' + esc(date(data.received)) : '') + '</p>' +
+      '<div id="pdf-pages" class="pdf-pages"><p>Open this panel to load the certificate.</p></div>' +
+      (data.certificate_id ? '<button class="btn secondary small" id="expand-pdf">Open full size</button>' : '') +
+      (window.COIPreview && data.pdf_link ? ' <button class="btn secondary small" id="open-preview-pdf">Open sample PDF</button>' : '') +
+      (data.pdf_link && !window.COIPreview ? '<p class="small" style="margin-top:10px"><a href="' + esc(data.pdf_link) + '" target="_blank" rel="noopener">Open original file (owner only)</a></p>' : '') + '</details></div>';
+    var timeline = '<section class="timeline"><h2>Timeline</h2>' + (data.timeline.length ? '<ol>' + data.timeline.map(function (item, i) {
+      return '<li' + (i === 0 && after ? ' class="drop-in"' : '') + '><time>' + esc(stamp(item.time)) + '</time><strong>' + esc(item.who) + '</strong>' + esc(item.summary) + '</li>';
+    }).join('') + '</ol>' : '<p class="muted">No activity recorded.</p>') + '</section>';
+
+    setHead('', '');
+    setView('<div class="record-head"><div class="chips"><span class="chip"><span class="k">Project</span><span class="v">' + esc(data.project) + '</span></span><span class="chip"><span class="k">Scope of work</span><span class="v">' + esc(capital(data.scope)) +
+      '</span></span><span class="chip"><span class="k">Record</span><span class="v mono">' + esc(data.record_id) + '</span></span></div>' +
+      '<div class="title-row"><div class="left"><h1>' + esc(data.subcontractor) + '</h1><div class="badges">' + badge(data.status,'lg') + (data.waived ? badge('Waived','lg' + (after === 'waive' ? ' fade-in-x' : '')) : '') + '</div></div>' + card + '</div>' +
+      '<dl class="facts strip"><div><dt>Current coverage</dt>' + coverage + '</div><div><dt>Certificate under review</dt>' + review + '</div><div><dt>Payment</dt>' + payment + '</div></dl>' +
+      source('compliance_records, certificates',data.last_updated) + '</div>' +
+      '<div class="detail-grid"><div class="detail-left"><section class="step' + (data.next ? ' pending' : '') + '" id="step" aria-label="Next step">' + banner + '<div class="step-body' + (after ? ' in' : '') + '">' + body + '</div>' + fix + '</section>' +
+      '<section class="w9" aria-label="W-9"><div class="w9-head"><h2>W-9</h2><span class="w9-state ' + (data.w9_on_file ? 'on">On file' : 'off">Missing') + '</span></div>' +
+      '<button class="btn secondary small" id="w9">Mark ' + (data.w9_on_file ? 'missing' : 'on file') + '</button></section></div>' +
+      '<section class="panel values" aria-label="Certificate vs. requirements"><div class="values-head"><h2>Checks</h2><span class="result">' + result + '</span></div>' + confidence +
+      (data.lines.length ? '<div class="checks">' + checkRows(data, swap) + '</div>' : '<p class="muted">No readable certificate values on file.</p>') + '</section>' +
+      '<div class="detail-right">' + pdf + timeline + '</div></div>', opts);
+
+    bindDetail(data, count, short);
+    var bar = view.querySelector('.bar i');
+    if (bar) { if (reduce || opts.quiet) bar.style.width = bar.dataset.width + '%'; else requestAnimationFrame(function () { requestAnimationFrame(function () { bar.style.width = bar.dataset.width + '%'; }); }); }
+    if (swap) playWaive();
+    if (!after) maybeSwell(false);
+  }
+  function playWaive() {
+    var rows = view.querySelectorAll('.checks .fail-row');
+    setTimeout(function () {
+      var top = view.querySelector('.values-head .result');
+      if (top && top.children.length === 2) { top.children[0].style.opacity = 0; top.children[1].style.opacity = 1; }
+      Array.prototype.forEach.call(rows,function (row, i) {
+        setTimeout(function () {
+          var res = row.querySelector('.res'); res.children[0].style.opacity = 0; res.children[1].style.opacity = 1;
+          row.classList.remove('fail-row');
+        },i * 90);
+      });
+    },220);
+  }
+  function maybeSwell(force) {
+    if (reduce || !state.detail || !owned(state.detail.next)) return;
+    var key = state.detail.record_id + ':' + state.role;
+    if (state.swelled[key] && !force) return;
+    state.swelled[key] = true;
+    setTimeout(swell,450);
+  }
+  function swell() {
+    var step = document.getElementById('step'); if (!step || reduce) return;
+    step.classList.add('swell'); setTimeout(function () { step.classList.remove('swell'); },420);
+  }
+  function bindDetail(data, count, short) {
+    var jump = document.getElementById('jump');
+    if (jump) jump.onclick = function () {
+      var step = document.getElementById('step');
+      step.scrollIntoView({behavior:reduce ? 'auto' : 'smooth',block:'center'});
+      swell();
+      var target = document.getElementById('waiver-note') || step.querySelector('.primary-action');
+      if (target) setTimeout(function () { target.focus({preventScroll:true}); },wait(320));
+    };
+    view.querySelectorAll('[data-become]').forEach(function (b) { b.onclick = function () { setRole(b.dataset.become); }; });
+    var approve = document.getElementById('approve');
+    if (approve) approve.onclick = function () {
+      act(data,'approve',{},approve,'Approving',data.subcontractor + ' approved. The approval email is on its way.');
+    };
+    var resend = document.getElementById('resend');
+    if (resend) resend.onclick = function () { act(data,'resend',{},resend,'Sending','Resend request sent to ' + data.subcontractor + '.'); };
+    var waive = document.getElementById('waive');
+    if (waive) waive.onclick = function () {
+      var note = document.getElementById('waiver-note');
+      if (!note.value.trim()) {
+        note.classList.remove('shake'); void note.offsetWidth;
+        note.classList.add('is-error','shake'); note.focus();
+        say('Add a waiver note first. Say why ' + (count === 1 ? 'this gap is' : 'these gaps are') + ' acceptable.',false);
+        return;
+      }
+      act(data,'waive',{note:note.value},waive,'Saving',(count === 2 ? 'Both deficiencies' : count === 1 ? 'The deficiency' : 'All ' + count + ' deficiencies') + ' waived. Your note is on the timeline.');
+    };
+    var note = document.getElementById('waiver-note');
+    if (note) note.oninput = function () { note.classList.remove('is-error'); };
+    var reject = document.getElementById('reject');
+    if (reject) reject.onclick = function () { openReject(data); };
+    var correct = document.getElementById('correct');
+    if (correct) correct.onclick = function () { editValues(data); };
+    document.getElementById('w9').onclick = function () {
+      var w9 = document.getElementById('w9');
+      mutate('runReviewAction',[data.record_id,state.role,'w9',{onFile:!data.w9_on_file}],{button:w9,busyLabel:'Saving',ok:function (result, show) { show(); reloadDetail(''); }});
+    };
+    var expand = document.getElementById('expand-pdf');
+    if (expand) expand.onclick = function () { openFull(data); };
+    openPdfLink(data);
+    var pdfPanel = document.getElementById('pdf-panel'), loaded = false;
+    function loadPdf() { if (pdfPanel.open && !loaded && data.certificate_id) { loaded = true; drawPdf(data.record_id); } }
+    pdfPanel.addEventListener('toggle',loadPdf); loadPdf();
+  }
+  // Run one review action, then redraw the record from the server.
+  function act(data, action, payload, button, busyLabel, text) {
+    mutate('runReviewAction',[data.record_id,state.role,action,payload],{button:button,busyLabel:busyLabel,text:function () { return text; },
+      ok:function (result, show) {
+        if (action !== 'correct') state.decided = data.record_id;
+        if (dialog.open) dialog.close();
+        var body = view.querySelector('.step-body'); if (body) body.classList.add('out');
+        setTimeout(function () { reloadDetail(action, show); },wait(220));
+      }});
+  }
+  function reloadDetail(after, show) {
+    navigate('detail',{quiet:true,after:after || 'update',done:function () {
+      if (!show) return;
+      var fails = state.detail && state.detail.lines ? state.detail.lines.filter(function (l) { return !l.pass; }).length : 0;
+      setTimeout(show,after === 'waive' ? wait(220 + fails * 90 + 420) : wait(220));
+    }});
+  }
+
+  // Dialogs
+  function openDialog(html, wide) {
+    dialog.className = wide ? 'wide' : '';
+    dialog.innerHTML = html; dialog.showModal();
+    dialog.querySelectorAll('[data-close]').forEach(function (b) { b.onclick = function () { if (!state.busy) dialog.close(); }; });
+  }
+  dialog.addEventListener('click',function (e) {
+    if (e.target !== dialog || state.busy) return;
+    var r = dialog.getBoundingClientRect();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close();
+  });
+  dialog.addEventListener('cancel',function (event) { if (state.busy) event.preventDefault(); });
+  dialog.addEventListener('close',function () { dialog.className = ''; });
+  function openReject(data) {
+    openDialog('<h2 id="editor-title">Send a correction request</h2><p class="lead">' + esc(data.subcontractor) + ' gets this email with a new upload link.</p>' +
+      '<div class="well-soft draft">' + esc(data.rejection_text) + '</div><p class="dialog-msg" id="editor-message" role="alert"></p>' +
+      '<div class="dialog-foot"><button class="btn secondary" data-close>Cancel</button><button class="btn" id="send-reject">Send request</button></div>');
+    var send = document.getElementById('send-reject');
+    send.onclick = function () { act(data,'reject',{approved_text:data.rejection_text,certificate_id:data.certificate_id},send,'Sending','Correction request sent to ' + data.subcontractor + '.'); };
+  }
+  function openFull(data) {
+    openDialog('<h2 id="editor-title">Certificate ' + esc(data.certificate_id) + '</h2><div class="full-cert"><div id="large-pdf" class="pdf-pages"></div>' +
+      '<div class="checks">' + checkRows(data,false) + '</div></div><div class="dialog-foot"><button class="btn secondary" data-close>Close</button></div>', true);
+    drawPdf(data.record_id,'large-pdf');
+  }
+  function editValues(data) {
+    var values = data.values, options = [];
+    options.push({key:'insured_name', label:'Insured name', kind:'text', read:values.insured_name});
+    data.limit_fields.forEach(function (f) {
+      if (!data.lines.some(function (line) { return line.field === f.field; })) return;
+      options.push({key:'limit:' + f.field, label:f.label, kind:'number', read:values.limits[f.field]});
+    });
+    [['additional_insured_endorsement','Additional insured endorsement'],['project_address','Project address'],['certificate_holder','Certificate holder']].forEach(function (f) {
+      options.push({key:f[0], label:f[1], kind:'printed', read:values[f[0]]});
+    });
+    options.push({key:'cancellation_notice_days', label:'Cancellation notice days', kind:'days', read:values.cancellation_notice_days});
+    options.push({key:'expiration_date', label:'Expires', kind:'date', read:values.expiration_date});
+    var firstFail = data.lines.filter(function (l) { return !l.pass; })[0], pick = 0;
+    options.forEach(function (o, i) { if (firstFail && (o.key === 'limit:' + firstFail.field || (firstFail.field === 'insured_name_matches' && o.key === 'insured_name') || o.key === firstFail.field)) pick = pick || i; });
+    function shown(o) {
+      if (o.read == null || o.read === '') return 'Not read';
+      if (o.kind === 'number') return money(o.read);
+      if (o.kind === 'printed') return o.read ? 'Printed' : 'Not printed';
+      if (o.kind === 'date') return date(o.read);
+      if (o.kind === 'days') return o.read + ' days';
+      return o.read;
+    }
+    function input(o) {
+      var v = o.read == null ? '' : o.read;
+      if (o.kind === 'printed') return '<select id="fix-value"><option value="true"' + (o.read ? ' selected' : '') + '>Printed</option><option value="false"' + (!o.read ? ' selected' : '') + '>Not printed</option></select>';
+      if (o.kind === 'number' || o.kind === 'days') return '<input id="fix-value" type="number" min="0" step="' + (o.kind === 'days' ? 1 : 'any') + '" value="' + esc(v) + '">';
+      if (o.kind === 'date') return '<input id="fix-value" type="date" value="' + esc(v) + '">';
+      return '<input id="fix-value" value="' + esc(v) + '">';
+    }
+    openDialog('<h2 id="editor-title">Fix a misread value</h2><p class="lead">Use the certificate as the source. Your name, the old and new values, and your note are saved to the timeline.</p>' +
+      '<div class="dialog-fields"><label class="field">Value<select id="fix-field">' + options.map(function (o, i) { return '<option value="' + i + '"' + (i === pick ? ' selected' : '') + '>' + esc(o.label) + '</option>'; }).join('') + '</select></label>' +
+      '<div class="dialog-grid"><label class="field">Read as<input id="fix-read" readonly></label><label class="field">Correct value<span id="fix-slot"></span></label></div>' +
+      '<label class="field">Note<textarea id="edit-note" placeholder="What you changed and why"></textarea></label></div>' +
+      '<p class="dialog-msg" id="editor-message" role="alert"></p><div class="dialog-foot"><button class="btn secondary" data-close>Cancel</button><button class="btn" id="save-correction">Save and recheck</button></div>');
+    var field = document.getElementById('fix-field');
+    function draw() { var o = options[Number(field.value)]; document.getElementById('fix-read').value = shown(o); document.getElementById('fix-slot').innerHTML = input(o); }
+    field.onchange = draw; draw();
+    var save = document.getElementById('save-correction');
+    save.onclick = function () {
+      var o = options[Number(field.value)], raw = document.getElementById('fix-value').value;
+      var fixed = JSON.parse(JSON.stringify(values));
+      if (o.kind === 'number') fixed.limits[o.key.slice(6)] = raw === '' ? null : Number(raw);
+      else if (o.kind === 'printed') fixed[o.key] = raw === 'true';
+      else if (o.kind === 'days') fixed[o.key] = raw === '' ? null : Number(raw);
+      else fixed[o.key] = raw;
+      act(data,'correct',{values:fixed,note:document.getElementById('edit-note').value},save,'Saving',null);
+    };
+  }
+  // On a phone the canvas is too small to read, so "Open PDF" opens the file in a new tab, where the phone's own viewer zooms.
+  // The file is fetched at once, because a link that waits for a reply is blocked as a pop-up.
+  function openPdfLink(data) {
+    var link = document.getElementById('open-pdf');
+    if (!link || !window.matchMedia || !window.matchMedia('(max-width:599px)').matches) return;
+    var key = data.record_id + ':' + data.certificate_id;
+    function show(base64) {
+      if (!base64 || !link.isConnected) return;
+      var bytes = Uint8Array.from(atob(base64),function (c) { return c.charCodeAt(0); });
+      link.href = URL.createObjectURL(new Blob([bytes],{type:'application/pdf'})); link.hidden = false;
+    }
+    if (state.pdfs[key] != null) show(state.pdfs[key]);
+    else rpc('getPdfData',[data.record_id],function (base64) { state.pdfs[key] = base64; show(base64); },function () {});
+  }
+  function drawPdf(recordId, targetId) {
+    var target = document.getElementById(targetId || 'pdf-pages'), request = state.request;
+    target.innerHTML = '<p role="status">Loading the certificate…</p>';
+    function failed() {
+      if (!target.isConnected) return;
+      target.innerHTML = '<p>The certificate preview didn\'t load. <button class="btn secondary small">Try again</button></p>';
+      target.querySelector('button').onclick = function () { drawPdf(recordId,targetId); };
+    }
+    // A certificate's PDF never changes, so each one downloads once per page load.
+    var key = recordId + ':' + (state.detail && state.detail.certificate_id || '');
+    if (state.pdfs[key] != null) { got(state.pdfs[key]); return; }
+    rpc('getPdfData',[recordId],function (base64) { state.pdfs[key] = base64; got(base64); },failed);
+    function got(base64) {
+      if (request !== state.request || !target.isConnected) return;
+      if (!base64) { target.innerHTML = '<p>No certificate PDF on file.</p>'; return; }
+      withPdfLib(function () { showPdf(base64); },failed);
+    }
+    function showPdf(base64) {
+      if (!target.isConnected) return;
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      var bytes = Uint8Array.from(atob(base64),function (c) { return c.charCodeAt(0); });
+      var original = document.getElementById('open-preview-pdf');
+      if (original) original.onclick = function () {
+        var url = URL.createObjectURL(new Blob([Uint8Array.from(atob(base64),function (c) { return c.charCodeAt(0); })],{type:'application/pdf'}));
+        window.open(url,'_blank','noopener'); setTimeout(function () { URL.revokeObjectURL(url); },60000);
+      };
+      pdfjsLib.getDocument({data:bytes}).promise.then(function (pdf) {
+        if (!target.isConnected) return;
+        target.innerHTML = '';
+        function page(n) {
+          pdf.getPage(n).then(function (p) {
+            if (!target.isConnected) return;
+            var canvas = document.createElement('canvas'), scale = Math.max(target.clientWidth,250) / p.getViewport({scale:1}).width;
+            var vp = p.getViewport({scale:scale * Math.min(window.devicePixelRatio || 1,2)});
+            canvas.width = vp.width; canvas.height = vp.height;
+            canvas.setAttribute('aria-label','Certificate page ' + n + ' of ' + pdf.numPages);
+            target.appendChild(canvas);
+            p.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise.then(function () {
+              if (n < pdf.numPages) page(n + 1);
+            }).catch(failed);
+          }).catch(failed);
+        }
+        page(1);
+      }).catch(failed);
+    }
+  }
+  // The PDF viewer library is large, so the page starts without it and fetches it once, after the first screen.
+  var pdfLib = {loading:false, waiting:[]};
+  function withPdfLib(yes, no) {
+    if (window.pdfjsLib) { yes(); return; }
+    pdfLib.waiting.push([yes,no]);
+    if (pdfLib.loading) return;
+    pdfLib.loading = true;
+    var tag = document.createElement('script');
+    tag.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    function settle() {
+      pdfLib.loading = false;
+      var list = pdfLib.waiting; pdfLib.waiting = [];
+      list.forEach(function (w) { (window.pdfjsLib ? w[0] : w[1])(); });
+    }
+    tag.onload = settle; tag.onerror = function () { tag.remove(); settle(); };
+    document.head.appendChild(tag);
+  }
+
+  // Busy state: one action at a time. The pressed button shows a spinner and a present-participle label.
+  function mutate(name, args, opts) {
+    if (state.busy) return;
+    state.busy = true;
+    var button = opts.button, original = button ? button.innerHTML : '', disabled = [];
+    document.querySelectorAll('button,select,textarea,input').forEach(function (el) {
+      if (el !== button && !el.disabled && !toast.contains(el)) { disabled.push(el); el.disabled = true; }
+    });
+    if (button) { button.classList.add('busy'); button.setAttribute('aria-busy','true'); button.disabled = true; button.innerHTML = '<span class="spin" aria-hidden="true"></span>' + esc(opts.busyLabel || 'Saving'); }
+    function finish() {
+      state.busy = false;
+      disabled.forEach(function (el) { if (el.isConnected) el.disabled = false; });
+      if (button && button.isConnected) { button.classList.remove('busy'); button.removeAttribute('aria-busy'); button.disabled = false; button.innerHTML = original; }
+    }
+    function refused(text) {
+      var local = dialog.open && document.getElementById('editor-message');
+      if (local) local.textContent = text; else say(text,false);
+    }
+    rpc(name,args,function (result) {
+      finish();
+      if (!result || !result.ok) { refused(result && result.message ? result.message : 'That didn\'t go through. Try again.'); return; }
+      // Both modes show the page's own words. A Share Proj server message drops its "Demo:" tail to match.
+      var text = (opts.text && opts.text(result)) || String(result.message || '').replace(/\s*Demo:.*$/,'');
+      var show = function () { say(text,true); };
+      state.writes = (state.writes || 0) + 1; state.details = {}; state.views = {};
+      var after = opts.ok ? opts.ok(result,show) : show();
+      // One fresh copy of the list data after every write. A list screen redraws in place; a record redraws itself.
+      loadData(after || function () {
+        if (!state.busy && !dialog.open && state.view !== 'detail') navigate(state.view,{quiet:true});
+      });
+    },function () { finish(); refused('That didn\'t go through. Reload the record to see its latest state, then try again.'); });
+  }
+
+  // Subcontractors, notifications and data trust (ticket 20). Each screen asks the server once, with the page's demo overlay,
+  // and keeps the answer in state.views. A write clears it (see mutate), so the next visit asks again.
+  state.views = {}; state.viewWait = {};
+  state.subs = {search:'', status:'all', trade:'all', limit:PAGE};
+  state.trust = {gapsOnly:true, limit:PAGE};
+  state.notes = {event:'all', status:'all', id:'', pane:'list', openDetail:false, scrollY:0};
+  var STATUS_ORDER = ['Expired','Needs review','In review','Awaiting certificate','Expiring soon','Compliant','Closed'];
+  var COUNT_LABEL = {expected_count:'Expected records', compliant_count:'Compliant', expired_count:'Expired', expiring_30d_count:'Expiring in 30 days', dollars_on_hold_usd:'On payment hold'};
+  var NOTE_BANNER = 'Preview. These emails are drafted for review.';
+  function askDirectory(yes, no) { rpc('getDirectory',[],yes,no); }
+  function askTrust(yes, no) { rpc('getTrustChecks',[],yes,no); }
+  function askNotifications(yes, no) { rpc('getNotifications',[],yes,no); }
+  // One request per screen at a time. A reply without its main list counts as a failure, so a bad reply never sticks.
+  // yes and no may be null: warm() only fills the cache and wants no callback.
+  function fetchView(key, ask, needs, yes, no) {
+    if (state.views[key]) { if (yes) yes(state.views[key]); return; }
+    var waiting = state.viewWait[key];
+    if (waiting) { waiting.push([yes,no]); return; }
+    waiting = state.viewWait[key] = [[yes,no]];
+    function settle(index, data) { delete state.viewWait[key]; waiting.forEach(function (w) { if (w[index]) w[index](data); }); }
+    ask(function (data) {
+      if (!data || !data[needs]) { settle(1); return; }
+      state.views[key] = data; settle(0, data);
+    },function () { settle(1); });
+  }
+  function searchIcon() { return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4"></path></svg>'; }
+  function openCompany(id) { if (state.busy || dialog.open) return; state.company = id; navigate('company'); }
+  function openNote(id) { state.notes.id = id; state.notes.event = 'all'; state.notes.status = 'all'; state.notes.openDetail = true; navigate('notifications'); }
+  function optionList(items, current) {
+    return items.map(function (it) { return '<option value="' + esc(it[0]) + '"' + (it[0] === current ? ' selected' : '') + '>' + esc(it[1]) + '</option>'; }).join('');
+  }
+
+  // Subcontractors
+  function directoryMatches(r) {
+    var q = state.subs.search.toLowerCase();
+    return (state.subs.status === 'all' || r.status === state.subs.status) && (state.subs.trade === 'all' || r.trade === state.subs.trade) &&
+      (!q || (r.company + ' ' + r.contact + ' ' + r.email + ' ' + r.sub_id).toLowerCase().indexOf(q) >= 0);
+  }
+  function directorySource(data) { return source(data.source + ', compliance_records, certificates', data.last_updated); }
+  function renderDirectory(data, opts) {
+    var u = updated(data.source + ', compliance_records, certificates', data.last_updated);
+    setHead('Subcontractors',{text:plural(data.subcontractor_count,'subcontractor','subcontractors') + ' · ' + data.directory_compliant_count + ' compliant · ' + u.text, source:u.source});
+    var statuses = STATUS_ORDER.filter(function (s) { return data.rows.some(function (r) { return r.status === s; }); });
+    var trades = []; data.rows.forEach(function (r) { if (r.trade && trades.indexOf(r.trade) < 0) trades.push(r.trade); }); trades.sort();
+    setView('<div class="dir-bar"><label class="dir-search">' + searchIcon() + '<input id="dir-search" type="search" autocomplete="off" aria-label="Search subcontractors" placeholder="Company, contact, email or ID" value="' + esc(state.subs.search) + '"></label>' +
+      '<select id="dir-status" aria-label="Status"><option value="all">All statuses</option>' + optionList(statuses.map(function (s) { return [s,s]; }), state.subs.status) + '</select>' +
+      '<select id="dir-trade" aria-label="Scope of work"><option value="all">All scopes of work</option>' + optionList(trades.map(function (t) { return [t,t]; }), state.subs.trade) + '</select>' +
+      '<button class="btn tertiary small" id="dir-clear">Clear filters</button></div>' +
+      '<div class="surface table-box dir-box" data-tour="directory"><div id="dir-rows"></div></div>', opts);
+    var box = document.getElementById('dir-search');
+    box.oninput = function () { state.subs.search = box.value; state.subs.limit = PAGE; renderDirRows(false); };
+    document.getElementById('dir-status').onchange = function (e) { state.subs.status = e.target.value; state.subs.limit = PAGE; renderDirRows(false); };
+    document.getElementById('dir-trade').onchange = function (e) { state.subs.trade = e.target.value; state.subs.limit = PAGE; renderDirRows(false); };
+    document.getElementById('dir-clear').onclick = function () {
+      state.subs.search = ''; state.subs.status = 'all'; state.subs.trade = 'all'; state.subs.limit = PAGE;
+      box.value = ''; document.getElementById('dir-status').value = 'all'; document.getElementById('dir-trade').value = 'all'; renderDirRows(false); box.focus();
+    };
+    renderDirRows(!(opts && opts.quiet));
+  }
+  function renderDirRows(animate) {
+    var data = state.views.directory, target = document.getElementById('dir-rows'); if (!data || !target) return;
+    var filtered = state.subs.search || state.subs.status !== 'all' || state.subs.trade !== 'all';
+    document.getElementById('dir-clear').hidden = !filtered;
+    var found = data.rows.filter(directoryMatches), rows = found.slice(0,state.subs.limit), more = Math.min(PAGE, found.length - rows.length);
+    target.innerHTML = (rows.length ? '<div class="table-scroll"><table class="table cardable dir-table" aria-label="Subcontractors"><thead><tr><th>Company</th><th>Scope of work</th><th>Point of contact</th><th>Email</th><th>Phone</th><th>Status</th><th>Certificates</th><th>Last notification sent</th></tr></thead><tbody>' +
+      rows.map(function (r, i) {
+        return '<tr class="clickable' + (animate ? ' row-in' : '') + '"' + (animate ? ' style="animation-delay:' + wait(Math.min(i,12) * 50) + 'ms"' : '') + ' data-company="' + esc(r.sub_id) + '">' +
+          '<td class="c-title" data-label="Company"><button class="link-btn" data-company="' + esc(r.sub_id) + '">' + esc(r.company) + '</button><span class="id mono">' + esc(r.sub_id) + '</span></td>' +
+          '<td data-label="Scope of work">' + esc(r.trade) + '</td><td data-label="Point of contact">' + esc(r.contact) + '</td><td class="c-hide" data-label="Email"><a class="plain-link" href="mailto:' + esc(r.email) + '">' + esc(r.email) + '</a></td><td class="mono c-hide" data-label="Phone">' + esc(r.phone) + '</td>' +
+          '<td class="c-chip" data-label="Status">' + (r.status ? badge(r.status) : '') + '</td>' +
+          '<td class="certs" data-label="Certificates">' + (r.certificate_ids.length ? r.certificate_ids.map(function (c) { return '<span class="mono">' + esc(c) + '</span>'; }).join('') : '<span class="muted">None on file</span>') + '</td>' +
+          '<td class="c-full" data-label="Last notification sent">' + (r.last_notification ? esc(r.last_notification) + '<span class="who">' + esc(stamp(r.last_notification_time)) + '</span>' : '<span class="muted">None sent</span>') + '</td></tr>';
+      }).join('') + '</tbody></table></div>' :
+      '<div class="empty"><h3>No matching subcontractors</h3><p>Change the search or clear the filters.</p></div>') +
+      '<div class="table-foot">' + (found.length ? '<span>Showing ' + rows.length + ' of ' + found.length + '</span>' : '') +
+      (more > 0 ? '<button class="btn secondary small" id="dir-more">Show ' + more + ' more</button>' : '') + directorySource(data).replace('class="source"','class="source foot-source"') + '</div>';
+    var moreBtn = document.getElementById('dir-more');
+    if (moreBtn) moreBtn.onclick = function () { state.subs.limit += PAGE; renderDirRows(false); };
+    target.querySelectorAll('[data-company]').forEach(function (el) {
+      el.onclick = function () { openCompany(el.dataset.company); };
+    });
+    target.querySelectorAll('a').forEach(function (a) { a.onclick = function (e) { e.stopPropagation(); }; });
+  }
+
+  // Company detail: its certificates (each opens the record) and its notification history.
+  function renderCompany(data, opts) {
+    var row = data.rows.filter(function (r) { return r.sub_id === state.company; })[0];
+    if (!row) { error(); return; }
+    var u = updated(data.source + ', compliance_records, certificates', data.last_updated);
+    setHead(row.company,{text:row.trade + ' · ' + u.text, source:u.source});
+    var records = {}; (state.all ? state.all.rows : []).forEach(function (r) { records[r.record_id] = r; });
+    var withCert = {};
+    var certs = (row.certificates || []).map(function (c) {
+      withCert[c.record_id] = true;
+      var rec = records[c.record_id];
+      return '<li class="co-cert"><div><strong class="mono">' + esc(c.certificate_id) + '</strong><span class="id"><span class="mono">' + esc(c.record_id) + '</span>' + (rec && rec.project ? ' · ' + esc(rec.project) : '') + (c.expiration_date ? ' · Expires ' + esc(date(c.expiration_date)) : '') + '</span></div>' +
+        (rec ? badge(rec.status) : '') + '<button class="btn secondary small" data-record="' + esc(c.record_id) + '" aria-label="Open record ' + esc(c.record_id) + ' for certificate ' + esc(c.certificate_id) + '">Open record</button></li>';
+    });
+    (row.record_ids || []).filter(function (id) { return !withCert[id]; }).forEach(function (id) {
+      var rec = records[id];
+      certs.push('<li class="co-cert"><div><strong>No certificate on file</strong><span class="id"><span class="mono">' + esc(id) + '</span>' + (rec && rec.project ? ' · ' + esc(rec.project) : '') + '</span></div>' +
+        (rec ? badge(rec.status) : '') + '<button class="btn secondary small" data-record="' + esc(id) + '">Open record</button></li>');
+    });
+    setView('<div class="co-top"><button class="btn back" data-route="directory">← Subcontractors <kbd>Esc</kbd></button>' + (row.status ? badge(row.status,'lg') : '') +
+      '<span class="chip"><span class="k">Scope of work</span><span class="v">' + esc(row.trade) + '</span></span><span class="chip"><span class="k">ID</span><span class="v mono">' + esc(row.sub_id) + '</span></span></div>' +
+      '<dl class="facts strip co-facts"><div><dt>Point of contact</dt><dd class="v">' + esc(row.contact) + '</dd></div>' +
+      '<div><dt>Email</dt><dd class="v"><a href="mailto:' + esc(row.email) + '">' + esc(row.email) + '</a></dd></div>' +
+      '<div><dt>Phone</dt><dd class="v mono">' + esc(row.phone) + '</dd></div>' +
+      '<div><dt>Last notification sent</dt>' + (row.last_notification ? '<dd class="v">' + esc(row.last_notification) + '</dd><dd class="sub">' + esc(stamp(row.last_notification_time)) + '</dd>' : '<dd class="v">None sent</dd>') + '</div></dl>' +
+      '<div class="co-source">' + directorySource(data) + '</div>' +
+      '<div class="co-grid"><section class="panel" aria-label="Certificates"><h2>Certificates</h2>' + (certs.length ? '<ul class="co-certs">' + certs.join('') + '</ul>' : '<p class="muted">No records for this subcontractor.</p>') + '</section>' +
+      '<section class="panel" aria-label="Notification history"><h2>Notification history</h2><div id="co-history"><div class="loading" role="status"><span class="spin" aria-hidden="true"></span>Loading</div></div></section></div>', opts);
+    fillHistory(row);
+  }
+  function fillHistory(row) {
+    function here() { var t = document.getElementById('co-history'); return state.view === 'company' && state.company === row.sub_id ? t : null; }
+    fetchView('notifications',askNotifications,'rows',function (data) {
+      var t = here(); if (!t) return;
+      var mine = data.rows.filter(function (n) { return n.sub_name === row.company; }).sort(function (a, b) { return String(b.time).localeCompare(String(a.time)); });
+      t.innerHTML = (mine.length ? '<ol class="co-history">' + mine.map(function (n) {
+        return '<li><time>' + esc(stamp(n.time)) + '</time><strong>' + esc(n.event) + '</strong><span class="id">To ' + esc(n.to_name) + (n.project ? ' · ' + esc(n.project) : '') + '</span>' +
+          '<span class="co-h-foot">' + badge(n.status) + '<button class="link-btn small" data-note="' + esc(n.id) + '">View email</button></span></li>';
+      }).join('') + '</ol>' : '<p class="muted">No notifications for this subcontractor.</p>') +
+        '<p class="footnote">' + esc(data.banner || NOTE_BANNER) + '</p>' + source(data.source, data.last_updated);
+      t.querySelectorAll('[data-note]').forEach(function (b) { b.onclick = function () { openNote(b.dataset.note); }; });
+    },function () {
+      var t = here(); if (!t) return;
+      t.innerHTML = '<p class="muted">The message history didn\'t load.</p><button class="btn secondary small" id="co-retry">Try again</button>';
+      document.getElementById('co-retry').onclick = function () { t.innerHTML = '<div class="loading" role="status"><span class="spin" aria-hidden="true"></span>Loading</div>'; fillHistory(row); };
+    });
+  }
+
+  // Data trust: the stored status check, then expected vs. received for every subcontractor.
+  function trustMoney(name, value) { return name === 'dollars_on_hold_usd' ? money(value) : String(value); }
+  function renderTrust(data, opts) {
+    var check = data.reconciliation, ev = data.expected_vs_received;
+    var pass = check.pass === true;
+    var checkSource = updated(check.source, check.last_updated);
+    setHead('Data trust',{text:'Stored status check: ' + (pass ? 'Pass' : 'Fail') + ' · Ran ' + stamp(check.checked_at), source:checkSource.source});
+    var owed = 0, got = 0, gaps = 0;
+    ev.rows.forEach(function (r) { owed += r.expected; got += r.received; if (r.gap > 0) gaps += 1; });
+    var evSource = updated(ev.source, ev.last_updated);
+    var names = Object.keys(COUNT_LABEL).map(function (k) { return COUNT_LABEL[k].toLowerCase(); });
+    var body = pass ?
+      '<p>Every figure matches. The dashboard shows the same counts as a recount from the stored statuses.</p><p class="small muted">Figures checked: ' + esc(names.join(', ')) + '.</p>' :
+      '<p>These figures differ. The dashboard shows one number and the recount from the stored statuses gives another.</p>' +
+      '<div class="table-scroll"><table class="table cardable trust-diff" aria-label="Figures that differ"><thead><tr><th>Figure</th><th class="right">Dashboard shows</th><th class="right">Recount</th></tr></thead><tbody>' +
+      check.mismatches.map(function (m) {
+        return '<tr class="fail-row"><td class="c-title" data-label="Figure">' + esc(COUNT_LABEL[m.count] || m.count) + '</td><td class="right" data-label="Dashboard shows"><strong>' + esc(trustMoney(m.count, m.actual)) + '</strong></td><td class="right" data-label="Recount"><strong>' + esc(trustMoney(m.count, m.expected)) + '</strong></td></tr>';
+      }).join('') + '</tbody></table></div>';
+    setView('<section class="panel trust-check ' + (pass ? 'is-pass' : 'is-fail') + '" aria-label="Stored status check"><div class="trust-head"><h2>Stored status check</h2>' + badge(pass ? 'Pass' : 'Fail','lg') + '</div>' +
+      '<dl class="facts strip trust-when"><div><dt>Last ran</dt><dd class="v">' + esc(stamp(check.checked_at)) + '</dd></div><div><dt>Daily job last finished</dt><dd class="v">' + (check.daily_job_last_ran ? esc(stamp(check.daily_job_last_ran)) : 'Not run yet') + '</dd></div></dl>' +
+      '<div class="trust-body">' + body + '</div>' +
+      '<p class="footnote">The dashboard is live. The daily job at 6 AM writes the stored statuses. A fail near midnight clears after that run. A fail at any other time means the stored rows and the certificates disagree.</p>' +
+      '<span class="source" title="' + esc(checkSource.source) + '">' + esc(checkSource.text) + ' · ' + esc(checkSource.source) + '</span></section>' +
+      aiCostStrip(data.ai_cost) +
+      '<section class="trust-gap" aria-label="Expected vs. received"><div class="trust-gap-head"><h2>Expected vs. received</h2><div class="seg" role="group" aria-label="Show subcontractors"><span class="seg-ind" aria-hidden="true"></span>' +
+      '<button data-gaps="1" aria-pressed="' + state.trust.gapsOnly + '">With a gap<span class="n">' + gaps + '</span></button>' +
+      '<button data-gaps="0" aria-pressed="' + !state.trust.gapsOnly + '">All subcontractors<span class="n">' + ev.rows.length + '</span></button></div></div>' +
+      '<dl class="facts strip holdstrip" title="' + esc(evSource.source + ' · ' + evSource.text) + '"><div><dt>Certificates owed</dt><dd class="v num">' + owed + '</dd></div><div><dt>Certificates received</dt><dd class="v num">' + got + '</dd></div>' +
+      '<div><dt>Subcontractors with a gap</dt><dd class="v num' + (gaps ? ' red' : '') + '">' + gaps + '</dd></div></dl>' +
+      '<div class="surface table-box" style="margin-top:16px"><div id="trust-rows"></div></div></section>', opts);
+    view.querySelectorAll('[data-gaps]').forEach(function (b) { b.onclick = function () {
+      state.trust.gapsOnly = b.dataset.gaps === '1'; state.trust.limit = PAGE;
+      view.querySelectorAll('[data-gaps]').forEach(function (x) { x.setAttribute('aria-pressed',String(x === b)); });
+      placeSeg(); renderTrustRows(false);
+    }; });
+    placeSeg(); renderTrustRows(!(opts && opts.quiet));
+  }
+  // AI cost: what the model calls cost this month, from the ai_calls tab. Code computes every figure.
+  // Costs are fractions of a cent, so a figure under one cent shows four decimals. A blank price says so, never $0.
+  function aiMoney(n) {
+    if (n == null) return 'price unknown';
+    return '$' + Number(n).toFixed(n > 0 && n < 0.01 ? 4 : 2);
+  }
+  function aiCostStrip(cost) {
+    if (!cost) return '';
+    var u = updated(cost.source, cost.last_updated);
+    return '<section class="trust-ai" aria-label="AI cost"><h2>AI cost</h2>' +
+      '<dl class="facts strip ai-strip" title="' + esc(u.source + ' · ' + u.text) + '">' +
+      '<div><dt>This month</dt><dd class="v">' + esc(aiMoney(cost.ai_spend_month_usd)) + '</dd></div>' +
+      '<div><dt>Calls this month</dt><dd class="v">' + esc(String(cost.ai_calls_month)) + '</dd></div>' +
+      '<div><dt>Per certificate</dt><dd class="v">' + esc(cost.ai_cost_per_certificate_usd == null && !cost.price_unknown ? 'No reads yet' : aiMoney(cost.ai_cost_per_certificate_usd)) + '</dd></div></dl>' +
+      '<span class="source" title="' + esc(u.source) + '">' + esc(u.text) + ' · ' + esc(u.source) + '</span></section>';
+  }
+  function renderTrustRows(animate) {
+    var data = state.views.trust, target = document.getElementById('trust-rows'); if (!data || !target) return;
+    var ev = data.expected_vs_received;
+    var list = ev.rows.map(function (r, i) { return {r:r, i:i}; }).filter(function (x) { return !state.trust.gapsOnly || x.r.gap > 0; });
+    list.sort(function (a, b) { return (Number(b.r.gap > 0) - Number(a.r.gap > 0)) || (b.r.gap - a.r.gap) || (a.i - b.i); });
+    var found = list.map(function (x) { return x.r; }), rows = found.slice(0,state.trust.limit), more = Math.min(PAGE, found.length - rows.length);
+    var updatedText = updated(ev.source, ev.last_updated);
+    target.innerHTML = (rows.length ? '<div class="table-scroll"><table class="table cardable cards-3 trust-table" aria-label="Expected vs. received"><thead><tr><th>Subcontractor</th><th class="right">Owed</th><th class="right">Received</th><th class="right">Gap</th><th>Responsible person</th></tr></thead><tbody>' +
+      rows.map(function (r, i) {
+        return '<tr' + (animate ? ' class="row-in" style="animation-delay:' + wait(Math.min(i,12) * 50) + 'ms"' : '') + '><td class="c-title" data-label="Subcontractor"><button class="link-btn" data-company="' + esc(r.sub_id) + '">' + esc(r.sub_name) + '</button><span class="id mono">' + esc(r.sub_id) + '</span></td>' +
+          '<td class="right" data-label="Owed">' + r.expected + '</td><td class="right" data-label="Received">' + r.received + '</td><td class="right" data-label="Gap"><strong' + (r.gap ? ' style="color:var(--red)"' : ' class="zero"') + '>' + r.gap + '</strong></td>' +
+          '<td class="c-full" data-label="Responsible person">' + (r.gap ? '<strong>' + esc(ev.responsible_role || r.responsible_role || '') + '</strong>' + (r.responsible && r.responsible.length ? '<span class="who">' + esc(r.responsible.join(', ')) + '</span>' : '') : '<span class="muted">Nothing owed</span>') + '</td></tr>';
+      }).join('') + '</tbody></table></div>' :
+      '<div class="empty"><h3>' + (state.trust.gapsOnly ? 'No subcontractor has a gap' : 'No subcontractors') + '</h3><p>' + (state.trust.gapsOnly ? 'Every subcontractor has the certificates it owes.' : 'There are no open records on active projects.') + '</p></div>') +
+      '<div class="table-foot">' + (found.length ? '<span>Showing ' + rows.length + ' of ' + found.length + '</span>' : '') +
+      (more > 0 ? '<button class="btn secondary small" id="trust-more">Show ' + more + ' more</button>' : '') +
+      '<span class="source foot-source" title="' + esc(updatedText.source) + '">' + esc(updatedText.text) + ' · ' + esc(updatedText.source) + '</span></div>';
+    var moreBtn = document.getElementById('trust-more');
+    if (moreBtn) moreBtn.onclick = function () { state.trust.limit += PAGE; renderTrustRows(false); };
+    target.querySelectorAll('[data-company]').forEach(function (b) { b.onclick = function () { openCompany(b.dataset.company); }; });
+  }
+
+  // Notifications: a read-only preview of the automatic emails. Nothing here sends.
+  function noteMatches(n) { return (state.notes.event === 'all' || n.event_type === state.notes.event) && (state.notes.status === 'all' || n.status === state.notes.status); }
+  function noteSteps(n) {
+    var sent = n.status === 'Sent', waiting = n.status === 'Waiting for approval', closed = n.status === 'Not sent', approval;
+    if (n.approval === 'Person approves') {
+      approval = waiting ? {value:n.approved_by || 'A person', sub:'Waiting for approval', st:'now'} :
+        closed ? {value:'Not approved', sub:'Not sent', st:'skip'} : {value:n.approved_by || 'A person', sub:'Approved', st:'done'};
+    } else if (n.approval === 'Automatic (review mode)') approval = {value:'Automatic', sub:'Review mode', st:'done'};
+    else if (n.approval === 'Automatic (daily job)') approval = {value:'Automatic', sub:'Daily job', st:'done'};
+    else if (n.approval === 'Automatic (on upload)') approval = {value:'Automatic', sub:'On upload', st:'done'};
+    else if (n.approval === 'Not built yet') approval = {value:'Not built yet', sub:'No approval step', st:'skip'};
+    else approval = {value:'Not needed', sub:'Internal', st:'skip'};
+    return [{label:'Triggered', value:n.trigger, sub:stamp(n.time), st:'done'}, {label:'Approval', value:approval.value, sub:approval.sub, st:approval.st},
+      sent ? {label:'Sent', value:stamp(n.time), sub:'Sent', st:'done'} : closed ? {label:'Sent', value:'Not sent', sub:'', st:'skip'} : {label:'Sent', value:'After approval', sub:'', st:'todo'}];
+  }
+  function renderNotes(data, opts) {
+    var u = updated(data.source, data.last_updated);
+    setHead('Notifications',{text:plural(data.rows.length,'email','emails') + ' · ' + u.text, source:u.source});
+    var kinds = []; data.rows.forEach(function (n) { if (!kinds.some(function (k) { return k[0] === n.event_type; })) kinds.push([n.event_type, n.event]); });
+    var statuses = ['Sent','Waiting for approval','Not sent'];
+    state.notes.pane = state.notes.openDetail ? 'detail' : 'list'; state.notes.openDetail = false;
+    setView('<div class="well notice note-banner" role="note"><span class="dot" aria-hidden="true"></span><strong>' + esc(data.banner || NOTE_BANNER) + '</strong></div>' +
+      '<div class="worklist-bar note-bar"><div class="seg" role="group" aria-label="Notification status"><span class="seg-ind" aria-hidden="true"></span>' +
+      [['all','All']].concat(statuses.map(function (s) { return [s,s]; })).map(function (f) {
+        return '<button data-nstatus="' + esc(f[0]) + '" aria-pressed="' + (state.notes.status === f[0]) + '">' + esc(f[1]) + '<span class="n">' + data.rows.filter(function (n) { return f[0] === 'all' || n.status === f[0]; }).length + '</span></button>';
+      }).join('') + '</div>' +
+      '<select id="note-event" aria-label="Event"><option value="all">All events</option>' + optionList(kinds, state.notes.event) + '</select></div>' +
+      '<div class="note-layout" data-pane="' + state.notes.pane + '"><div class="surface note-list" data-tour="notifications"><div id="note-items"></div></div><article class="surface note-preview" id="note-preview" aria-label="Email preview"></article></div>', opts);
+    view.querySelectorAll('[data-nstatus]').forEach(function (b) { b.onclick = function () {
+      state.notes.status = b.dataset.nstatus; setNotePane('list');
+      view.querySelectorAll('[data-nstatus]').forEach(function (x) { x.setAttribute('aria-pressed',String(x === b)); });
+      placeSeg(); renderNoteBody(false);
+    }; });
+    document.getElementById('note-event').onchange = function (e) { state.notes.event = e.target.value; setNotePane('list'); renderNoteBody(false); };
+    placeSeg(); renderNoteBody(!(opts && opts.quiet));
+  }
+  // On a narrow screen the list and the email are two steps: the list first, then the email with a way back.
+  function narrowNotes() { return !!(window.matchMedia && window.matchMedia('(max-width:759px)').matches); }
+  function setNotePane(pane) {
+    state.notes.pane = pane;
+    var layout = view.querySelector('.note-layout'); if (layout) layout.setAttribute('data-pane',pane);
+  }
+  function renderNoteBody(animate) {
+    var data = state.views.notifications, list = document.getElementById('note-items'); if (!data || !list) return;
+    var found = data.rows.filter(noteMatches).sort(function (a, b) { return String(b.time).localeCompare(String(a.time)); });
+    var chosen = found.filter(function (n) { return n.id === state.notes.id; })[0] || found[0] || null;
+    state.notes.id = chosen ? chosen.id : '';
+    var u = updated(data.source, data.last_updated);
+    list.innerHTML = (found.length ? '<ul class="note-items" aria-label="Notifications">' + found.map(function (n, i) {
+      return '<li' + (animate ? ' class="row-in" style="animation-delay:' + wait(Math.min(i,12) * 40) + 'ms"' : '') + '><button class="note-item" data-note="' + esc(n.id) + '"' + (chosen && n.id === chosen.id ? ' aria-current="true"' : '') + '>' +
+        '<span class="note-top"><strong>' + esc(n.event) + '</strong>' + badge(n.status) + '</span>' +
+        '<span class="note-sub">' + esc(n.sub_name ? n.sub_name + ' · ' : '') + 'To ' + esc(n.to_name) + '</span><span class="note-sub">' + esc(stamp(n.time)) + (n.project ? ' · ' + esc(n.project) : '') + '</span></button></li>';
+    }).join('') + '</ul>' : '<div class="empty"><h3>No matching emails</h3><p>Change the status or the event to see other emails.</p></div>') +
+      '<div class="table-foot"><span>' + plural(found.length,'email','emails') + '</span><span class="source foot-source" title="' + esc(u.source) + '">' + esc(u.text) + ' · ' + esc(u.source) + '</span></div>';
+    list.querySelectorAll('[data-note]').forEach(function (b) { b.onclick = function () {
+      state.notes.id = b.dataset.note; renderNoteBody(false);
+      if (narrowNotes()) { state.notes.scrollY = window.scrollY; setNotePane('detail'); document.getElementById('note-preview').scrollIntoView({block:'start'}); }
+    }; });
+    var pane = document.getElementById('note-preview');
+    if (!chosen) { pane.innerHTML = '<div class="empty"><h3>Nothing selected</h3><p>No email matches these filters.</p></div>'; return; }
+    var n = chosen, steps = noteSteps(n), ai = n.drafted_by === 'AI';
+    pane.innerHTML = '<button type="button" class="btn back note-back" id="note-back">← Notifications</button><div class="note-meta"><span class="note-event">' + esc(n.event) + '</span>' + badge(n.status) + '<span class="mark' + (ai ? ' ai' : '') + '">' + (ai ? 'Drafted by AI' : 'Template') + '</span></div>' +
+      '<h2>' + esc(n.subject) + '</h2>' +
+      '<p class="note-to">To <strong>' + esc(n.to_name) + '</strong>' + (n.to_role ? ' (' + esc(n.to_role) + ')' : '') + ' · ' + esc(n.to_email) + '</p>' +
+      '<dl class="note-facts"><div><dt>Trigger</dt><dd>' + esc(n.trigger) + '</dd></div><div><dt>Approval step</dt><dd>' + esc(n.approval) + '</dd></div></dl>' +
+      '<ol class="note-track" aria-label="Progress">' + steps.map(function (s) {
+        return '<li class="' + s.st + '"' + (s.st === 'now' ? ' aria-current="step"' : '') + '><span class="mk" aria-hidden="true">' + (s.st === 'done' ? '✓' : s.st === 'skip' ? '–' : '') + '</span><span class="lb">' + esc(s.label) + '</span><span class="vl">' + esc(s.value) + '</span><span class="sb">' + esc(s.sub) + '</span></li>';
+      }).join('') + '</ol>' +
+      '<div class="email" aria-label="Email text"><div class="email-head"><span>Subject</span><strong>' + esc(n.subject) + '</strong></div><div class="email-body">' + esc(n.body) + '</div></div>' +
+      '<p class="footnote">' + esc(data.banner || NOTE_BANNER) + '</p>';
+    document.getElementById('note-back').onclick = function () { setNotePane('list'); window.scrollTo(0,state.notes.scrollY); };
+  }
+
+  // Keyboard: ↑ ↓ (or j k) move, Enter opens, / searches, Esc blurs a field or goes back from a record.
+  document.addEventListener('keydown',function (e) {
+    if (dialog.open) return;
+    var t = e.target, typing = /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName);
+    if (e.key === 'Escape') {
+      if (overlay() && state.sideOpen) { setSide(false); document.getElementById('side-expand').focus(); return; }
+      if (typing) { t.blur(); return; }
+      if (state.view === 'detail' && !state.busy) navigate('worklist');
+      if (state.view === 'company' && !state.busy) navigate('directory');
+      return;
+    }
+    if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key === '/') { e.preventDefault(); search.focus(); return; }
+    if (state.view !== 'worklist') return;
+    var count = state.visible.length;
+    if ((e.key === 'ArrowDown' || e.key === 'j') && count) { e.preventDefault(); state.cursor = Math.min(count - 1,state.cursor + 1); drawCursor(); scrollCursor(); }
+    else if ((e.key === 'ArrowUp' || e.key === 'k') && count) { e.preventDefault(); state.cursor = Math.max(0,state.cursor - 1); drawCursor(); scrollCursor(); }
+    else if (e.key === 'Enter' && state.cursor >= 0 && t.tagName !== 'BUTTON' && t.tagName !== 'A') { e.preventDefault(); openRecord(state.visible[state.cursor].record_id); }
+  });
+  function scrollCursor() { var row = view.querySelector('#work-rows tr.cursor'); if (row) row.scrollIntoView({block:'nearest'}); }
+
+  // About view. It is reached from the sidebar foot, not from ORDER.
+  NAV_LABEL.about = 'About';
+  function showAbout() {
+    if (state.busy || dialog.open) return;
+    state.dir = 'fwd'; state.view = 'about'; state.cursor = -1; state.request++;
+    if (state.search) { state.search = ''; search.value = ''; searchBox.classList.remove('has-text'); }
+    renderSide(); setHead(NAV_LABEL.about, '', false); window.scrollTo(0,0);
+    setView('<div class="surface about" style="padding:28px 32px">' +
+      '<h2>How it works</h2>' +
+      '<p class="thesis">AI reads, routes and drafts. Code calculates and decides. A person approves what matters. The model never does arithmetic.</p>' +
+      '<h2>The 0.85 rule</h2>' +
+      '<p>When the model reads a certificate with confidence below 0.85, a person checks the reading first. It never approves on its own.</p>' +
+      '<p class="about-sample">All names are fictional.</p>' +
+      '<p class="about-credit">Designed and built by Lucas Layden.</p></div>');
+  }
+  document.getElementById('about-link').onclick = showAbout;
+
+  // Host API for the guided tour (Tour.html). The tour calls go() to switch screens and screen() to read the current one.
+  // The record screen is the detail of a reading below the 0.85 gate. Worklist rows carry no confidence,
+  // so a row the server routed to "Check the reading" stands in for it.
+  function lowConfidenceRecord() {
+    var rows = state.all ? state.all.rows : [];
+    var row = rows.filter(function (r) { return r.next === 'correct' && r.status === 'Needs review'; })[0];
+    if (row) return row.record_id;
+    var seen = Object.keys(state.details).filter(function (id) { var d = state.details[id]; return d && typeof d.confidence === 'number' && d.confidence < 0.85; })[0];
+    if (seen) return seen;
+    row = rows.filter(function (r) { return !!r.waiting; })[0];
+    return row ? row.record_id : null;
+  }
+  window.coiApp = {
+    screen: function () { return state.view === 'detail' ? 'record' : state.view; },
+    go: function (name) {
+      if (name === 'record') { var id = lowConfidenceRecord(); if (id) openRecord(id); else navigate('worklist'); return; }
+      if (name === 'about') { showAbout(); return; }
+      // A screen this build does not have yet is ignored, and the tour shows the step's card in the centre.
+      // The tour shows the whole portfolio, as the sidebar's "View all" does. Without this, a list keeps the
+      // project of the record the tour opened before it, and Payment holds can show $0.
+      if (name === 'worklist') { state.project = 'all'; state.filter = 'waiting'; }
+      if (name === 'holds') state.project = 'all';
+      if (ORDER.indexOf(name) >= 0) navigate(name);
+    },
+    // Asks the server for every screen the tour opens, in the background, so each tour step finds its data
+    // already in the page. fetchView and fetchDetail share one request per screen, so a later visit waits on it.
+    warm: function () {
+      fetchView('directory',askDirectory,'rows',null,null);
+      fetchView('notifications',askNotifications,'rows',null,null);
+      var id = lowConfidenceRecord();
+      if (id && !state.details[id] && !state.fetching[id]) fetchDetail(id);
+    }
+  };
+
+  // Figures show at once from the data in the page, in both modes. In Share Proj with saved changes, one quiet
+  // refresh then lays this tab's changes over them.
+  if (INITIAL.data) useData(INITIAL.data);
+  if (INITIAL.record) openRecord(INITIAL.record);
+  else navigate(state.role === 'leadership' ? 'projects' : 'worklist');
+  // A write after start-up brings its own fresh copy, so this refresh drops its answer: a late reply must not undo the write.
+  if (INITIAL.data && DEMO && demoOverlay()) {
+    var writesAtStart = state.writes || 0;
+    rpc('getAppData',[],function (data) {
+      if ((state.writes || 0) !== writesAtStart) return;
+      useData(data); renderSide();
+      if (!state.busy && !dialog.open && state.view !== 'detail') navigate(state.view,{quiet:true});
+    },function () {});
+  }
+  setTimeout(function () { withPdfLib(function () {},function () {}); },1500);
+})();
+</script>

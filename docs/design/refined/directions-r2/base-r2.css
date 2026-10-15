@@ -1,0 +1,59 @@
+/* Shared anatomy only. Each HTML file supplies all visual values. */
+* { box-sizing: border-box; }
+body,h1,h2,h3,p,figure,dl,dd { margin: 0; }
+button,select,summary { cursor: pointer; }
+button:disabled { cursor: default; }
+[hidden] { display: none !important; }
+button { display: inline-flex; align-items: center; justify-content: center; }
+.app { display: grid; min-height: 100vh; }
+.chrome,.brand,.demo,.navigation,.header-top,.head-state,.facts,.trust,.actions,.pane-head,.confidence-top { display: flex; }
+.chrome,.demo,.facts,.trust,.navigation,.actions,.header-top,.head-state { flex-wrap: wrap; }
+.brand,.header-top,.pane-head,.confidence-top { align-items: center; justify-content: space-between; }
+.brand { justify-content: flex-start; }
+.demo,.demo label { display: flex; align-items: center; }
+.record-head,.pane,.page,.layout,.value-row>* { min-width: 0; }
+.layout { display: grid; }
+.pdf { grid-area: pdf; }
+.step { grid-area: step; }
+.values { grid-area: values; }
+.w9 { grid-area: w9; }
+.timeline { grid-area: timeline; }
+.value-row { display: grid; align-items: center; }
+.value-row .label { display: flex; flex-direction: column; }
+.money { white-space: nowrap; }
+.result,.status { display: inline-flex; align-items: center; }
+.facts>div { display: flex; flex-direction: column; }
+.pdf-pages { display: flex; flex-direction: column; }
+.pdf-pages canvas { display: block; width: 100%; height: auto; }
+.pdf-page { position: relative; }
+.pdf-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.confidence-track { position: relative; }
+.confidence-fill { display: block; width: var(--confidence); height: 100%; }
+.confidence-mark { position: absolute; left: 85%; top: 0; height: 100%; }
+.deficiencies { list-style: none; padding: 0; margin: 0; }
+.deficiencies li { display: grid; grid-template-columns: auto minmax(0,1fr); }
+.timeline ol { list-style: none; padding: 0; margin: 0; }
+.timeline-meta { display: flex; justify-content: space-between; flex-wrap: wrap; }
+.field-label { display: block; }
+.field { width: 100%; }
+.email { white-space: pre-wrap; overflow-wrap: anywhere; }
+.icon { display: inline-block; width: 1.1em; height: 1.1em; flex-shrink: 0; vertical-align: middle; }
+.toasts { position: fixed; z-index: 10; display: flex; flex-direction: column; }
+.toast { display: flex; justify-content: space-between; align-items: center; }
+.skip { position: fixed; z-index: 20; transform: translateY(-150%); }
+.skip:focus { transform: none; }
+.pdf-mobile { display: none; }
+.reveal { animation: reveal var(--duration-2) var(--ease) both; }
+@keyframes reveal { from { opacity: 0; transform: translate(var(--distance-x),var(--distance-y)); } to { opacity: 1; transform: none; } }
+@keyframes settle { from { opacity: .3; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+ *,*::before,*::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+@media (max-width: 1000px) {
+ .app { display: block; }
+ .layout { display: flex; flex-direction: column; }
+ .step { order: 0; } .values { order: 1; } .pdf { order: 2; } .w9 { order: 3; } .timeline { order: 4; }
+ .pdf-mobile { display: inline-flex; }
+ .pdf-pages { display: none; }
+ .pdf.is-open .pdf-pages { display: flex; }
+}

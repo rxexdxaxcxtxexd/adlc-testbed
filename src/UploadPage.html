@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head><base target="_top"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Upload your certificate</title><?!= include('Styles') ?></head>
+<body>
+<header class="uploadhead">
+  <div class="brand"><span class="logo" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"></path><path d="M9 12l2 2 4-4"></path></svg></span>COI Check<span class="brand-sub">for Harborline Builders</span></div>
+</header>
+<main class="upload-main">
+  <h1>Upload your certificate</h1>
+  <div class="chips" id="upload-chips"></div>
+  <section class="surface upload-card page-enter" aria-live="polite">
+    <div id="upload-form" hidden>
+      <p>Send your certificate of insurance as one PDF, up to 5 MB.</p>
+      <label class="well drop" id="drop" for="file">
+        <span class="drop-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path><path class="arrow" d="M12 17v-6M9.5 13.5L12 11l2.5 2.5"></path></svg></span>
+        <span class="drop-title" id="drop-title">Drop your PDF here</span>
+        <span id="chosen" hidden><span class="file-pill" id="chosen-name"></span></span>
+        <button type="button" class="btn secondary small" id="choose">Choose PDF</button>
+        <input type="file" id="file" accept="application/pdf,.pdf" hidden>
+      </label>
+      <p class="form-error" id="upload-error" role="alert" hidden></p>
+      <button class="btn wide" id="send">Upload certificate</button>
+      <p class="helper">The project team reviews every certificate before it's approved.</p>
+    </div>
+    <div id="upload-progress" class="upload-done" hidden>
+      <div class="done-seal" id="done-seal" hidden aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 12.5l3.5 3.5 7.5-8"></path></svg></div>
+      <h2 id="progress-title">Certificate received</h2>
+      <p class="muted" id="progress-text">We're reading it now. You can close this page.</p>
+      <ol class="steps" id="steps">
+        <li data-step="1"><span class="mark"></span>File received</li>
+        <li data-step="2"><span class="mark"></span>Reading your certificate</li>
+        <li data-step="3"><span class="mark"></span>Sent to the project team</li>
+      </ol>
+      <div id="progress-actions" class="tools" style="margin-top:16px"></div>
+    </div>
+    <div id="upload-closed" hidden>
+      <h2>This upload link isn't active</h2>
+      <p class="muted" id="closed-text" style="margin-top:6px"></p>
+    </div>
+  </section>
+  <p class="upload-note">Questions? Reply to the email that sent you this link.</p>
+</main>
+<script>
+var TOKEN = <?!= token ?>;
+var INFO = <?!= info ?>;
+var DEMO = <?!= demo ?>;
+(function () {
+  'use strict';
+  var form = document.getElementById('upload-form'), progress = document.getElementById('upload-progress'), closed = document.getElementById('upload-closed');
+  var input = document.getElementById('file'), drop = document.getElementById('drop'), button = document.getElementById('send');
+  var errorText = document.getElementById('upload-error'), busy = false, receipt = '', pollTimer = null, pollCount = 0;
+  function esc(value) { return String(value == null ? '' : value).replace(/[&<>"']/g,function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function call(name, args, yes, no) {
+    if (window.COIPreview) { window.COIPreview.call(name,args,yes,no); return; }
+    var run = google.script.run.withSuccessHandler(yes).withFailureHandler(no);
+    run[name].apply(run,args);
+  }
+  function showError(text) {
+    errorText.textContent = text; errorText.hidden = !text; drop.classList.toggle('is-error',!!text);
+    if (text) errorText.scrollIntoView({block:'nearest'});
+  }
+  function closeLink(text) {
+    form.hidden = true; progress.hidden = true; closed.hidden = false;
+    document.getElementById('closed-text').textContent = text || 'Ask the project team for a new one.';
+  }
+  if (INFO.open) {
+    document.getElementById('upload-chips').innerHTML = '<span class="chip"><span class="k">From</span><span class="v">' + esc(INFO.subcontractor) + '</span></span>' +
+      '<span class="chip"><span class="k">Project</span><span class="v">' + esc(INFO.project) + '</span></span>';
+    form.hidden = false;
+  } else {
+    closeLink(INFO.message);
+  }
+
+  // Choosing a file
+  function chosen() {
+    var file = input.files[0];
+    showError('');
+    document.getElementById('drop-title').hidden = !!file;
+    document.getElementById('chosen').hidden = !file;
+    drop.classList.toggle('has-file',!!file);
+    document.getElementById('choose').textContent = file ? 'Choose another' : 'Choose PDF';
+    if (file) document.getElementById('chosen-name').textContent = file.name + ' · ' + (file.size / 1024).toFixed(1) + ' KB';
+  }
+  document.getElementById('choose').onclick = function () { input.click(); };
+  input.onchange = chosen;
+  ['dragenter','dragover'].forEach(function (type) { drop.addEventListener(type,function (e) { e.preventDefault(); if (!busy) drop.classList.add('over'); }); });
+  ['dragleave','drop'].forEach(function (type) { drop.addEventListener(type,function (e) { e.preventDefault(); drop.classList.remove('over'); }); });
+  drop.addEventListener('drop',function (e) {
+    if (busy || !e.dataTransfer || !e.dataTransfer.files.length) return;
+    try { input.files = e.dataTransfer.files; } catch (err) { return; }
+    chosen();
+  });
+
+  // Progress steps, driven by getUploadStatus
+  function steps(active, done) {
+    document.querySelectorAll('#steps li').forEach(function (li) {
+      var n = Number(li.dataset.step);
+      li.className = n <= done ? 'done' : n === active ? 'active' : 'todo';
+      li.querySelector('.mark').innerHTML = n === active && n > done ? '<span class="spin" aria-hidden="true"></span>' : '';
+    });
+  }
+  function actions(html) { document.getElementById('progress-actions').innerHTML = html; }
+  var seal = document.getElementById('done-seal'), titleEl = document.getElementById('progress-title');
+  function setProgress(title, text) {
+    if (titleEl.textContent !== title) { titleEl.classList.remove('swap'); void titleEl.offsetWidth; titleEl.classList.add('swap'); }
+    titleEl.textContent = title; document.getElementById('progress-text').textContent = text; seal.hidden = true;
+  }
+  var ALL_SET = 'The project team will review it. We\'ll email you if anything needs to change.';
+  function allSet() { steps(0,3); setProgress('You\'re all set',ALL_SET); seal.hidden = false; }
+  function poll() {
+    if (!receipt) return;
+    var mine = receipt;
+    call('getUploadStatus',[TOKEN,receipt],function (result) {
+      if (receipt !== mine) return;
+      if (result.state === 'waiting') {
+        steps(2,1);
+        if (++pollCount < 36) pollTimer = setTimeout(poll,5000);
+        else { setProgress('Certificate received','This is taking longer than usual. Your file is saved, so you can close this page.'); retry(); }
+        return;
+      }
+      if (result.state === 'inactive') { closeLink(result.message); return; }
+      if (result.state === 'unreadable' || result.state === 'failed') {
+        steps(0,1); setProgress('We couldn\'t finish the check',result.message);
+        if (result.state === 'unreadable') {
+          actions('<button class="btn secondary small" id="again">Choose a new PDF</button>');
+          document.getElementById('again').onclick = function () { reset(); input.click(); };
+        }
+        return;
+      }
+      allSet();
+    },function () { setProgress('Certificate received','We couldn\'t load the progress. Your file is saved.'); retry(); });
+  }
+  function retry() {
+    actions('<button class="btn secondary small" id="check">Check progress</button>');
+    document.getElementById('check').onclick = function () { actions(''); pollCount = 0; poll(); };
+  }
+  function reset() {
+    clearTimeout(pollTimer); receipt = ''; input.value = ''; chosen(); actions(''); seal.hidden = true;
+    progress.hidden = true; form.hidden = false;
+  }
+
+  // Upload
+  button.onclick = function () {
+    if (busy) return;
+    var file = input.files[0];
+    if (!file) { showError('Choose a PDF first.'); return; }
+    if (!/\.pdf$/i.test(file.name)) { showError('Only PDF files are accepted. Please upload your certificate as a PDF.'); return; }
+    if (file.size > 5 * 1024 * 1024) { showError('This file is larger than 5 MB. Please save a smaller PDF and try again.'); return; }
+    busy = true; button.disabled = true; button.classList.add('busy'); document.getElementById('choose').disabled = true;
+    button.innerHTML = '<span class="spin" aria-hidden="true"></span>Uploading';
+    function finish() { busy = false; button.disabled = false; button.classList.remove('busy'); document.getElementById('choose').disabled = false; button.textContent = 'Upload certificate'; }
+    function failed() { finish(); showError('The upload didn\'t go through. Check your connection and try again.'); }
+    var reader = new FileReader();
+    reader.onerror = failed;
+    reader.onload = function () {
+      var base64 = String(reader.result).split(',')[1];
+      call('submitUpload',[TOKEN,file.name,base64],function (result) {
+        finish();
+        if (!result.ok) {
+          if (/link is not active/.test(result.message)) closeLink(result.message); else showError(result.message);
+          return;
+        }
+        form.hidden = true; progress.hidden = false; actions('');
+        // Share Proj (ticket 14): nothing was saved or read. The page walks the same steps as Demo Proj.
+        if (result.demo) {
+          setProgress('Certificate received','We\'re reading it now. You can close this page.');
+          steps(2,1);
+          pollTimer = setTimeout(function () { steps(3,2); pollTimer = setTimeout(allSet,1100); },1700);
+          return;
+        }
+        if (result.duplicate) { steps(0,3); setProgress('Certificate received',result.message); return; }
+        setProgress('Certificate received','We\'re reading it now. You can close this page.');
+        steps(2,1);
+        if (result.upload_id) { receipt = result.upload_id; pollCount = 0; poll(); }
+      },failed);
+    };
+    reader.readAsDataURL(file);
+  };
+})();
+</script>
+</body></html>

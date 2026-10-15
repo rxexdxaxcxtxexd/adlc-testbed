@@ -1,0 +1,172 @@
+<title>Record detail directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=IBM+Plex+Sans:wght@500;600&family=Instrument+Sans:wght@600&family=Geist+Mono:wght@400&display=swap">
+<style>
+/* Comparison page: three live direction studies of one screen, one at a time or side by side. */
+:root {
+  --bg: #F4F5F6; --surface: #FFFFFF; --ink: #121417; --ink-2: #555B64; --line: #E1E4E8; --line-strong: #8A9099; --accent: #2F51C4; --chip: #ECEEF1;
+  --font: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif; --mono: "Geist Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #111316; --surface: #1A1D21; --ink: #ECEEF1; --ink-2: #A3AAB3; --line: #2C3036; --line-strong: #6B727C; --accent: #9DB4FF; --chip: #24282D; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #111316; --surface: #1A1D21; --ink: #ECEEF1; --ink-2: #A3AAB3; --line: #2C3036; --line-strong: #6B727C; --accent: #9DB4FF; --chip: #24282D; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 15px/1.55 var(--font); -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1480px; margin: 0 auto; padding-inline: 24px; padding-block: 28px 56px; display: flex; flex-direction: column; gap: 24px; }
+header { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 32px; flex-wrap: wrap; }
+.kicker { font: 400 12px/1 var(--mono); color: var(--ink-2); letter-spacing: .02em; margin: 0 0 10px; }
+h1 { font-size: 30px; line-height: 1.15; font-weight: 600; letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+.lede { margin: 10px 0 0; color: var(--ink-2); max-width: 70ch; }
+.mode { display: inline-flex; padding: 3px; background: var(--chip); border-radius: 10px; }
+.mode button { border: 0; background: transparent; color: var(--ink-2); font: 500 13px/1 var(--font); padding: 9px 14px; border-radius: 8px; cursor: pointer; transition: background-color 120ms, color 120ms; }
+.mode button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+.mode button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.dirs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.dir { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 12px; cursor: pointer; transition: border-color 160ms, box-shadow 160ms; min-width: 0; }
+.dir:hover { border-color: var(--line-strong); }
+.dir.is-on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.dir-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.dir-name { display: flex; align-items: baseline; gap: 10px; }
+.letter { font: 400 12px/1 var(--mono); color: var(--ink-2); }
+.dir-pick { all: unset; cursor: pointer; }
+.dir-pick::after { content: ""; position: absolute; inset: 0; border-radius: 12px; }
+.dir-pick:focus-visible::after { outline: 2px solid var(--accent); outline-offset: 2px; }
+.dir h2 { margin: 0; font-size: 19px; line-height: 1.2; letter-spacing: -.01em; }
+.dir-a h2 { font-family: "IBM Plex Sans", var(--font); font-weight: 600; }
+.dir-b h2 { font-family: "Geist", var(--font); font-weight: 600; letter-spacing: -.02em; }
+.dir-c h2 { font-family: "Instrument Sans", var(--font); font-weight: 600; }
+.swatches { display: flex; gap: 4px; }
+.swatches i { width: 16px; height: 16px; border-radius: 4px; box-shadow: inset 0 0 0 1px var(--line-strong); }
+.dir p { margin: 0; font-size: 14px; line-height: 1.6; color: var(--ink-2); }
+.facts { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.facts li { font: 400 11.5px/1 var(--mono); padding: 5px 7px; border-radius: 6px; background: var(--chip); color: var(--ink-2); }
+.open { font-size: 13px; font-weight: 500; color: var(--accent); text-decoration: none; align-self: flex-start; }
+.open:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.stage { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.stage-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px 16px; flex-wrap: wrap; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--ink-2); }
+.stage-bar strong { color: var(--ink); font-weight: 600; }
+.frames { display: grid; gap: 1px; background: var(--line); }
+.frames[data-mode="one"] { grid-template-columns: minmax(0, 1fr); }
+.frames[data-mode="all"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.frame { position: relative; overflow: hidden; background: var(--bg); min-width: 0; }
+.frame-label { position: absolute; left: 8px; top: 8px; z-index: 2; font: 500 11px/1 var(--mono); padding: 5px 7px; border-radius: 6px; background: rgba(18,20,23,.82); color: #fff; }
+.frames[data-mode="one"] .frame-label { display: none; }
+.frame iframe { position: absolute; left: 0; top: 0; border: 0; transform-origin: 0 0; background: #fff; }
+.frames[data-mode="one"] .frame:not(.is-on) { display: none; }
+
+.how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.how section { padding: 16px 18px; border-radius: 12px; border: 1px dashed var(--line-strong); }
+.how h3 { margin: 0 0 8px; font-size: 14px; font-weight: 600; }
+.how ul { margin: 0; padding-left: 18px; font-size: 14px; color: var(--ink-2); display: flex; flex-direction: column; gap: 4px; }
+kbd { font: 400 12px/1 var(--mono); padding: 2px 5px; border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); }
+
+@media (max-width: 980px) { .dirs, .how { grid-template-columns: minmax(0, 1fr); } .frames[data-mode="all"] { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 520px) { .wrap { padding-inline: 16px; } h1 { font-size: 24px; } }
+@media (prefers-reduced-motion: reduce) { * { transition-duration: 1ms !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <p class="kicker">Certificate compliance · Round 3, step 1 · Sample data, all names fictional</p>
+      <h1>Three directions for the compliance record</h1>
+      <p class="lede">The same Round 2 screen, data, wording and rules in three visual languages. Each one is live: switch the role, correct a value, approve, waive or reject. Pick one and it becomes the shared stylesheet for every screen.</p>
+    </div>
+    <div class="mode" role="group" aria-label="View">
+      <button type="button" data-mode="one" aria-pressed="true">One at a time</button>
+      <button type="button" data-mode="all" aria-pressed="false">Side by side</button>
+    </div>
+  </header>
+
+  <div class="dirs">
+    <article class="dir dir-a is-on" data-dir="a">
+      <span class="dir-top"><span class="dir-name"><span class="letter">A</span><h2><button type="button" class="dir-pick" data-dir="a" aria-pressed="true">Instrument</button></h2></span>
+        <span class="swatches" aria-hidden="true"><i style="background:#141A20"></i><i style="background:#ECEEF1"></i><i style="background:#0E4F5C"></i><i style="background:#7FC4CF"></i></span></span>
+      <p>Built for the accountant who works this queue all day. Type is small and tight, rows are short, and a dark side rail keeps navigation out of the work area. Every action shows its key on the button: A approves, E opens a correction, Ctrl+Enter saves, and J and K walk the value lines while the PDF follows. Motion is quick and mechanical, so the screen confirms what changed without slowing anyone down. A CFO opening it cold may find it busy.</p>
+      <ul class="facts"><li>IBM Plex Sans + Mono</li><li>13 px base</li><li>90 / 160 / 240 ms</li><li>Keys on buttons</li></ul>
+    </article>
+    <article class="dir dir-b" data-dir="b">
+      <span class="dir-top"><span class="dir-name"><span class="letter">B</span><h2><button type="button" class="dir-pick" data-dir="b" aria-pressed="false">Ledger</button></h2></span>
+        <span class="swatches" aria-hidden="true"><i style="background:#111318"></i><i style="background:#F6F7F9"></i><i style="background:#FFFFFF"></i><i style="background:#3358D4"></i></span></span>
+      <p>Built to be trusted with money decisions. Amounts sit right-aligned in tabular figures, borders are few, and the next step is the only raised object on the page, so the eye goes there first. Three panes put the certificate, the values and the decision side by side, and the decision stays in view while you scroll. Motion is slower and softer and lands without bounce. It looks the most like a product a firm would pay for. It shows fewer rows than A, and its keyboard support stays out of sight until someone presses ?.</p>
+      <ul class="facts"><li>Geist</li><li>14 px base</li><li>120 / 220 / 360 ms</li><li>One raised panel</li></ul>
+    </article>
+    <article class="dir dir-c" data-dir="c">
+      <span class="dir-top"><span class="dir-name"><span class="letter">C</span><h2><button type="button" class="dir-pick" data-dir="c" aria-pressed="false">Light table</button></h2></span>
+        <span class="swatches" aria-hidden="true"><i style="background:#252B2E"></i><i style="background:#F0F2F2"></i><i style="background:#1F4FA3"></i><i style="background:#FFE071"></i></span></span>
+      <p>Built around the evidence. The certificate takes half the screen on a dark viewing surface. Point at any value and the same spot on the page lights up like a highlighter mark, with a red edge when that line fails. That shows the product's promise in one gesture: code checks the reading against the paper, and a person signs off. The demo controls float in their own dashed panel, well away from the product. The dark pane is the one bold move, and it may feel heavy on a small laptop.</p>
+      <ul class="facts"><li>Instrument Sans + DM Mono</li><li>14 px base</li><li>120 / 200 / 320 ms</li><li>Highlighter link</li></ul>
+    </article>
+  </div>
+
+  <div class="stage">
+    <div class="stage-bar"><span id="stage-label"><strong>A · Instrument</strong> · live at 1440 wide, scaled to fit</span><a class="open" id="open-full" href="a-instrument.html" target="_blank" rel="noopener">Open full size</a></div>
+    <div class="frames" id="frames" data-mode="one">
+      <div class="frame is-on" data-dir="a"><span class="frame-label">A · Instrument</span><iframe title="Direction A, Instrument" src="a-instrument.html" loading="eager"></iframe></div>
+      <div class="frame" data-dir="b"><span class="frame-label">B · Ledger</span><iframe title="Direction B, Ledger" src="b-ledger.html" loading="eager"></iframe></div>
+      <div class="frame" data-dir="c"><span class="frame-label">C · Light table</span><iframe title="Direction C, Light table" src="c-light-table.html" loading="eager"></iframe></div>
+    </div>
+  </div>
+
+  <div class="how">
+    <section><h3>Try the two walkthrough moments</h3><ul>
+      <li>Ridgeline Roofing as Project manager: try Waive with no note, then write one, or Reject.</li>
+      <li>Summit Mechanical as Accountant: change Auto to $1,000,000, save, then approve.</li>
+      <li>Switch roles to see the plain refusal for actions that are not yours.</li>
+    </ul></section>
+    <section><h3>Keyboard (all three)</h3><ul>
+      <li><kbd>A</kbd> approve · <kbd>E</kbd> correct a value</li>
+      <li><kbd>Ctrl</kbd> <kbd>↵</kbd> save or waive · <kbd>Esc</kbd> cancel</li>
+      <li><kbd>J</kbd> <kbd>K</kbd> move through lines · <kbd>?</kbd> all keys</li>
+    </ul></section>
+    <section><h3>The same in every direction</h3><ul>
+      <li>Round 2 data, states, wording and check rules. No new numbers.</li>
+      <li>Status always in words with a shape. Red only for fail, Expired and At risk.</li>
+      <li>Figures never animate. Reduced motion turns movement into a short fade.</li>
+    </ul></section>
+  </div>
+</div>
+
+<script>
+(function () {
+  var VW = 1440, VH = 1100;
+  var names = { a: ['A · Instrument', 'a-instrument.html'], b: ['B · Ledger', 'b-ledger.html'], c: ['C · Light table', 'c-light-table.html'] };
+  var frames = document.getElementById('frames');
+  var current = 'a';
+  try { var saved = localStorage.getItem('dir'); if (saved && names[saved]) current = saved; } catch (e) {}
+
+  function fit() {
+    frames.querySelectorAll('.frame').forEach(function (f) {
+      var w = f.clientWidth || frames.clientWidth;
+      var scale = Math.min(1, w / VW);
+      var ifr = f.querySelector('iframe');
+      ifr.style.width = VW + 'px'; ifr.style.height = VH + 'px';
+      ifr.style.transform = 'scale(' + scale + ')';
+      f.style.height = Math.round(VH * scale) + 'px';
+    });
+  }
+  function pick(d) {
+    current = d;
+    try { localStorage.setItem('dir', d); } catch (e) {}
+    document.querySelectorAll('.dir').forEach(function (b) { b.classList.toggle('is-on', b.dataset.dir === d); });
+    document.querySelectorAll('.dir-pick').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.dir === d)); });
+    frames.querySelectorAll('.frame').forEach(function (f) { f.classList.toggle('is-on', f.dataset.dir === d); });
+    document.getElementById('stage-label').innerHTML = '<strong>' + names[d][0] + '</strong> · live at 1440 wide, scaled to fit';
+    var open = document.getElementById('open-full'); open.href = names[d][1];
+    fit();
+  }
+  function mode(m) {
+    frames.dataset.mode = m;
+    document.querySelectorAll('.mode button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.mode === m)); });
+    document.getElementById('stage-label').innerHTML = m === 'all' ? '<strong>Side by side</strong> · each live at 1440 wide, scaled to fit' : '<strong>' + names[current][0] + '</strong> · live at 1440 wide, scaled to fit';
+    document.getElementById('open-full').hidden = m === 'all';
+    fit();
+  }
+  document.querySelectorAll('.dir-pick').forEach(function (b) { b.addEventListener('click', function () { pick(b.dataset.dir); if (frames.dataset.mode === 'all') mode('one'); }); });
+  document.querySelectorAll('.mode button').forEach(function (b) { b.addEventListener('click', function () { mode(b.dataset.mode); }); });
+  if (window.ResizeObserver) new ResizeObserver(fit).observe(frames); else window.addEventListener('resize', fit);
+  pick(current);
+})();
+</script>

@@ -1,0 +1,147 @@
+{
+  "note": "Fictional data. Every value below is printed on its PDF. Calibration compares the Reader to this file.",
+  "samples": [
+    {
+      "file": "01-clean.pdf",
+      "problem": "none",
+      "readable": true,
+      "expected": {
+        "insured_name": "Ridgeline Roofing LLC",
+        "limits": {
+          "commercial_liability": 1000000,
+          "aggregate": 2000000,
+          "auto": 1000000,
+          "umbrella": 2000000,
+          "workers_comp": 1000000,
+          "pollution_liability": 1000000,
+          "professional_liability": null
+        },
+        "additional_insured_endorsement": true,
+        "project_address": true,
+        "certificate_holder": true,
+        "cancellation_notice_days": 30,
+        "expiration_date": "2027-09-30"
+      }
+    },
+    {
+      "file": "02-clean-earthwork.pdf",
+      "problem": "none (second insured; professional liability listed)",
+      "readable": true,
+      "expected": {
+        "insured_name": "Birchwood Earthworks Inc.",
+        "limits": {
+          "commercial_liability": 2000000,
+          "aggregate": 4000000,
+          "auto": 1000000,
+          "umbrella": 5000000,
+          "workers_comp": 1000000,
+          "pollution_liability": 2000000,
+          "professional_liability": 1000000
+        },
+        "additional_insured_endorsement": true,
+        "project_address": true,
+        "certificate_holder": true,
+        "cancellation_notice_days": 30,
+        "expiration_date": "2028-01-15"
+      }
+    },
+    {
+      "file": "03-expired.pdf",
+      "problem": "expired policy",
+      "readable": true,
+      "expected": {
+        "insured_name": "Ridgeline Roofing LLC",
+        "limits": {
+          "commercial_liability": 1000000,
+          "aggregate": 2000000,
+          "auto": 1000000,
+          "umbrella": 2000000,
+          "workers_comp": 1000000,
+          "pollution_liability": 1000000,
+          "professional_liability": null
+        },
+        "additional_insured_endorsement": true,
+        "project_address": true,
+        "certificate_holder": true,
+        "cancellation_notice_days": 30,
+        "expiration_date": "2025-03-31"
+      }
+    },
+    {
+      "file": "04-low-limit.pdf",
+      "problem": "limit below requirement (general liability each occurrence)",
+      "readable": true,
+      "expected": {
+        "insured_name": "Ridgeline Roofing LLC",
+        "limits": {
+          "commercial_liability": 500000,
+          "aggregate": 1000000,
+          "auto": 1000000,
+          "umbrella": 2000000,
+          "workers_comp": 1000000,
+          "pollution_liability": 1000000,
+          "professional_liability": null
+        },
+        "additional_insured_endorsement": true,
+        "project_address": true,
+        "certificate_holder": true,
+        "cancellation_notice_days": 45,
+        "expiration_date": "2027-06-30"
+      }
+    },
+    {
+      "file": "05-wrong-insured.pdf",
+      "problem": "wrong insured name",
+      "readable": true,
+      "expected": {
+        "insured_name": "Ridgeline Roofing Partners LLC",
+        "limits": {
+          "commercial_liability": 1000000,
+          "aggregate": 2000000,
+          "auto": 1000000,
+          "umbrella": 2000000,
+          "workers_comp": 1000000,
+          "pollution_liability": 1000000,
+          "professional_liability": null
+        },
+        "additional_insured_endorsement": true,
+        "project_address": true,
+        "certificate_holder": true,
+        "cancellation_notice_days": 30,
+        "expiration_date": "2027-09-30"
+      }
+    },
+    {
+      "file": "06-no-additional-insured.pdf",
+      "problem": "missing additional insured endorsement",
+      "readable": true,
+      "expected": {
+        "insured_name": "Ridgeline Roofing LLC",
+        "limits": {
+          "commercial_liability": 1000000,
+          "aggregate": 2000000,
+          "auto": 1000000,
+          "umbrella": 2000000,
+          "workers_comp": 1000000,
+          "pollution_liability": 1000000,
+          "professional_liability": null
+        },
+        "additional_insured_endorsement": false,
+        "project_address": true,
+        "certificate_holder": true,
+        "cancellation_notice_days": 30,
+        "expiration_date": "2027-03-31"
+      }
+    },
+    {
+      "file": "07-corrupt.pdf",
+      "problem": "corrupt file (a real certificate cut off partway through)",
+      "readable": false
+    },
+    {
+      "file": "08-not-a-pdf.pdf",
+      "problem": "not a PDF (plain text with a .pdf name)",
+      "readable": false
+    }
+  ]
+}
