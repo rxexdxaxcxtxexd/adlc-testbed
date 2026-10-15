@@ -1,5 +1,7 @@
 # CLAUDE.md: standing instructions for coi-poc
 
+Also read and follow `AGENTS.md` (lifecycle and agent rules).
+
 A proof of concept of certificate-of-insurance (COI) automation: a Google Apps Script backend plus a custom HtmlService web front end, inside Google Workspace. A self-directed portfolio build. Not a client delivery.
 
 Readers of the result: a non-technical CFO who wants ROI and polished UX, and a data manager who wants data she can trust.

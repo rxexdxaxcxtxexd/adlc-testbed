@@ -4,6 +4,7 @@
 # would deploy, so a new top-level folder must be added here.
 # Keep .clasp.json without a rootDir, or these paths no longer line up.
 .claude/**
+.github/**
 .scratch/**
 .gitignore
 .gitattributes

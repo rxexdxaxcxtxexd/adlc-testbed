@@ -1,0 +1,69 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm test
+
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks 8.30.1 (MIT CLI, checksum pinned)
+        run: |
+          curl -sSL -o gl.tgz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  gl.tgz" | sha256sum -c -
+          tar -xzf gl.tgz gitleaks
+          ./gitleaks git . --redact --no-banner --exit-code 1
+
+  scope:
+    # Agent PRs may not touch rules or CI. Rule PRs are the one exception: AGENTS.md only.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: check changed paths
+        env:
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          changed=$(git diff --name-only "$BASE" "$HEAD")
+          echo "$changed"
+          if [ "$AUTHOR" != "adlc-testbed-bot[bot]" ]; then exit 0; fi
+          if echo "$changed" | grep -E '^(\.github/|CLAUDE\.md)'; then
+            echo "::error::Agent PRs may not change .github/ or CLAUDE.md"; exit 1; fi
+          if echo "$changed" | grep -qx 'AGENTS.md' && [ "${HEAD_REF#agent/rule-}" = "$HEAD_REF" ]; then
+            echo "::error::AGENTS.md changes only through an agent/rule-* PR"; exit 1; fi
+          if echo "$changed" | grep -qx 'PLAN.md' && [ "$(git show "$HEAD":PLAN.md 2>/dev/null | grep -c '^Status: approved')" = "0" ] && [ "$(echo "$changed" | wc -l)" -gt 1 ]; then
+            echo "::error::Code changed before PLAN.md was approved"; exit 1; fi
+
+  ci-gate:
+    if: always()
+    needs: [tests, secrets, scope]
+    runs-on: ubuntu-latest
+    steps:
+      - name: all required jobs passed
+        run: |
+          echo '${{ toJSON(needs) }}' | grep -q '"result": "failure"\|"result": "cancelled"' && exit 1 || exit 0
